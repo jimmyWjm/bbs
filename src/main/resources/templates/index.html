@@ -1,0 +1,51 @@
+@layout("/common/layout.html"){
+@ var _user = c.currentUser(request, servlet.response); 
+@ var isAdmin = 'admin'== (_user.userName!"");
+<div class="col-sm-9 animated fadeInRight">
+   
+    <div class="mail-box">
+        @include("/common/topicPage.html"){}
+        <table class="table table-hover table-mail">
+        	<thead>
+        		<td></td>
+        		<td>发帖</td>
+        		<td>标题</td>
+        		<td>浏览</td>
+        		<td>回复</td>
+        		<td></td>
+        		@if(isAdmin){
+				<th >管理</th>
+				@}
+        	</thead>
+            <tbody>
+            	@ for(topic in topicPage.list!){
+                <tr >
+                    <td>
+                    @if(topic.isUp>0){
+						<span class="label label-danger">重要</span>
+					@}
+					@if(topic.isNice>0){
+						<span class="label label-error ">精品</span> 
+					@}
+                    </td>
+                    <td><a href="mail_detail.html">${topic.userName}</a>
+                    </td>
+                    
+                    <td class="mail-subject"><a href="${ctxPath}/bbs/topic/${topic.id}-1.html">${topic.content}</a>
+                    </td>
+                    <td class=""><span class="label label-warning ">${topic.pv}</span>
+                    </td>
+                    <td class=""><span class="label label-warning ">${topic.postCount}</span>
+                    </td>
+                    <td class="text-right ">${printTime(topic.createTime)}</td>
+                    @if(isAdmin){
+					<td class="text-right mail-date">删除，置顶</td>
+					@}
+                </tr>
+                @}
+                
+            </tbody>
+        </table>
+    </div>
+</div>
+@}    
