@@ -19,12 +19,7 @@
     <link href="css/animate.min.css" rel="stylesheet">
     <link href="css/style.min862f.css?v=4.1.0" rel="stylesheet">
 
-		<script type="text/javascript" charset="utf-8" src="ueditor/ueditor.config.js"></script>
-    <script type="text/javascript" charset="utf-8" src="ueditor/ueditor.all.min.js"> </script>
-    <!--建议手动加在语言，避免在ie下有时因为加载语言失败导致编辑器加载失败-->
-    <!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
-    <script type="text/javascript" charset="utf-8" src="ueditor/lang/zh-cn/zh-cn.js"></script>
-
+   
 </head>
 
 <body class="gray-bg">
@@ -149,7 +144,9 @@
                     
                      <div class="mail-box">
 
-                        <script id="editor" type="text/plain" style="width:100%;height:250px"></script>
+                             <div id="test-editormd">
+                                 <textarea<span> style="display:none;"</span>>###Hello world!</textarea>
+                            </div>
                         <div class="clearfix"></div>
                     </div>
                     <div class="mail-body text-right tooltip-demo">
@@ -168,13 +165,44 @@
     <script src="js/bootstrap.min14ed.js?v=3.3.6"></script>
     <script src="js/content.mine209.js?v=1.0.0"></script>
     <script src="js/plugins/iCheck/icheck.min.js"></script>
+
+    <link rel="stylesheet" href="md/css/editormd.css" />
+  
+    <script src="md/editormd.min.js"></script>
+
     <script>
+
+       var testEditor;
+
+            $(function() {
+                testEditor = editormd("test-editormd", {
+                    width   : "100%",
+                    height  : 340,
+                    syncScrolling : "single",
+                    path    : "md/lib/",
+                    toolbarIcons : function() {
+            // Or return editormd.toolbarModes[name]; // full, simple, mini
+            // Using "||" set icons align right.
+                    return ["undo", "redo", "|", "bold", "hr", "|", 
+            "h1", "h2", "h3", "h4",  "|","link", "reference-link", "image", "code",  "code-block", "table",  "||", "watch"]
+                    }
+                });
+                
+                /*
+                // or
+                testEditor = editormd({
+                    id      : "test-editormd",
+                    width   : "90%",
+                    height  : 640,
+                    path    : "../lib/"
+                });
+                */
+            });
+        </script>
        
         
-        var ue = UE.getEditor('editor');
-        
     </script>
-    <script type="text/javascript" src="http://tajs.qq.com/stats?sId=9051096" charset="UTF-8"></script>
+    
 </body>
 
 

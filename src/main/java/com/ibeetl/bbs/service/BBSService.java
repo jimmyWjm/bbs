@@ -1,5 +1,7 @@
 package com.ibeetl.bbs.service;
 
+import java.util.Date;
+
 import org.beetl.sql.core.engine.PageQuery;
 
 import com.ibeetl.bbs.model.BbsPost;
@@ -33,4 +35,6 @@ public interface BBSService {
 	void deleteTopic(int id);
 
 	void deletePost(int id);
+	
+	Date getLatestPost(int userId);
 }

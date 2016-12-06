@@ -121,6 +121,7 @@ public class BBSServiceImpl implements BBSService {
 		post.setUserId(user.getId());
 		post.setTopicId(topic.getId());
 		post.setCreateTime(new Date());
+		post.setContent(topic.getContent());
 		postDao.insert(post);
 		gitUserService.addTopicScore(user.getId());
 	}
@@ -161,6 +162,11 @@ public class BBSServiceImpl implements BBSService {
 	public void deletePost(int id) {
 		sql.deleteById(BbsPost.class, id);
 		replyDao.deleteByPostId(id);
+	}
+
+	@Override
+	public Date getLatestPost(int userId) {
+		return postDao.getLatestPostDate(userId);
 	}
 
 }

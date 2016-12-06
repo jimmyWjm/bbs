@@ -33,13 +33,18 @@
                     
                     <td class="mail-subject"><a href="${ctxPath}/bbs/topic/${topic.id}-1.html">${topic.content}</a>
                     </td>
-                    <td class=""><span class="label label-warning ">${topic.pv}</span>
+                    <td class=""><span >${topic.pv}</span>
                     </td>
                     <td class=""><span class="label label-warning ">${topic.postCount}</span>
                     </td>
                     <td class="text-right ">${printTime(topic.createTime)}</td>
                     @if(isAdmin){
-					<td class="text-right mail-date">删除，置顶</td>
+					<td class="text-right mail-date">
+					<button type="button" class="btn btn-primary btn-xs"><a href="${ctxPath}/bbs/admin/topic/nice/${topic.id}">精华</a></button>
+					<button type="button" class="btn btn-primary btn-xs"><a href="${ctxPath}/bbs/admin/topic/up/${topic.id}">值顶</a></button>
+					<button type="button" class="btn btn-danger btn-xs"><a href="${ctxPath}/bbs/admin/topic/delete/${topic.id}">删除</a></button>
+						
+					</td>
 					@}
                 </tr>
                 @}

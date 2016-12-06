@@ -1,0 +1,39 @@
+@layout("/common/layout.html",{requriedUEditor:true}){
+        <div class="col-sm-9 animated fadeInRight">
+            <div class="mail-box">
+				<form action="${ctxPath}/bbs/admin/post/update.html" method="post">
+             	<input type="hidden" name="id" value="${post.id}"/>
+             	  <div class="mail-body">
+
+                    <div class="mail-tools tooltip-demo m-t-md">
+
+                   <h3>
+                   		<span class="font-noraml">主题： </span>${topic.content}
+               	   </h3>
+
+                 </div>
+                  <div class="mail-body">
+
+                     <div id="test-editormd">
+                             <textarea id="postContent" name="content">${post.content}</textarea>
+                     </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="mail-body text-right tooltip-demo">
+                    <button class="btn btn-sm btn-primary" onclick="return savePost(this)" title="Send"><i class="fa fa-reply"></i> 提交</button>
+                  </div>
+                <div class="clearfix"></div>
+            </div>
+           </form>
+        </div>
+     </div>
+ </div>
+ <script>
+ 
+ function savePost(v){
+	 $("form").submit(function(e){
+	});
+ }
+ 
+ </script>
+ @}

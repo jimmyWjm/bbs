@@ -36,7 +36,7 @@ public class LoginController {
 //	}
 	
 	
-	@RequestMapping("/user/login.html")
+	@RequestMapping("/bbs/user/login.html")
 	public ModelAndView  login(String userName,String password,HttpServletRequest request,HttpServletResponse response){
 		password = HashKit.md5(password);
 		BbsUser user = bbsUserService.getUserAccount(userName, password);
@@ -47,23 +47,23 @@ public class LoginController {
 		}else{
 		
 			WebUtils.loginUser(request, response, user, true);
-			ModelAndView view = new ModelAndView("redirect:/");
+			ModelAndView view = new ModelAndView("redirect:/bbs/index");
 			return view;
 		}
 		
 	}
 	
-	@RequestMapping("/user/loginPage.html")
+	@RequestMapping("/bbs/user/loginPage.html")
 	public ModelAndView  loginPage(HttpServletRequest request){
 		ModelAndView view = new ModelAndView("/user/login.html");
 		return view ;
 	}
 	
-	@RequestMapping("/user/logout.html")
+	@RequestMapping("/bbs/user/logout.html")
 	public ModelAndView  logout(HttpServletRequest request,HttpServletResponse response){
 		
 		WebUtils.logoutUser(response);
-		ModelAndView view = new ModelAndView("redirect:/");
+		ModelAndView view = new ModelAndView("redirect:/bbs/index");
 		return view;
 	}
 	

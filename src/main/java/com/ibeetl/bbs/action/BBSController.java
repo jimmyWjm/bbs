@@ -126,14 +126,23 @@ public class BBSController {
 		return view;
 	}
 
-	@RequestMapping("/bbs/topic/add")
+	@RequestMapping("/bbs/topic/add.html")
 	public ModelAndView addTopic(ModelAndView view){
-		view.setViewName("/bbs/topic/add.html");
+		view.setViewName("/post.html");
 		return view;
 	}
 
-	@RequestMapping("/bbs/topic/save")
+	@RequestMapping("/bbs/topic/save.html")
 	public RedirectView saveTopic(BbsTopic topic, BbsPost post, String topicContent, HttpServletRequest request, HttpServletResponse response){
+		//@TODO， 防止频繁提交
+		BbsUser user = webUtils.currentUser(request, response);
+		Date lastPostTime = bbsService.getLatestPost(user.getId());
+		long now = System.currentTimeMillis();
+		long temp = lastPostTime.getTime();
+		if(now-temp<1000*10){
+			//10秒之内的提交都不处理
+			throw new RuntimeException("提交太快，处理不了，上次提交是 "+lastPostTime);
+		}
 		topic.setIsNice(0);
 		topic.setIsUp(0);
 		topic.setPv(1);
@@ -141,11 +150,11 @@ public class BBSController {
 		topic.setReplyCount(0);
 		post.setHasReply(0);
 		topic.setContent(topicContent);
-		bbsService.saveTopic(topic, post, webUtils.currentUser(request, response));
-		return new RedirectView("/bbs/topic/"+topic.getId()+"-1");
+		bbsService.saveTopic(topic, post, user);
+		return new RedirectView("/bbs/topic/"+topic.getId()+"-1.html");
 	}
 
-	@RequestMapping("/bbs/post/save")
+	@RequestMapping("/bbs/post/save.html")
 	public RedirectView savePost(BbsPost post, HttpServletRequest request, HttpServletResponse response){
 		post.setHasReply(0);
 		post.setCreateTime(new Date());
@@ -153,10 +162,11 @@ public class BBSController {
 		BbsTopic topic = bbsService.getTopic(post.getTopicId());
 		topic.setPostCount(topic.getPostCount() + 1);
 		sql.updateById(topic);
-		return new RedirectView("/bbs/topic/"+post.getTopicId()+"-1");
+		return new RedirectView("/bbs/topic/"+post.getTopicId()+"-1.html");
 	}
 
 	@RequestMapping("/bbs/reply/{postId}-{p}")
+	@Deprecated
 	public ModelAndView listReply(@PathVariable final int postId, @PathVariable int p, ModelAndView view){
 		PageQuery query = new PageQuery(p, new HashMap(){{put("postId", postId);}});
 		bbsService.getReplys(query);
@@ -166,7 +176,7 @@ public class BBSController {
 		return view;
 	}
 
-	@RequestMapping("/bbs/reply/save")
+	@RequestMapping("/bbs/reply/save.html")
 	public ModelAndView saveReply(BbsReply reply, HttpServletRequest request, HttpServletResponse response){
 		ModelAndView view = new ModelAndView("/common/replyItem.html");
 		
@@ -282,26 +292,34 @@ public class BBSController {
 		return view;
 	}
 
-	@RequestMapping("/bbs/admin/post/edit/{id}")
+	@RequestMapping("/bbs/admin/post/edit/{id}.html")
 	public ModelAndView editPost(ModelAndView view, @PathVariable int id){
-		view.setViewName("/bbs/post/edit.html");
-		view.addObject("post", sql.unique(BbsPost.class, id));
+		view.setViewName("/postEdit.html");
+		BbsPost post = sql.unique(BbsPost.class, id);
+		view.addObject("post",post );
+		view.addObject("topic", sql.unique(BbsTopic.class, post.getTopicId()));
 		return view;
 	}
 
-	@RequestMapping("/bbs/admin/post/update")
-	public ModelAndView updatePost(ModelAndView view, BbsPost post){
+	@RequestMapping("/bbs/admin/post/update.html")
+	public ModelAndView updatePost(ModelAndView view, BbsPost post,HttpServletRequest request, HttpServletResponse response){
+		
 		BbsPost db = sql.unique(BbsPost.class, post.getId());
+		canUpdatePost(db,request,response);
 		db.setContent(post.getContent());
 		sql.updateById(db);
-		view.setView(new RedirectView("/bbs/topic/"+db.getTopicId()+"-1"));
+		view.setView(new RedirectView("/bbs/topic/"+db.getTopicId()+"-1.html"));
 		return view;
 	}
 
 	@RequestMapping("/bbs/admin/post/delete/{id}")
-	public ModelAndView deletePost(ModelAndView view, @PathVariable int id){
+	public ModelAndView deletePost(ModelAndView view, @PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+		
+		BbsPost post = sql.unique(BbsPost.class, id);
+		canUpdatePost(post,request,response);
+		Integer topicId = post.getTopicId();
 		bbsService.deletePost(id);
-		view.setView(new RedirectView("/bbs/admin/post/1"));
+		view.setView(new RedirectView("/bbs/topic/"+topicId+"-1.html"));
 		return view;
 	}
 
@@ -319,6 +337,21 @@ public class BBSController {
 		sql.deleteById(BbsReply.class, id);
 		view.setView(new RedirectView("/bbs/admin/reply/1"));
 		return view;
+	}
+	
+	private boolean canUpdatePost(BbsPost post,HttpServletRequest request, HttpServletResponse response){
+		WebUtils util = new WebUtils();
+		BbsUser user = util.currentUser(request, response);
+		if(post.getUserId()==user.getId()){
+			return true ;
+		}
+		//如果是admin
+		if(user.getUserName().equals("admin")){
+			return true;
+		}
+		
+		throw new RuntimeException("非本人不能修改"+post.getId());
+		
 	}
 	
 	

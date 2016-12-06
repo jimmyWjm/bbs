@@ -43,13 +43,13 @@ public  class WebUtils {
 	 * @return GitUserModel
 	 */
 	public BbsUser currentUser(HttpServletRequest request, HttpServletResponse response) {
-		if(1==1){
-			//just for test
-			BbsUser user = new BbsUser();
-			user.setId(1);
-			user.setUserName("xxx");
-			return user;
-		}
+//		if(1==1){
+//			//just for test
+//			BbsUser user = new BbsUser();
+//			user.setId(95);
+//			user.setUserName("admin");
+//			return user;
+//		}
 		String cookieKey = Const.USER_COOKIE_KEY;
 		// 获取cookie信息
 		String userCookie = getCookie(request, cookieKey);

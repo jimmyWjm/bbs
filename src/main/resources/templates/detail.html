@@ -1,130 +1,133 @@
 @layout("/common/layout.html",{requriedUEditor:true}){
-           <div class="col-sm-9 animated fadeInRight">
-                <div class="mail-box-header">
-                    <div class="pull-right tooltip-demo">
-                        <a href="mail_compose.html" class="btn btn-white btn-sm" data-toggle="tooltip" data-placement="top" title="回复"><i class="fa fa-reply"></i> 回复</a>
-                        <a href="mail_compose.html" class="btn btn-white btn-sm" data-toggle="tooltip" data-placement="top" title="编辑"><i class="fa fa-reply"></i> 编辑</a>
-                    	 	<a href="mail_compose.html" class="btn btn-white btn-sm" data-toggle="tooltip" data-placement="top" title="置顶"><i class="fa fa-reply"></i> 置顶</a>
-                      	<a href="mail_compose.html" class="btn btn-white btn-sm" data-toggle="tooltip" data-placement="top" title="删除"><i class="fa fa-reply"></i> 删除</a>
-                    
-                     </div>
-                    <h2>
-                    
-                		</h2>
-                    <div class="mail-tools tooltip-demo m-t-md">
+@ var _user = c.currentUser(request, servlet.response); 
+@ var isAdmin = 'admin'== (_user.userName!"");
+
+      <div class="col-sm-9 animated fadeInRight">
+           <div class="mail-box-header">
+               
+               <h2>
+               
+           		</h2>
+               <div class="mail-tools tooltip-demo m-t-md">
 
 
-                        <h3>
-                        <span class="font-noraml">主题： </span>${topic.content}
-                    </h3>
-                        <h5>
-                        <span class="pull-right font-noraml">${printTime(topic.createTime)}</span>
-                        <span class="font-noraml">发件人： </span>
-                    </h5>
-                    </div>
-                </div>
-                @for(post in postPage.list){
-                <div class="mail-box">
-		
-
-                    <div class="mail-body">
-                    ${post.content}
-                    @if(isNotEmpty(post.replyPage.list)){
-                    <hr/>
-                    	<div class="mail-reply">
-                    @}
-                    	@for(reply in post.replyPage.list){
-                    		@include("/common/replyItem.html",{"reply":reply}){}
-                   
-                   	 	@}
-                   	  	</div>
-                   	  	 @include("/common/replyForm.html",{"post":post,"topic":topic}){};
-                    </div>
+                   <h3>
+                   <span class="font-noraml">主题： </span>${topic.content}
+               </h3>
                   
-                    
-              	</div>
-                 @}
-                   
-                 <div class="mail-box">
+               </div>
+           </div>
+           @for(post in postPage.list){
+           <div class="mail-box">
 
-                        <script id="editor" type="text/plain" style="width:100%;height:250px"></script>
-                        <div class="clearfix"></div>
-                </div>
-                <div class="mail-body text-right tooltip-demo">
-                    <a href="mailbox.html" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Send"><i class="fa fa-reply"></i> 发送</a>
-                    <a href="mailbox.html" class="btn btn-white btn-sm" data-toggle="tooltip" data-placement="top" title="Discard email"><i class="fa fa-times"></i> 放弃</a>
-                    <a href="mailbox.html" class="btn btn-white btn-sm" data-toggle="tooltip" data-placement="top" title="Move to draft folder"><i class="fa fa-pencil"></i> 存为草稿</a>
-                </div>
+
+               <div class="mail-body">
+               <button type="button" class="btn btn-default btn-xs">${printTime(post.createTime)}</button>
+               <button type="button" class="btn btn-default btn-xs">${post.user.userName}</button>
+               @if(_user.id!0==post.userId||isAdmin){
+                
+               <a class="btn btn-primary btn-xs" href="${ctxPath}/bbs/admin/post/edit/${post.id}.html">修改</a>
+               <a class="btn btn-primary btn-xs" href="${ctxPath}/bbs/admin/post/delete/${post.id}.html">删除</a>
+				
+			   @}
+			   
+               <div class="md-content" id="editormd-markdown-doc-${post.id}">
+                 <textarea style="display:none;">${post.content}</textarea>         
              
-              
-                <div class="clearfix"></div>
-                </div>
-            </div>
+     </div>
+     
+    
+     <div class="mail-reply">
+     	
+     	@for(reply in post.replyPage.list){
+     		
+     		<div class="alert alert-warning">
+             @include("/common/replyItem.html",{"reply":reply}){}
+         	</div>
+    
+    	 	@}
+    	  	</div>
+    	  	 @if(_user!=null){
+    	  	 @include("/common/replyForm.html",{"post":post,"topic":topic}){};
+    	  	 @}
+     </div>
+   
+     
+</div>
+  @}
+  @if(_user!=null){
+  <form id="postForm" action="${ctxPath}/bbs/post/save.html"> 
+  <div class="mail-box">
+		  
+		  <input type="hidden" name="topicId" value="${topic.id}">
+          <div id="test-editormd">
+                  <textarea id="postContent" name="content"></textarea>
+          </div>
+          
+         <div class="clearfix"></div>
+ </div>
+ <div class="mail-body text-right tooltip-demo">
+     <button class="btn btn-sm btn-primary" onclick="return savePost(this)" title="Send"><i class="fa fa-reply"></i> 提交</button>
+  </div>
+
+</form>
+
+<div class="clearfix"></div>
+@}
+</div>
         </div>
     </div>
+</div>
 @}
 
  <script>
-	// window.UMEDITOR_CONFIG.imageUrl  = "${ctxPath}/bbs/upload";
-	 //window.UMEDITOR_CONFIG.imagePath = "${ctxPath}/";
-	 //window.UMEDITOR_CONFIG.imageFieldName="imgFile" ;
-	 //window.UMEDITOR_CONFIG.textarea="content" ;
- 
-     
-        var ue = UE.getEditor('editor', {
-        	serverUrl:"${ctxPath}/bbs/upload",
-            toolbars: [
-                ['fullscreen', 'source', 'undo', 'redo', 'bold']
-            ],
-            autoHeightEnabled: true,
-            autoFloatEnabled: true
-        });
-        
-        
-        
-        $(function(){
+	
+ function savePost(v){
+	 $(v).closest("form").subimt();
+	 
+ }
 
-        });
-        function saveReply(v){
-            if($(v).parent().parent().children('input[type=text]').val() == ''){
-                alert('内容不能为空');
-                return false;
-            }
-            $.post(
-                $(v).attr("data"),
-                $(v).parent().parent().parent().serialize(),
-                function(data){
-                    if(data == "error"){
-                        alert("评论不能为空，且不超过200字 :(");
-                    }else{
-                    	var container = $(v).closest(".mail-body").children(".mail-reply")
-                        var input = $(container).html();
-                    	$(container).html(data+input);
-                    	//如何赋值？
-                    	$(v).parent().parent().children('input[type=text]').val("")
-                       
-                    }
-                },
-                "html"
-            );
-            return false;
-        }
-        function replyPaginate(v){
-            $.post(
-                $(v).attr("data"),
-                function(data){
-                    $(v).closest(".-reply-list").html(data).hide().fadeIn(2000);
-                },
-                "html"
-            );
-        }
-        function replyThisUser(v){
-            var footer = $(v).closest(".-post-footer").find("textarea").focus().val("回复 \@" + $(v).attr("data") + " ");
-        }
-        function login(v){
-            var passwordInput = $(v).closest("form").find("input[name='password']");
-            passwordInput.val(md5(passwordInput.val()));
-            return true;
-        }
+ function saveReply(v){
+     if($(v).parent().parent().children('input[type=text]').val() == ''){
+         alert('内容不能为空');
+         return false;
+     }
+     $.post(
+         $(v).attr("data"),
+         $(v).parent().parent().parent().serialize(),
+         function(data){
+             if(data == "error"){
+                 alert("评论不能为空，且不超过200字 :(");
+             }else{
+             	var container = $(v).closest(".mail-body").children(".mail-reply")
+                 var input = $(container).html();
+             	data="<div class='alert alert-warning'>"+data+"</div>"
+             	$(container).html(data+input);
+             	//如何赋值？
+             	$(v).parent().parent().children('input[type=text]').val("")
+                
+             }
+         },
+         "html"
+     );
+     return false;
+ }
+ function replyPaginate(v){
+     $.post(
+         $(v).attr("data"),
+         function(data){
+             $(v).closest(".-reply-list").html(data).hide().fadeIn(2000);
+         },
+         "html"
+     );
+ }
+ function replyThisUser(v){
+     var footer = $(v).closest(".-post-footer").find("textarea").focus().val("回复 \@" + $(v).attr("data") + " ");
+ }
+ function login(v){
+     var passwordInput = $(v).closest("form").find("input[name='password']");
+     passwordInput.val(md5(passwordInput.val()));
+     return true;
+ }
 </script>
 

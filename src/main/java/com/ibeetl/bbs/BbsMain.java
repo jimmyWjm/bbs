@@ -87,6 +87,7 @@ public class BbsMain {
         beetlSpringViewResolver.setContentType("text/html;charset=UTF-8");
         beetlSpringViewResolver.setOrder(0);
         beetlSpringViewResolver.setConfig(beetlGroupUtilConfiguration);
+      
         return beetlSpringViewResolver;
     }
 
