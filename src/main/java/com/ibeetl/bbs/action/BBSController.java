@@ -136,13 +136,13 @@ public class BBSController {
 	public RedirectView saveTopic(BbsTopic topic, BbsPost post, String topicContent, HttpServletRequest request, HttpServletResponse response){
 		//@TODO， 防止频繁提交
 		BbsUser user = webUtils.currentUser(request, response);
-		Date lastPostTime = bbsService.getLatestPost(user.getId());
-		long now = System.currentTimeMillis();
-		long temp = lastPostTime.getTime();
-		if(now-temp<1000*10){
-			//10秒之内的提交都不处理
-			throw new RuntimeException("提交太快，处理不了，上次提交是 "+lastPostTime);
-		}
+//		Date lastPostTime = bbsService.getLatestPost(user.getId());
+//		long now = System.currentTimeMillis();
+//		long temp = lastPostTime.getTime();
+//		if(now-temp<1000*10){
+//			//10秒之内的提交都不处理
+//			throw new RuntimeException("提交太快，处理不了，上次提交是 "+lastPostTime);
+//		}
 		topic.setIsNice(0);
 		topic.setIsUp(0);
 		topic.setPv(1);

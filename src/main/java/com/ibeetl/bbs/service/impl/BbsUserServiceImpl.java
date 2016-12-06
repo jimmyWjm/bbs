@@ -47,12 +47,8 @@ public class BbsUserServiceImpl implements BbsUserService {
 
 
 	@Override
-	public BbsUser setUserAccount(String userName, String password) {
-		BbsUser query = new BbsUser();
-		query.setUserName(userName);
-		BbsUser user = userDao.template(query).get(0);
-		user.setPassword(password);
-		userDao.updateById(user);
+	public BbsUser setUserAccount(BbsUser user){
+		userDao.insert(user,true);
 		return user;
 		
 	}
@@ -97,6 +93,17 @@ public class BbsUserServiceImpl implements BbsUserService {
 		user.setBalance(balance);
 		user.setLevel(getLevel(score));
 		userDao.updateById(user);
+	}
+
+
+
+
+	@Override
+	public boolean hasUser(String userName) {
+		BbsUser user = new BbsUser();
+		user.setUserName(userName);
+		List list = userDao.template(user);
+		return !list.isEmpty();
 	}
 
 }

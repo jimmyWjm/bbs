@@ -53,9 +53,9 @@ public class LoginController {
 		
 	}
 	
-	@RequestMapping("/bbs/user/loginPage.html")
+	@RequestMapping("/bbs/user/register.html")
 	public ModelAndView  loginPage(HttpServletRequest request){
-		ModelAndView view = new ModelAndView("/user/login.html");
+		ModelAndView view = new ModelAndView("/register.html");
 		return view ;
 	}
 	
@@ -67,7 +67,30 @@ public class LoginController {
 		return view;
 	}
 	
-	
+	@RequestMapping("/bbs/user/doRegister.html")
+	public ModelAndView  register(BbsUser user,HttpServletRequest request,HttpServletResponse response){
+		
+//		BbsUser db = bbsUserService.getUserAccount(user.getUserName(), user.getPassword());
+		if(bbsUserService.hasUser(user.getUserName())){
+			ModelAndView view = new ModelAndView("redirect:/bbs/user/logout.html");
+			view.addObject("error","用户已经存在");
+			view.addObject("userName",user.getUserName());
+			view.addObject("password",user.getPassword());
+			
+			return view;
+		}
+		
+		String password = HashKit.md5(user.getPassword());
+		user.setPassword(password);
+		user.setBalance(0);
+		user.setLevel(0);
+		user.setScore(0);
+		user = bbsUserService.setUserAccount(user);
+		WebUtils.loginUser(request, response, user, true);
+		ModelAndView view = new ModelAndView("redirect:/bbs/index");
+		return view;
+		
+	}
 	
 	
 	

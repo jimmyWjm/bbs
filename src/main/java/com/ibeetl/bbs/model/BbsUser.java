@@ -13,6 +13,8 @@ public class BbsUser extends TailBean {
 	private String password;
 	private String email ;
 	private String userName ;
+	private String corp;
+	
 	public Integer getId() {
 		return id;
 	}
@@ -54,6 +56,12 @@ public class BbsUser extends TailBean {
 	}
 	public void setBalance(Integer balance) {
 		this.balance = balance;
+	}
+	public String getCorp() {
+		return corp;
+	}
+	public void setCorp(String corp) {
+		this.corp = corp;
 	}
 	
 	

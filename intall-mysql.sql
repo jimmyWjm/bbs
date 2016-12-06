@@ -140,25 +140,28 @@ INSERT INTO `bbs_topic` VALUES ('69', '4', '1', '4', '0', '82', 'Zookeeper', nul
 
 
 -- ----------------------------
--- Table structure for git_user
+-- Table structure for bbs_user
 -- ----------------------------
 DROP TABLE IF EXISTS `bbs_user`;
-CREATE TABLE `git_user` (
+CREATE TABLE `bbs_user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_name` varchar(255) DEFAULT NULL,
   `password` varchar(32) DEFAULT NULL,
   `email` varchar(255) DEFAULT NULL,
-  `score` int(255) DEFAULT '0' COMMENT '积分',
-  `level` int(255) DEFAULT NULL COMMENT '积分换算成等级，新生，老生，班主任，教导主任，校长',
+  
+  `score` int(11) DEFAULT '0' COMMENT '积分',
+  `level` int(11) DEFAULT '1' COMMENT '积分换算成等级，新生，老生，班主任，教导主任，校长',
+  `balance` int(11) DEFAULT '0' COMMENT '积分余额',
+  `corp` varchar(128) ,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of git_user
 -- ----------------------------
-INSERT INTO `git_user` VALUES ('1', 'xxx', 'e10adc3949ba59abbe56e057f20f883e', 'xxx', '0', '1');
-INSERT INTO `git_user` VALUES ('4', '李家智', 'e10adc3949ba59abbe56e057f20f883e', null, '140', '2');
-INSERT INTO `git_user` VALUES ('5', '赵晴文', 'e10adc3949ba59abbe56e057f20f883e', 'zhaoqingwen@coamc.com', '1000', '5');
-INSERT INTO `git_user` VALUES ('6', '石萌', 'e10adc3949ba59abbe56e057f20f883e', 'shimeng@coamc.com', '12', '1');
-INSERT INTO `git_user` VALUES ('95', 'admin', 'e10adc3949ba59abbe56e057f20f883e', 'xxxx@coamc.com', '0', '1');
+INSERT INTO `bbs_user` VALUES ('1', 'xxx', 'e10adc3949ba59abbe56e057f20f883e', 'xxx', '0', '1','0');
+INSERT INTO `bbs_user` VALUES ('4', '李家智', 'e10adc3949ba59abbe56e057f20f883e', null, '140', '2','0');
+INSERT INTO `bbs_user` VALUES ('5', '赵晴文', 'e10adc3949ba59abbe56e057f20f883e', 'zhaoqingwen@coamc.com', '1000', '5', '0');
+INSERT INTO `bbs_user` VALUES ('6', '石萌', 'e10adc3949ba59abbe56e057f20f883e', 'shimeng@coamc.com', '12', '1', '0');
+INSERT INTO `bbs_user` VALUES ('95', 'admin', 'e10adc3949ba59abbe56e057f20f883e', 'xxxx@coamc.com', '0', '1', '0');
 

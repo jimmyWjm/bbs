@@ -15,7 +15,7 @@ public interface BbsPostDao extends BaseMapper<BbsPost> {
     void getPosts(PageQuery query);
     @SqlStatement(params="topicId")
     void deleteByTopicId(int topicId);
-    @Sql("select max(create_time) from bbs_post where user_id=1 order by id desc ")
+    @Sql(value="select max(create_time) from bbs_post where user_id=? order by id desc ",returnType=Date.class)
     Date getLatestPostDate(int userId);
     
 }

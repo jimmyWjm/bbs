@@ -34,10 +34,11 @@ public interface  BbsUserService {
 	 * @param userName
 	 * @param password
 	 */
-	public BbsUser setUserAccount(String userName,String password);
+	public BbsUser setUserAccount(BbsUser user);
 	
 	public BbsUser getUserAccount(String userName,String password);
 	
+	public boolean hasUser(String userName);
 	
 	
 

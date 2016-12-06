@@ -1,0 +1,67 @@
+@layout("/common/layout.html",{inLogin:true}){
+
+<div class="col-sm-9 animated fadeInRight">
+               
+                <div class="mail-box">
+
+
+                    <div class="mail-body">
+
+                         <div class="ibox-content">
+                        <form class="form-horizontal m-t" id="signupForm" action="${ctxPath}/bbs/user/doRegister.html">
+                            
+                            
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">用户名：</label>
+                                
+                                <div class="col-sm-8">
+                                    <input id="username" name="userName" class="form-control" type="text" aria-required="true" aria-invalid="true" value="${userName!}" class="error">
+                                		@if(has(error)){
+                                		<span class="help-block m-b-none"><i class="fa fa-info-circle"></i>${error}</span>
+                                		@}
+                                </div>
+                            </div>
+                          <div class="form-group">
+                                <label class="col-sm-3 control-label">密码：</label>
+                                
+                                <div class="col-sm-8">
+                                    <input id="password" name="password" class="form-control" type="text" aria-required="true" aria-invalid="true" class="error" value="${password!}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">E-mail：</label>
+                                <div class="col-sm-8">
+                                    <input id="email" name="email" class="form-control" type="email">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">公司：</label>
+                                <div class="col-sm-8">
+                                    <input id="corp" name="corp" class="form-control" type="text" aria-required="true" aria-invalid="false" class="valid">
+                                		<span class="help-block m-b-none"><i class="fa fa-info-circle"></i>留下你的公司名字，以方便beetl统计使用者，网站不会在任何情况下泄露你个人信息</span>
+                                </div>
+                            </div>
+                          
+                            <div class="form-group">
+                                <div class="col-sm-8 col-sm-offset-3">
+                                    <button class="btn btn-primary" type="submit">提交</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    </div>
+
+                  
+                </div>
+                
+
+            </div>
+        </div>
+    </div>
+@}
+
+ <script>
+
+</script>
+
