@@ -121,7 +121,6 @@ public class BBSServiceImpl implements BBSService {
 		post.setUserId(user.getId());
 		post.setTopicId(topic.getId());
 		post.setCreateTime(new Date());
-		post.setContent(topic.getContent());
 		postDao.insert(post);
 		gitUserService.addTopicScore(user.getId());
 	}

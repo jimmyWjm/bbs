@@ -1,6 +1,11 @@
 package com.ibeetl.bbs;
 
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.sql.DataSource;
+
 import org.beetl.core.resource.ClasspathResourceLoader;
 import org.beetl.ext.spring.BeetlGroupUtilConfiguration;
 import org.beetl.ext.spring.BeetlSpringViewResolver;
@@ -9,8 +14,6 @@ import org.beetl.sql.core.Interceptor;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.UnderlinedNameConversion;
 import org.beetl.sql.core.db.MySqlStyle;
-import org.beetl.sql.core.mapper.DefaultMapperBuilder;
-import org.beetl.sql.core.mapper.MapperJavaProxy;
 import org.beetl.sql.ext.DebugInterceptor;
 import org.beetl.sql.ext.spring4.BeetlSqlDataSource;
 import org.beetl.sql.ext.spring4.BeetlSqlScannerConfigurer;
@@ -21,33 +24,23 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternUtils;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.ibeetl.bbs.common.Const;
 import com.ibeetl.bbs.dao.BbsModuleDao;
 import com.ibeetl.bbs.util.Functions;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
-import java.lang.reflect.Proxy;
-import java.util.HashMap;
-import java.util.Map;
 
 
 @SpringBootApplication
 public class BbsMain {
 
 
-    public static void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(BbsMain.class);
         app.setBannerMode(Banner.Mode.OFF);
         app.run(args);
@@ -61,8 +54,9 @@ public class BbsMain {
         ResourcePatternResolver patternResolver = ResourcePatternUtils.getResourcePatternResolver(new DefaultResourceLoader());
 
         try {
-
+//			String root =  patternResolver.getResource("classpath:templates").getFile().toString();
             ClasspathResourceLoader cploder = new ClasspathResourceLoader("/templates");
+//			WebAppResourceLoader webAppResourceLoader = new WebAppResourceLoader(root);
             beetlGroupUtilConfiguration.setResourceLoader(cploder);
 
             beetlGroupUtilConfiguration.setConfigFileResource(patternResolver.getResource("classpath:beetl.properties"));
@@ -87,7 +81,6 @@ public class BbsMain {
         beetlSpringViewResolver.setContentType("text/html;charset=UTF-8");
         beetlSpringViewResolver.setOrder(0);
         beetlSpringViewResolver.setConfig(beetlGroupUtilConfiguration);
-      
         return beetlSpringViewResolver;
     }
 
@@ -98,6 +91,13 @@ public class BbsMain {
         conf.setDaoSuffix("Dao");
         conf.setSqlManagerFactoryBeanName("sqlManagerFactoryBean");
 
+        SQLManager sql;
+        try {
+            sql = (SQLManager) fb.getObject();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+ 
         return conf;
     }
 
@@ -108,6 +108,7 @@ public class BbsMain {
 
         BeetlSqlDataSource source = new BeetlSqlDataSource();
         source.setMasterSource(datasource);
+        ;
         factory.setCs(source);
         factory.setDbStyle(new MySqlStyle());
         factory.setInterceptors(new Interceptor[]{new DebugInterceptor()});
@@ -119,18 +120,26 @@ public class BbsMain {
     }
 
 
-//    @Bean(name = "datasource")
-//    public DataSource getDataSource() {
-//        System.out.println("-------------------- primaryDataSource init ---------------------");
-//        return DataSourceBuilder.create().url(Test.MysqlDBConfig.url).username(Test.MysqlDBConfig.userName).password(Test.MysqlDBConfig.password).build();
-//    }
-
-
-    @Bean(name = "txManager")
-    public DataSourceTransactionManager getDataSourceTransactionManager(@Qualifier("datasource") DataSource datasource) {
-        DataSourceTransactionManager dsm = new DataSourceTransactionManager();
-        dsm.setDataSource(datasource);
-        return dsm;
+    @Bean(name = "datasource")
+    public DataSource getDataSource() {
+        System.out.println("-------------------- primaryDataSource init ---------------------");
+        return DataSourceBuilder.create().url(Test.MysqlDBConfig.url).username(Test.MysqlDBConfig.userName).password(Test.MysqlDBConfig.password).build();
     }
+
+
+    @Bean(name = "datasource")
+	public DataSource druidDataSource(Environment env) {
+		DruidDataSource druidDataSource = new DruidDataSource();
+		
+		druidDataSource.setDriverClassName(env.getProperty("bbs.driver"));
+		druidDataSource.setUrl(env.getProperty("bbs.dbUrl"));
+		druidDataSource.setUsername(env.getProperty("bbs.dbUserName"));
+		druidDataSource.setPassword(env.getProperty("bbs.dbPassowrd"));
+		druidDataSource.setValidationQuery("SELECT 1 FROM DUAL");
+		druidDataSource.setInitialSize(5);
+		druidDataSource.setMaxActive(10);
+	
+		return druidDataSource;
+	}
 
 }

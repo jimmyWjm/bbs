@@ -133,7 +133,7 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/topic/save.html")
-	public RedirectView saveTopic(BbsTopic topic, BbsPost post, String topicContent, HttpServletRequest request, HttpServletResponse response){
+	public RedirectView saveTopic(BbsTopic topic, BbsPost post, String title, String postContent,HttpServletRequest request, HttpServletResponse response){
 		//@TODO， 防止频繁提交
 		BbsUser user = webUtils.currentUser(request, response);
 //		Date lastPostTime = bbsService.getLatestPost(user.getId());
@@ -149,7 +149,8 @@ public class BBSController {
 		topic.setPostCount(1);
 		topic.setReplyCount(0);
 		post.setHasReply(0);
-		topic.setContent(topicContent);
+		topic.setContent(title);
+		post.setContent(postContent);
 		bbsService.saveTopic(topic, post, user);
 		return new RedirectView("/bbs/topic/"+topic.getId()+"-1.html");
 	}

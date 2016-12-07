@@ -28,8 +28,17 @@
                 <div class="ibox float-e-margins">
                     <div class="ibox-content mailbox-content">
                         <div class="file-manager">
-                            <a class="btn btn-block btn-primary compose-mail" href="${ctxPath}/bbs/topic/add.html">发帖</a>
-                            <div class="space-25"></div>
+                          <div class="widget style1 yellow-bg">
+			                    <div class="row">
+			                        <div class="col-xs-4">
+			                            <i class="fa fa-music fa-5x"></i>
+			                        </div>
+			                        <div class="col-xs-8 text-right">
+			                            <span> Beetl-BBS </span>
+			                            <h2 class="font-bold"><a href="http://git.oschina.net/xiandafu/beetl-bbs">1.0 试用版本</a></h2>
+			                        </div>
+			                    </div>
+                			</div>
                             <h5>板块</h5>
                             <ul class="folder-list m-b-md" style="padding: 0">
                                 <li>
@@ -87,7 +96,8 @@
 	                        </div>
 	                    </div>
 	                   @}else{
-	                   
+	                     <a class="btn btn-block btn-primary compose-mail" href="${ctxPath}/bbs/topic/add.html">发帖(提交数据将在1.1正式版发布前删除)</a>
+                            <div class="space-25"></div>
 	                    <div class="alert alert-success">
 	                            欢迎你 ${_user.userName} ${level(_user.level)},你已有 ${_user.score} 积分 <a class="alert-link" href="${ctxPath}/bbs/user/logout.html">点击注销</a>.
 	                     </div>
