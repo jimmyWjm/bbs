@@ -120,12 +120,6 @@ public class BbsMain {
     }
 
 
-    @Bean(name = "datasource")
-    public DataSource getDataSource() {
-        System.out.println("-------------------- primaryDataSource init ---------------------");
-        return DataSourceBuilder.create().url(Test.MysqlDBConfig.url).username(Test.MysqlDBConfig.userName).password(Test.MysqlDBConfig.password).build();
-    }
-
 
     @Bean(name = "datasource")
 	public DataSource druidDataSource(Environment env) {
