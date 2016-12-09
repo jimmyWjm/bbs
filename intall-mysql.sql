@@ -159,9 +159,9 @@ CREATE TABLE `bbs_user` (
 -- ----------------------------
 -- Records of git_user
 -- ----------------------------
-INSERT INTO `bbs_user` VALUES ('1', 'xxx', 'e10adc3949ba59abbe56e057f20f883e', 'xxx', '0', '1','0');
+INSERT INTO `bbs_user` VALUES ('1', 'xxx', 'e10adc3949ba59abbe56e057f20f883e', 'xxx', '0', '1','0', 'xxx',);
 INSERT INTO `bbs_user` VALUES ('4', '李家智', 'e10adc3949ba59abbe56e057f20f883e', null, '140', '2','0');
-INSERT INTO `bbs_user` VALUES ('5', '赵晴文', 'e10adc3949ba59abbe56e057f20f883e', 'zhaoqingwen@coamc.com', '1000', '5', '0');
-INSERT INTO `bbs_user` VALUES ('6', '石萌', 'e10adc3949ba59abbe56e057f20f883e', 'shimeng@coamc.com', '12', '1', '0');
-INSERT INTO `bbs_user` VALUES ('95', 'admin', 'e10adc3949ba59abbe56e057f20f883e', 'xxxx@coamc.com', '0', '1', '0');
+INSERT INTO `bbs_user` VALUES ('5', '赵晴文', 'e10adc3949ba59abbe56e057f20f883e', 'zhaoqingwen@coamc.com', '1000', '5', '0', 'xxx');
+INSERT INTO `bbs_user` VALUES ('6', '石萌', 'e10adc3949ba59abbe56e057f20f883e', 'shimeng@coamc.com', '12', '1', '0', 'xxx');
+INSERT INTO `bbs_user` VALUES ('95', 'admin', 'e10adc3949ba59abbe56e057f20f883e', 'xxxx@coamc.com', '0', '1', '0', 'xxx');
 
