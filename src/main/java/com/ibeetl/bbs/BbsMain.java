@@ -14,6 +14,7 @@ import org.beetl.sql.core.Interceptor;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.UnderlinedNameConversion;
 import org.beetl.sql.core.db.MySqlStyle;
+import org.beetl.sql.core.engine.PageQuery;
 import org.beetl.sql.ext.DebugInterceptor;
 import org.beetl.sql.ext.spring4.BeetlSqlDataSource;
 import org.beetl.sql.ext.spring4.BeetlSqlScannerConfigurer;
@@ -43,6 +44,7 @@ public class BbsMain {
 	public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(BbsMain.class);
         app.setBannerMode(Banner.Mode.OFF);
+        PageQuery.DEFAULT_PAGE_SIZE =5 ;
         app.run(args);
 
     }

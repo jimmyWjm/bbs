@@ -36,6 +36,13 @@ queryNiceTopic
     @}
     from bbs_topic where is_nice=true order by create_time desc
 
+getTopicAndPostCount
+===
+
+* 根据id查找topic和拥有的post数量
+
+	select t.*,(select count(1) from bbs_post where topic_id=#id#) post_count from bbs_topic t where t.id =#id#
+
 sample
 ===
 * 注释

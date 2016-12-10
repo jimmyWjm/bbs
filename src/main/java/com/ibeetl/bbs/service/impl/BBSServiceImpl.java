@@ -45,6 +45,8 @@ public class BBSServiceImpl implements BBSService {
 	public BbsTopic getTopic(int id) {
 		return topicDao.unique(id);
 	}
+	
+	
 
 	@Override
 	public void getTopics(PageQuery query) {
@@ -167,5 +169,7 @@ public class BBSServiceImpl implements BBSService {
 	public Date getLatestPost(int userId) {
 		return postDao.getLatestPostDate(userId);
 	}
+
+	
 
 }

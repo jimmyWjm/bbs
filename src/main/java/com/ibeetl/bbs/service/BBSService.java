@@ -11,7 +11,7 @@ import com.ibeetl.bbs.model.BbsUser;
 
 public interface BBSService {
 	BbsTopic getTopic(int id);
-
+	
 	void getTopics(PageQuery query);
 
 	void getHotTopics(PageQuery query);

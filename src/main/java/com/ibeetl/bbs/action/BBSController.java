@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -119,8 +120,8 @@ public class BBSController {
 	@RequestMapping("/bbs/topic/module/{id}-{p}.html")
 	public ModelAndView module(@PathVariable final int id, @PathVariable int p){
 		ModelAndView view = new ModelAndView();
-		view.setViewName("/bbs/index.html");
-		PageQuery query = new PageQuery(p, new HashMap(){{put("moduleId", id+"");}});
+		view.setViewName("/index.html");
+		PageQuery query = new PageQuery(p, new HashMap(){{put("moduleId", id);}});
 		bbsService.getTopics(query);
 		view.addObject("topicPage", query);
 		return view;
@@ -161,9 +162,12 @@ public class BBSController {
 		post.setCreateTime(new Date());
 		bbsService.savePost(post, webUtils.currentUser(request, response));
 		BbsTopic topic = bbsService.getTopic(post.getTopicId());
-		topic.setPostCount(topic.getPostCount() + 1);
+		int totalPost = topic.getPostCount() + 1;
+		topic.setPostCount(totalPost);
 		sql.updateById(topic);
-		return new RedirectView("/bbs/topic/"+post.getTopicId()+"-1.html");
+		int pageSize = (int)PageQuery.DEFAULT_PAGE_SIZE;
+		int page = (totalPost/pageSize)+(totalPost%pageSize==0?0:1);
+		return new RedirectView("/bbs/topic/"+post.getTopicId()+"-"+page+".html");
 	}
 
 	@RequestMapping("/bbs/reply/{postId}-{p}")
@@ -341,8 +345,8 @@ public class BBSController {
 	}
 	
 	private boolean canUpdatePost(BbsPost post,HttpServletRequest request, HttpServletResponse response){
-		WebUtils util = new WebUtils();
-		BbsUser user = util.currentUser(request, response);
+		
+		BbsUser user = this.webUtils.currentUser(request, response);
 		if(post.getUserId()==user.getId()){
 			return true ;
 		}
