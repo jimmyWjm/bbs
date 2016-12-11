@@ -1,9 +1,6 @@
-page
+allReply
 ===
-    select  
-    @pageTag(){
-    *
-    @}
+    select  * 
     from bbs_reply where true
     @if(!isEmpty(postId)){
     	 and `post_id`=#postId#
@@ -11,6 +8,8 @@ page
     @if(!isEmpty(isAdmin)){
          order by id desc
     @}
+    @ orm.single({"userId":"id"},"BbsUser");
+    
 
 deleteByTopicId
 ===

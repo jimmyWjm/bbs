@@ -24,7 +24,7 @@
 
                <div class="mail-body">
                <button type="button" class="btn btn-default btn-xs">${printTime(post.createTime)}</button>
-               <button type="button" class="btn btn-default btn-xs">${post.user.userName}</button>
+               <button type="button" class="btn btn-default btn-xs">${post.bbsUser.userName}</button>
                @if(_user.id!0==post.userId||isAdmin){
                 
                <a class="btn btn-primary btn-xs" href="${ctxPath}/bbs/admin/post/edit/${post.id}.html">修改</a>
@@ -40,12 +40,10 @@
     
      <div class="mail-reply">
      	
-     	@for(reply in post.replyPage.list){
-     		
+     	@for(reply in post.replys){
      		<div class="alert alert-warning">
              @include("/common/replyItem.html",{"reply":reply}){}
          	</div>
-    
     	 	@}
     	  	</div>
     	  	 @if(_user!=null){
@@ -58,7 +56,7 @@
   @}
   <#page query="${postPage}"/>
   @if(_user!=null){
-  <form id="postForm" action="${ctxPath}/bbs/post/save.html"> 
+  <form id="postForm" action="${ctxPath}/bbs/post/save.html" method="POST"> 
   <div class="mail-box">
 		  
 		  <input type="hidden" name="topicId" value="${topic.id}">

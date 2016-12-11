@@ -21,7 +21,14 @@ public class WebMvcConfigurer extends WebMvcConfigurerAdapter {
             @Override
             public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                                      Object handler) throws Exception {
-                String requestURI = request.getRequestURI();
+                
+            		String requestURI = request.getRequestURI();
+            		if(webUtils.currentUser(request, response)==null){
+            			//未登陆用户，记录访问地址，登陆后可以直接跳转到此页面
+            			if(!requestURI.equals("/bbs/user/login.html")){
+            				request.getSession(true).setAttribute("lastAccess", requestURI);
+            			}
+            		}
                 if(requestURI.contains("/bbs/admin/") || requestURI.contains("/bbs/topic/add")){
                     BbsUser user = webUtils.currentUser(request, response);
                     if(user == null){

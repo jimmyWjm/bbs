@@ -1,13 +1,16 @@
 package com.ibeetl.bbs.model;
 import java.math.*;
 import java.util.Date;
+
+import org.beetl.sql.core.TailBean;
+
 import java.sql.Timestamp;
 
 /*
 * 
 * gen by beetlsql 2016-06-13
 */
-public class BbsReply  {
+public class BbsReply extends TailBean {
 	private Integer id ;
 	private Integer postId ;
 	private Integer topicId ;

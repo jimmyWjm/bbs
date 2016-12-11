@@ -1,18 +1,23 @@
 package com.ibeetl.bbs.action;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.beetl.sql.core.SQLManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BbsUserService;
 import com.ibeetl.bbs.util.HashKit;
+import com.ibeetl.bbs.util.VerifyCodeUtils;
 
 
 @Controller
@@ -24,17 +29,7 @@ public class LoginController {
 	@Autowired
 	BbsUserService bbsUserService;
 	
-	
-//	@RequestMapping("/user/registerOk.html")
-//	public ModelAndView  sync(String key,String userName,String password,HttpServletRequest request,HttpServletResponse response){
-//		password = HashKit.md5(password);
-//		BbsUser user = bbsUserService.setUserAccount(userName, password);
-//		WebUtils.loginUser(request, response, user, true);
-//		ModelAndView view = new ModelAndView("redirect:/");
-//		UserData.removeKey(key);
-//		return view;
-//	}
-	
+	static final String CODE_NAME = "verCode";
 	
 	@RequestMapping("/bbs/user/login.html")
 	public ModelAndView  login(String userName,String password,HttpServletRequest request,HttpServletResponse response){
@@ -47,7 +42,13 @@ public class LoginController {
 		}else{
 		
 			WebUtils.loginUser(request, response, user, true);
-			ModelAndView view = new ModelAndView("redirect:/bbs/index");
+			String url = (String)request.getSession().getAttribute("lastAccess");
+			if(url==null){
+				url = "redirect:/bbs/index";
+			}else{
+				url = "redirect:"+url;
+			}
+			ModelAndView view = new ModelAndView(url);
 			return view;
 		}
 		
@@ -67,31 +68,57 @@ public class LoginController {
 		return view;
 	}
 	
-	@RequestMapping("/bbs/user/doRegister.html")
-	public ModelAndView  register(BbsUser user,HttpServletRequest request,HttpServletResponse response){
-		
+	@RequestMapping(value="/bbs/user/doRegister.html",method=RequestMethod.POST)
+	public ModelAndView  register(BbsUser user,String code,HttpServletRequest request,HttpServletResponse response){
+		HttpSession session = request.getSession(true); 
+		String verCode = (String)session.getAttribute(CODE_NAME);
+		if(!verCode.equalsIgnoreCase(code)){
+			ModelAndView view = new ModelAndView("/register.html");
+			view.addObject("error","验证码输入错误");
+			view.addObject("user",user);
+			return view;
+		}
 //		BbsUser db = bbsUserService.getUserAccount(user.getUserName(), user.getPassword());
 		if(bbsUserService.hasUser(user.getUserName())){
-			ModelAndView view = new ModelAndView("redirect:/bbs/user/logout.html");
+			ModelAndView view = new ModelAndView("/register.html");
 			view.addObject("error","用户已经存在");
-			view.addObject("userName",user.getUserName());
-			view.addObject("password",user.getPassword());
+			view.addObject("user",user);
 			
 			return view;
 		}
 		
 		String password = HashKit.md5(user.getPassword());
 		user.setPassword(password);
-		user.setBalance(0);
-		user.setLevel(0);
-		user.setScore(0);
+		user.setBalance(10);
+		user.setLevel(1);
+		user.setScore(10);
 		user = bbsUserService.setUserAccount(user);
 		WebUtils.loginUser(request, response, user, true);
+		
 		ModelAndView view = new ModelAndView("redirect:/bbs/index");
 		return view;
 		
 	}
 	
+	@RequestMapping("/bbs/user/authImage")
+	public void authImage(HttpServletRequest request,HttpServletResponse response) throws IOException{
+		response.setHeader("Pragma", "No-cache"); 
+        response.setHeader("Cache-Control", "no-cache"); 
+        response.setDateHeader("Expires", 0); 
+        response.setContentType("image/jpeg"); 
+           
+        //生成随机字串 
+        String verifyCode = VerifyCodeUtils.generateVerifyCode(4); 
+        //存入会话session 
+        HttpSession session = request.getSession(true); 
+        //删除以前的
+        session.removeAttribute(CODE_NAME);
+        session.setAttribute(CODE_NAME, verifyCode.toLowerCase()); 
+        //生成图片 
+        int w = 100, h = 30; 
+        VerifyCodeUtils.outputImage(w, h, response.getOutputStream(), verifyCode); 
+	
+	}
 	
 	
 }

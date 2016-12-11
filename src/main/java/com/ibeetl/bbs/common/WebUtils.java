@@ -14,11 +14,8 @@ import com.ibeetl.bbs.util.HashKit;
 
 
 /**
- * Web相关工具类
- * @author L.cm
- * email: 596392912@qq.com
- * site:http://www.dreamlu.net
- * date 2015年7月5日下午7:48:48
+ * Web相关工具类,同时用spring session，因此用户信息也放到session好cookie里
+ * 
  */
 @Service
 public  class WebUtils {
@@ -43,13 +40,10 @@ public  class WebUtils {
 	 * @return GitUserModel
 	 */
 	public BbsUser currentUser(HttpServletRequest request, HttpServletResponse response) {
-//		if(1==1){
-//			//just for test
-//			BbsUser user = new BbsUser();
-//			user.setId(95);
-//			user.setUserName("admin");
-//			return user;
-//		}
+		BbsUser user = (BbsUser)request.getAttribute("user");
+		if(user!=null){
+			return user;
+		}
 		String cookieKey = Const.USER_COOKIE_KEY;
 		// 获取cookie信息
 		String userCookie = getCookie(request, cookieKey);
@@ -94,7 +88,9 @@ public  class WebUtils {
 			removeCookie(response, cookieKey);
 			return null;
 		}
-		return userDao.unique(Integer.valueOf(userId));
+		user =  userDao.unique(Integer.valueOf(userId));
+		request.setAttribute("user", user);
+		return user;
 	}
 
 	/**
@@ -109,6 +105,8 @@ public  class WebUtils {
 	 * @return void
 	 */
 	public static void loginUser(HttpServletRequest request, HttpServletResponse response, BbsUser user, boolean... remember) {
+		
+		request.setAttribute("user", user);
 		// 获取用户的id、nickName
 		String uid     = user.getId()+"";
 		// 当前毫秒数
@@ -225,6 +223,15 @@ public  class WebUtils {
 			ip = request.getRemoteAddr();
 		}
 		return ip;
+	}
+	
+	public  boolean isAdmin(HttpServletRequest request,HttpServletResponse response) {
+		BbsUser user = this.currentUser(request,  response);
+		if(user==null){
+			throw new RuntimeException("未登陆用户");
+		}
+		return user.getUserName().equals("admin");
+			
 	}
 
 }

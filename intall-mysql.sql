@@ -114,7 +114,7 @@ CREATE TABLE `bbs_topic` (
   `post_count` int(11) NOT NULL DEFAULT '1',
   `reply_count` int(11) NOT NULL DEFAULT '0',
   `pv` int(11) NOT NULL DEFAULT '0',
-  `content` varchar(60) NOT NULL,
+  `content` varchar(150) NOT NULL,
   `emotion` tinyint(2) DEFAULT NULL,
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `is_nice` bit(1) NOT NULL DEFAULT b'0',

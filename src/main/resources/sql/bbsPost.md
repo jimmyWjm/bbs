@@ -11,6 +11,8 @@ getPosts
     @if(!isEmpty(isAdmin)){
          order by id desc
     @}
+    @ orm.single({"userId":"id"},"BbsUser");
+    @ orm.single({"topicId":"id"},"BbsTopic");
 
 deleteByTopicId
 ===

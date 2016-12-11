@@ -28,7 +28,6 @@ public interface BBSService {
 
 	void savePost(BbsPost post, BbsUser user);
 
-	void getReplys(PageQuery query);
 
 	void saveReply(BbsReply reply);
 

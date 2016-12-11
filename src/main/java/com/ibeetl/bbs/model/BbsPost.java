@@ -1,15 +1,15 @@
 package com.ibeetl.bbs.model;
-import org.beetl.sql.core.engine.PageQuery;
-
-import java.math.*;
 import java.util.Date;
-import java.sql.Timestamp;
+import java.util.List;
+
+import org.beetl.sql.core.TailBean;
+import org.beetl.sql.core.engine.PageQuery;
 
 /*
 * 
 * gen by beetlsql 2016-06-13
 */
-public class BbsPost  {
+public class BbsPost  extends TailBean{
 	private Integer id ;
 	private Integer hasReply ;
 	private Integer topicId ;
@@ -17,9 +17,9 @@ public class BbsPost  {
 	private String content ;
 	private Date createTime ;
 	private Date updateTime ;
-	private PageQuery replyPage;
-	private BbsUser user;
-	private BbsTopic topic;
+	
+	
+	private List<BbsReply> replys ;
 
 	public Integer getId() {
 		return id;
@@ -77,27 +77,15 @@ public class BbsPost  {
 		this.updateTime = updateTime;
 	}
 
-	public PageQuery getReplyPage() {
-		return replyPage;
+
+
+	public List<BbsReply> getReplys() {
+		return replys;
 	}
 
-	public void setReplyPage(PageQuery replyPage) {
-		this.replyPage = replyPage;
+	public void setReplys(List<BbsReply> replys) {
+		this.replys = replys;
 	}
 
-	public BbsUser getUser() {
-		return user;
-	}
-
-	public void setUser(BbsUser user) {
-		this.user = user;
-	}
-
-	public BbsTopic getTopic() {
-		return topic;
-	}
-
-	public void setTopic(BbsTopic topic) {
-		this.topic = topic;
-	}
+	
 }

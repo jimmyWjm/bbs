@@ -12,11 +12,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -144,6 +144,9 @@ public class BBSController {
 //			//10秒之内的提交都不处理
 //			throw new RuntimeException("提交太快，处理不了，上次提交是 "+lastPostTime);
 //		}
+		if(user==null){
+			throw new RuntimeException("未登陆用户");
+		}
 		topic.setIsNice(0);
 		topic.setIsUp(0);
 		topic.setPv(1);
@@ -170,22 +173,16 @@ public class BBSController {
 		return new RedirectView("/bbs/topic/"+post.getTopicId()+"-"+page+".html");
 	}
 
-	@RequestMapping("/bbs/reply/{postId}-{p}")
-	@Deprecated
-	public ModelAndView listReply(@PathVariable final int postId, @PathVariable int p, ModelAndView view){
-		PageQuery query = new PageQuery(p, new HashMap(){{put("postId", postId);}});
-		bbsService.getReplys(query);
-		view.addObject("replyPage", query);
-		view.addObject("postId", postId);
-		view.setViewName("/bbs/reply/_reply.html");
-		return view;
-	}
+	
 
 	@RequestMapping("/bbs/reply/save.html")
 	public ModelAndView saveReply(BbsReply reply, HttpServletRequest request, HttpServletResponse response){
 		ModelAndView view = new ModelAndView("/common/replyItem.html");
 		
 		BbsUser user = webUtils.currentUser(request, response);
+		if(user==null){
+			throw new RuntimeException("未登陆用户");
+		}
 		reply.setUserId(user.getId());
 		reply.setPostId(reply.getPostId());
 		reply.setCreateTime(new Date());
@@ -251,7 +248,11 @@ public class BBSController {
 	
 
 	@RequestMapping("/bbs/admin/topic/nice/{id}")
-	public ModelAndView editNiceTopic(ModelAndView view,@PathVariable int id){
+	public ModelAndView editNiceTopic(ModelAndView view,@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+		if(!webUtils.isAdmin(request, response)){
+			//如果有非法使用，不提示具体信息，直接返回null
+			return null;
+		}
 		BbsTopic db = bbsService.getTopic(id);
 		Integer nice = db.getIsNice();
 		if(nice>0){
@@ -266,7 +267,11 @@ public class BBSController {
 	
 	
 	@RequestMapping("/bbs/admin/topic/up/{id}")
-	public ModelAndView editUpTopic(ModelAndView view,@PathVariable int id){
+	public ModelAndView editUpTopic(ModelAndView view,@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+		if(!webUtils.isAdmin(request, response)){
+			//如果有非法使用，不提示具体信息，直接返回null
+			return null;
+		}
 		BbsTopic db = bbsService.getTopic(id);
 		Integer up = db.getIsUp();
 		if(up>0){
@@ -282,7 +287,11 @@ public class BBSController {
 	
 
 	@RequestMapping("/bbs/admin/topic/delete/{id}")
-	public ModelAndView deleteTopic(ModelAndView view, @PathVariable int id){
+	public ModelAndView deleteTopic(ModelAndView view, @PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+		if(!webUtils.isAdmin(request, response)){
+			//如果有非法使用，不提示具体信息，直接返回null
+			return null;
+		}
 		bbsService.deleteTopic(id);
 		view.setView(new RedirectView("/bbs/index"));
 		return view;
@@ -298,7 +307,7 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/admin/post/edit/{id}.html")
-	public ModelAndView editPost(ModelAndView view, @PathVariable int id){
+	public ModelAndView editPost(ModelAndView view, @PathVariable int id,HttpServletRequest request, HttpServletResponse response){
 		view.setViewName("/postEdit.html");
 		BbsPost post = sql.unique(BbsPost.class, id);
 		view.addObject("post",post );
@@ -328,14 +337,7 @@ public class BBSController {
 		return view;
 	}
 
-	@RequestMapping("/bbs/admin/reply/{p}")
-	public ModelAndView adminReplys(ModelAndView view, @PathVariable int p){
-		view.setViewName("/bbs/admin/replyList.html");
-		PageQuery query = new PageQuery(p, new HashMap(){{put("isAdmin", true);}});
-		bbsService.getReplys(query);
-		view.addObject("replyPage", query);
-		return view;
-	}
+	
 
 	@RequestMapping("/bbs/admin/reply/delete/{id}")
 	public ModelAndView deleteReply(ModelAndView view, @PathVariable int id){

@@ -50,14 +50,7 @@ public class BBSServiceImpl implements BBSService {
 
 	@Override
 	public void getTopics(PageQuery query) {
-		if(query.getParas() == null){
-			Map paras = new HashMap();
-			paras.put("type", "normal");
-			query.setParas(paras);
-		}else{
-			Map paras = (Map) query.getParas();
-			paras.put("type", "normal");
-		}
+		
 		topicDao.queryTopic(query);
 	}
 
@@ -86,17 +79,9 @@ public class BBSServiceImpl implements BBSService {
 		if(query.getList() != null){
 			for (Object topicObj : query.getList()) {
 				final BbsPost post = (BbsPost) topicObj;
-				PageQuery pageQuery = new PageQuery(1, new HashMap(){{put("postId", post.getId());}});
-				replyDao.page(pageQuery);
-				if(pageQuery.getList() != null){
-					for (Object obj : pageQuery.getList()) {
-						BbsReply reply = (BbsReply) obj;
-						reply.setUser(sql.unique(BbsUser.class, reply.getUserId()));
-					}
-				}
-				post.setReplyPage(pageQuery);
-				post.setUser(sql.unique(BbsUser.class, post.getUserId()));
-				post.setTopic(this.getTopic(post.getTopicId()));
+				List<BbsReply> replys = replyDao.allReply(post.getId());
+				post.setReplys (replys);
+				
 			}
 		}
 	}
@@ -134,17 +119,7 @@ public class BBSServiceImpl implements BBSService {
 		gitUserService.addPostScore(user.getId());
 	}
 
-	@Override
-	public void getReplys(PageQuery pageQuery) {
-		replyDao.page(pageQuery);
-		if(pageQuery.getList() != null){
-			for (Object obj : pageQuery.getList()) {
-				BbsReply reply = (BbsReply) obj;
-				reply.setUser(userDao.unique(reply.getUserId()));
-				reply.setTopic(this.getTopic(reply.getTopicId()));
-			}
-		}
-	}
+	
 
 	@Override
 	public void saveReply(BbsReply reply) {

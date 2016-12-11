@@ -24,6 +24,7 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
@@ -38,6 +39,7 @@ import com.ibeetl.bbs.util.Functions;
 
 
 @SpringBootApplication
+@Cacheable
 public class BbsMain {
 
 
