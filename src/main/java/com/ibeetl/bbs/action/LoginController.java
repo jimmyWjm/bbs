@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.model.BbsUser;
@@ -31,24 +32,26 @@ public class LoginController {
 	
 	static final String CODE_NAME = "verCode";
 	
+	
 	@RequestMapping("/bbs/user/login.html")
 	public ModelAndView  login(String userName,String password,HttpServletRequest request,HttpServletResponse response){
+		
 		password = HashKit.md5(password);
 		BbsUser user = bbsUserService.getUserAccount(userName, password);
 		if(user==null){
+			//TODO
 			ModelAndView view = new ModelAndView("/user/login.html");
 			view.addObject("error","用户不存在");
 			return view ;
 		}else{
 		
 			WebUtils.loginUser(request, response, user, true);
-			String url = (String)request.getSession().getAttribute("lastAccess");
-			if(url==null){
-				url = "redirect:/bbs/index";
-			}else{
-				url = "redirect:"+url;
-			}
-			ModelAndView view = new ModelAndView(url);
+//			String url = (String)request.getSession().getAttribute("lastAccess");
+//			if(url==null){
+				String url = "forward:/bbs/index/1.html";
+//			}
+			ModelAndView view = new ModelAndView();
+			view.setViewName(url);
 			return view;
 		}
 		
@@ -61,10 +64,10 @@ public class LoginController {
 	}
 	
 	@RequestMapping("/bbs/user/logout.html")
-	public ModelAndView  logout(HttpServletRequest request,HttpServletResponse response){
+	public RedirectView  logout(HttpServletRequest request,HttpServletResponse response){
 		
-		WebUtils.logoutUser(response);
-		ModelAndView view = new ModelAndView("redirect:/bbs/index");
+		WebUtils.logoutUser(request,response);
+		RedirectView view = new RedirectView("/bbs/index/1.html",true);
 		return view;
 	}
 	
@@ -95,7 +98,7 @@ public class LoginController {
 		user = bbsUserService.setUserAccount(user);
 		WebUtils.loginUser(request, response, user, true);
 		
-		ModelAndView view = new ModelAndView("redirect:/bbs/index");
+		ModelAndView view = new ModelAndView("forward:/bbs/index/1.html");
 		return view;
 		
 	}

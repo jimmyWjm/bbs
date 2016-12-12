@@ -47,6 +47,7 @@ public class BBSController {
 	@Autowired
 	WebUtils webUtils;
 	
+	
 	static String filePath = null;
 	static {
 		filePath = System.getProperty("user.dir");
@@ -55,13 +56,13 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/share")
-	public RedirectView share(HttpServletRequest request){
-		return new RedirectView("/bbs/topic/module/1-1.html");
+	public ModelAndView share(HttpServletRequest request){
+		return new ModelAndView( "forward:/bbs/topic/module/1-1.html");
 	}
 	
 	@RequestMapping("/bbs/index")
-	public RedirectView index(HttpServletRequest request){
-		return new RedirectView("/bbs/index/1.html");
+	public ModelAndView index(HttpServletRequest request){
+		return new ModelAndView( "forward:/bbs/index/1.html");
 	}
 
 	@RequestMapping("/bbs/index/{p}.html")
@@ -76,7 +77,7 @@ public class BBSController {
 
 	@RequestMapping("/bbs/topic/hot")
 	public RedirectView hotTopic(){
-		return new RedirectView("/bbs/topic/hot/1");
+		return new RedirectView( "/bbs/topic/hot/1");
 	}
 
 	@RequestMapping("/bbs/topic/hot/{p}")
@@ -90,8 +91,8 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/topic/nice")
-	public RedirectView niceTopic(){
-		return new RedirectView("/bbs/topic/nice/1");
+	public ModelAndView niceTopic(){
+		return new ModelAndView( "forward:/bbs/topic/nice/1");
 	}
 
 	@RequestMapping("/bbs/topic/nice/{p}")
@@ -134,7 +135,7 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/topic/save.html")
-	public RedirectView saveTopic(BbsTopic topic, BbsPost post, String title, String postContent,HttpServletRequest request, HttpServletResponse response){
+	public ModelAndView saveTopic(BbsTopic topic, BbsPost post, String title, String postContent,HttpServletRequest request, HttpServletResponse response){
 		//@TODO， 防止频繁提交
 		BbsUser user = webUtils.currentUser(request, response);
 //		Date lastPostTime = bbsService.getLatestPost(user.getId());
@@ -156,11 +157,11 @@ public class BBSController {
 		topic.setContent(title);
 		post.setContent(postContent);
 		bbsService.saveTopic(topic, post, user);
-		return new RedirectView("/bbs/topic/"+topic.getId()+"-1.html");
+		return new ModelAndView( "forward:/bbs/topic/"+topic.getId()+"-1.html");
 	}
 
 	@RequestMapping("/bbs/post/save.html")
-	public RedirectView savePost(BbsPost post, HttpServletRequest request, HttpServletResponse response){
+	public ModelAndView savePost(BbsPost post, HttpServletRequest request, HttpServletResponse response){
 		post.setHasReply(0);
 		post.setCreateTime(new Date());
 		bbsService.savePost(post, webUtils.currentUser(request, response));
@@ -170,7 +171,7 @@ public class BBSController {
 		sql.updateById(topic);
 		int pageSize = (int)PageQuery.DEFAULT_PAGE_SIZE;
 		int page = (totalPost/pageSize)+(totalPost%pageSize==0?0:1);
-		return new RedirectView("/bbs/topic/"+post.getTopicId()+"-"+page+".html");
+		return new ModelAndView( "forward:/bbs/topic/"+post.getTopicId()+"-"+page+".html");
 	}
 
 	
@@ -187,6 +188,7 @@ public class BBSController {
 		reply.setPostId(reply.getPostId());
 		reply.setCreateTime(new Date());
 		bbsService.saveReply(reply);
+		reply.set("bbsUser", user);
 		reply.setUser(user);
 		view.addObject("reply",reply);
 		return view;
@@ -261,7 +263,7 @@ public class BBSController {
 			db.setIsNice(1);
 		}
 		sql.updateById(db);
-		view.setView(new RedirectView("/bbs/index"));
+		view.setView(new RedirectView( "/bbs/index"));
 		return view;
 	}
 	
@@ -280,7 +282,7 @@ public class BBSController {
 			db.setIsUp(1);
 		}
 		sql.updateById(db);
-		view.setView(new RedirectView("/bbs/index"));
+		view.setViewName( "forward:/bbs/index");
 		return view;
 	}
 
@@ -293,7 +295,7 @@ public class BBSController {
 			return null;
 		}
 		bbsService.deleteTopic(id);
-		view.setView(new RedirectView("/bbs/index"));
+		view.setViewName( "forward:/bbs/index");
 		return view;
 	}
 
@@ -322,7 +324,7 @@ public class BBSController {
 		canUpdatePost(db,request,response);
 		db.setContent(post.getContent());
 		sql.updateById(db);
-		view.setView(new RedirectView("/bbs/topic/"+db.getTopicId()+"-1.html"));
+		view.setViewName("forward:/bbs/topic/"+db.getTopicId()+"-1.html");
 		return view;
 	}
 
@@ -333,7 +335,7 @@ public class BBSController {
 		canUpdatePost(post,request,response);
 		Integer topicId = post.getTopicId();
 		bbsService.deletePost(id);
-		view.setView(new RedirectView("/bbs/topic/"+topicId+"-1.html"));
+		view.setViewName("forward:/bbs/topic/"+topicId+"-1.html");
 		return view;
 	}
 
@@ -342,7 +344,7 @@ public class BBSController {
 	@RequestMapping("/bbs/admin/reply/delete/{id}")
 	public ModelAndView deleteReply(ModelAndView view, @PathVariable int id){
 		sql.deleteById(BbsReply.class, id);
-		view.setView(new RedirectView("/bbs/admin/reply/1"));
+		view.setViewName( "forward:/bbs/admin/reply/1");
 		return view;
 	}
 	

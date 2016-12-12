@@ -139,8 +139,10 @@ public  class WebUtils {
 	 * @param Controller
 	 * @return void
 	 */
-	public static void logoutUser(HttpServletResponse response) {
+	public static void logoutUser(HttpServletRequest request,HttpServletResponse response) {
+		request.removeAttribute("user");
 		removeCookie(response, Const.USER_COOKIE_KEY);
+		
 	}
 
 	/**

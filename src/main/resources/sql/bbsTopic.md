@@ -1,5 +1,7 @@
 queryTopic
 ===
+
+	
 	select  
 	@pageTag(){
 	t.*,m.name module_name,u.user_name user_name
@@ -7,6 +9,7 @@ queryTopic
 	FROM  bbs_topic t left join bbs_module m
 	on t.module_id = m.id  left join bbs_user u on t.user_id=u.id
     where true
+     @var type = type!"normal";
      @if(!isEmpty(moduleId)){
      	 and `module_id`=#moduleId#
      @}

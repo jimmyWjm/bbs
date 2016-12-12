@@ -4,11 +4,11 @@
 
 <div class="btn-group">
 	@if(query.pageNumber>1){
-	<a href="${pageUrl}${query.pageNumber-1}.html" class="btn btn-white" type="button">上一页</a>
+	<a href="${ctxPath}${pageUrl}${query.pageNumber-1}.html" class="btn btn-white" type="button">上一页</a>
 	@}
 	
 	@if(query.pageNumber!=query.totalPage){
-	<a href="${pageUrl}${query.pageNumber+1}.html" class="btn btn-white" type="button">下一页</a>
+	<a href="${ctxPath}${pageUrl}${query.pageNumber+1}.html" class="btn btn-white" type="button">下一页</a>
 	@}
 </div>
 @}

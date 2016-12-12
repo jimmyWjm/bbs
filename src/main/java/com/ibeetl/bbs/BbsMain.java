@@ -23,7 +23,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -40,9 +41,13 @@ import com.ibeetl.bbs.util.Functions;
 
 @SpringBootApplication
 @Cacheable
-public class BbsMain {
+public class BbsMain extends SpringBootServletInitializer  {
 
-
+	@Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(BbsMain.class);
+    }
+	
 	public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(BbsMain.class);
         app.setBannerMode(Banner.Mode.OFF);
