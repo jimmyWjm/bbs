@@ -154,6 +154,10 @@ public class BBSController {
 		topic.setPostCount(1);
 		topic.setReplyCount(0);
 		post.setHasReply(0);
+		//客户端需要完善
+		if(title.length()<10||postContent.length()<10){
+			throw new RuntimeException("内容太短");
+		}
 		topic.setContent(title);
 		post.setContent(postContent);
 		bbsService.saveTopic(topic, post, user);
@@ -162,6 +166,10 @@ public class BBSController {
 
 	@RequestMapping("/bbs/post/save.html")
 	public ModelAndView savePost(BbsPost post, HttpServletRequest request, HttpServletResponse response){
+		
+		if(post.getContent().length()<10){
+			throw new RuntimeException("内容太短");
+		}
 		post.setHasReply(0);
 		post.setCreateTime(new Date());
 		bbsService.savePost(post, webUtils.currentUser(request, response));
@@ -183,6 +191,10 @@ public class BBSController {
 		BbsUser user = webUtils.currentUser(request, response);
 		if(user==null){
 			throw new RuntimeException("未登陆用户");
+		}
+		
+		if(reply.getContent().length()<10){
+			throw new RuntimeException("内容太短");
 		}
 		reply.setUserId(user.getId());
 		reply.setPostId(reply.getPostId());
@@ -319,7 +331,9 @@ public class BBSController {
 
 	@RequestMapping("/bbs/admin/post/update.html")
 	public ModelAndView updatePost(ModelAndView view, BbsPost post,HttpServletRequest request, HttpServletResponse response){
-		
+		if(post.getContent().length()<10){
+			throw new RuntimeException("内容太短");
+		}
 		BbsPost db = sql.unique(BbsPost.class, post.getId());
 		canUpdatePost(db,request,response);
 		db.setContent(post.getContent());
