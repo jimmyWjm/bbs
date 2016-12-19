@@ -214,10 +214,12 @@ public class BBSController {
 		return view;
 	}
 
+	
+	
 	// ============== 上传文件路径：项目根目录 upload
 	@RequestMapping("/bbs/upload")
 	@ResponseBody
-	public Map<String, Object> upload(@RequestParam("imgFile") MultipartFile file, HttpServletRequest request, HttpServletResponse response){
+	public Map<String, Object> upload(@RequestParam("editormd-image-file") MultipartFile file, HttpServletRequest request, HttpServletResponse response){
 		String rootPath = filePath;
 		Map<String, Object> map = new HashMap<String, Object>();
 		try {
@@ -231,11 +233,11 @@ public class BBSController {
 			
 			String filePath = rootPath + "/upload/" + newName;
 			FileCopyUtils.copy(file.getBytes(), new File(filePath));
-			map.put("url", "/bbs/showPic/" + newName);
-			map.put("error", 0);
+			map.put("url", request.getContextPath()+"/bbs/showPic/" + newName);
+			map.put("success", 1);
 			return map;
 		} catch (Exception e) {
-			map.put("error", 1);
+			map.put("success", 0);
 			map.put("message", "上传出错！");
 		}
 		return map;

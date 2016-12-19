@@ -132,12 +132,16 @@
                 
                 testEditor = editormd("test-editormd", {
                     watch : false,
-                    height  : 470,
+                    height  : 370,
                     syncScrolling : "single",
                     path    : "${ctxPath}/md/lib/",
+                   // autoHeight : true,
+                    imageUpload    : true,
+                    imageFormats   : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+                    imageUploadURL : "${ctxPath}/bbs/upload",
                     toolbarIcons : function() {
-          
-                    return ["undo", "redo", "|", "bold", "hr", "|", 
+          				
+                    return ["undo", "redo", "|", "bold", "hr", "|", "list-ul", "list-ol",
             			"h1", "h2", "h3", "h4",  "|","link", "reference-link", "image", "code",  "code-block", "table",  "||", "watch"]
                     }
                 });
