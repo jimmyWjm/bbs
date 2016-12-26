@@ -6,14 +6,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.StringUtils;
 import org.beetl.sql.core.SQLManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
 
+import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BbsUserService;
@@ -32,75 +35,83 @@ public class LoginController {
 	
 	static final String CODE_NAME = "verCode";
 	
-	
-	@RequestMapping("/bbs/user/login.html")
-	public ModelAndView  login(String userName,String password,HttpServletRequest request,HttpServletResponse response){
-		
-		password = HashKit.md5(password);
-		BbsUser user = bbsUserService.getUserAccount(userName, password);
-		if(user==null){
-			//TODO
-			ModelAndView view = new ModelAndView("/user/login.html");
-			view.addObject("error","用户不存在");
-			return view ;
+
+	/**
+	 * 登录方法改为ajax方式登录
+	 * @param userName
+	 * @param password
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/bbs/user/login")
+	public JSONObject  login(String userName,String password,HttpServletRequest request,HttpServletResponse response){
+		JSONObject result = new JSONObject();
+		result.put("err", 1);
+		if(StringUtils.isEmpty(userName)||StringUtils.isEmpty(password)){
+			result.put("msg","请输入正确的内容！");
 		}else{
-		
-			WebUtils.loginUser(request, response, user, true);
-//			String url = (String)request.getSession().getAttribute("lastAccess");
-//			if(url==null){
-				String url = "forward:/bbs/index/1.html";
-//			}
-			ModelAndView view = new ModelAndView();
-			view.setViewName(url);
-			return view;
+			password = HashKit.md5(password);
+			BbsUser user = bbsUserService.getUserAccount(userName, password);
+			if(user==null){
+				result.put("msg","用户不存在");
+			}else{
+				WebUtils.loginUser(request, response, user, true);
+				result.put("msg", "/bbs/index/1.html");
+				result.put("err", 0);
+			}
 		}
-		
+		return result;
 	}
 	
-	@RequestMapping("/bbs/user/register.html")
+	@GetMapping("/bbs/user/register.html")
 	public ModelAndView  loginPage(HttpServletRequest request){
 		ModelAndView view = new ModelAndView("/register.html");
 		return view ;
 	}
 	
-	@RequestMapping("/bbs/user/logout.html")
-	public RedirectView  logout(HttpServletRequest request,HttpServletResponse response){
-		
+	/**
+	 * 登出方法改为ajax方式登出
+	 * @param request
+	 * @param response
+	 */
+	@ResponseBody
+	@PostMapping("/bbs/user/logout")
+	public void  logout(HttpServletRequest request,HttpServletResponse response){
 		WebUtils.logoutUser(request,response);
-		RedirectView view = new RedirectView("/bbs/index/1.html",true);
-		return view;
 	}
-	
-	@RequestMapping(value="/bbs/user/doRegister.html",method=RequestMethod.POST)
-	public ModelAndView  register(BbsUser user,String code,HttpServletRequest request,HttpServletResponse response){
+	/**
+	 * 注册改为 ajax 方式注册
+	 * @param user
+	 * @param code
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/bbs/user/doRegister")
+	public JSONObject  register(BbsUser user,String code,HttpServletRequest request,HttpServletResponse response){
+		JSONObject result  = new JSONObject();
+		result.put("err", 1);
 		HttpSession session = request.getSession(true); 
 		String verCode = (String)session.getAttribute(CODE_NAME);
 		if(!verCode.equalsIgnoreCase(code)){
-			ModelAndView view = new ModelAndView("/register.html");
-			view.addObject("error","验证码输入错误");
-			view.addObject("user",user);
-			return view;
+			result.put("msg", "验证码输入错误");
+		}else if(bbsUserService.hasUser(user.getUserName())){
+			result.put("msg", "用户已经存在");
+		}else{
+			String password = HashKit.md5(user.getPassword());
+			user.setPassword(password);
+			user.setBalance(10);
+			user.setLevel(1);
+			user.setScore(10);
+			user = bbsUserService.setUserAccount(user);
+			WebUtils.loginUser(request, response, user, true);
+			result.put("err", 0);
+			result.put("msg", "/bbs/index");
 		}
-//		BbsUser db = bbsUserService.getUserAccount(user.getUserName(), user.getPassword());
-		if(bbsUserService.hasUser(user.getUserName())){
-			ModelAndView view = new ModelAndView("/register.html");
-			view.addObject("error","用户已经存在");
-			view.addObject("user",user);
-			
-			return view;
-		}
-		
-		String password = HashKit.md5(user.getPassword());
-		user.setPassword(password);
-		user.setBalance(10);
-		user.setLevel(1);
-		user.setScore(10);
-		user = bbsUserService.setUserAccount(user);
-		WebUtils.loginUser(request, response, user, true);
-		
-		ModelAndView view = new ModelAndView("forward:/bbs/index/1.html");
-		return view;
-		
+		return result;
 	}
 	
 	@RequestMapping("/bbs/user/authImage")

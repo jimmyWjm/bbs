@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,10 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -23,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
+import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.model.BbsPost;
 import com.ibeetl.bbs.model.BbsReply;
@@ -134,8 +138,19 @@ public class BBSController {
 		return view;
 	}
 
-	@RequestMapping("/bbs/topic/save.html")
-	public ModelAndView saveTopic(BbsTopic topic, BbsPost post, String title, String postContent,HttpServletRequest request, HttpServletResponse response){
+	/**
+	 * 文章发布改为Ajax方式提交更友好
+	 * @param topic
+	 * @param post
+	 * @param title
+	 * @param postContent
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/bbs/topic/save")
+	public JSONObject saveTopic(BbsTopic topic, BbsPost post, String title, String postContent,HttpServletRequest request, HttpServletResponse response){
 		//@TODO， 防止频繁提交
 		BbsUser user = webUtils.currentUser(request, response);
 //		Date lastPostTime = bbsService.getLatestPost(user.getId());
@@ -145,65 +160,81 @@ public class BBSController {
 //			//10秒之内的提交都不处理
 //			throw new RuntimeException("提交太快，处理不了，上次提交是 "+lastPostTime);
 //		}
+		JSONObject result = new JSONObject();
+		result.put("err", 1);
 		if(user==null){
-			throw new RuntimeException("未登陆用户");
+			result.put("msg", "请先登录后再继续！");
+		}else if(title.length()<10||postContent.length()<10){
+			//客户端需要完善
+			result.put("msg", "标题或内容太短！");
+		}else{
+			topic.setIsNice(0);
+			topic.setIsUp(0);
+			topic.setPv(1);
+			topic.setPostCount(1);
+			topic.setReplyCount(0);
+			post.setHasReply(0);
+			topic.setContent(title);
+			post.setContent(postContent);
+			bbsService.saveTopic(topic, post, user);
+			result.put("err", 0);
+			result.put("msg", "/bbs/topic/"+topic.getId()+"-1.html");
 		}
-		topic.setIsNice(0);
-		topic.setIsUp(0);
-		topic.setPv(1);
-		topic.setPostCount(1);
-		topic.setReplyCount(0);
-		post.setHasReply(0);
-		//客户端需要完善
-		if(title.length()<10||postContent.length()<10){
-			throw new RuntimeException("内容太短");
-		}
-		topic.setContent(title);
-		post.setContent(postContent);
-		bbsService.saveTopic(topic, post, user);
-		return new ModelAndView( "forward:/bbs/topic/"+topic.getId()+"-1.html");
+		return result;
 	}
 
-	@RequestMapping("/bbs/post/save.html")
-	public ModelAndView savePost(BbsPost post, HttpServletRequest request, HttpServletResponse response){
-		
+	@ResponseBody
+	@RequestMapping("/bbs/post/save")
+	public JSONObject savePost(BbsPost post, HttpServletRequest request, HttpServletResponse response){
+		JSONObject result = new JSONObject();
+		result.put("err", 1);
 		if(post.getContent().length()<10){
-			throw new RuntimeException("内容太短");
+			result.put("msg", "内容太短，请重新编辑！");
+		}else{
+			post.setHasReply(0);
+			post.setCreateTime(new Date());
+			bbsService.savePost(post, webUtils.currentUser(request, response));
+			BbsTopic topic = bbsService.getTopic(post.getTopicId());
+			int totalPost = topic.getPostCount() + 1;
+			topic.setPostCount(totalPost);
+			sql.updateById(topic);
+			int pageSize = (int)PageQuery.DEFAULT_PAGE_SIZE;
+			int page = (totalPost/pageSize)+(totalPost%pageSize==0?0:1);
+			result.put("msg", "/bbs/topic/"+post.getTopicId()+"-"+page+".html");
+			result.put("err", 0);
 		}
-		post.setHasReply(0);
-		post.setCreateTime(new Date());
-		bbsService.savePost(post, webUtils.currentUser(request, response));
-		BbsTopic topic = bbsService.getTopic(post.getTopicId());
-		int totalPost = topic.getPostCount() + 1;
-		topic.setPostCount(totalPost);
-		sql.updateById(topic);
-		int pageSize = (int)PageQuery.DEFAULT_PAGE_SIZE;
-		int page = (totalPost/pageSize)+(totalPost%pageSize==0?0:1);
-		return new ModelAndView( "forward:/bbs/topic/"+post.getTopicId()+"-"+page+".html");
+		return result;
 	}
 
 	
-
-	@RequestMapping("/bbs/reply/save.html")
-	public ModelAndView saveReply(BbsReply reply, HttpServletRequest request, HttpServletResponse response){
-		ModelAndView view = new ModelAndView("/common/replyItem.html");
-		
+	/**
+	 * 回复评论改为Ajax方式提升体验
+	 * @param reply
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@PostMapping("/bbs/reply/save")
+	public JSONObject saveReply(BbsReply reply, HttpServletRequest request, HttpServletResponse response){
+		JSONObject result = new JSONObject();
+		result.put("err", 1);
 		BbsUser user = webUtils.currentUser(request, response);
 		if(user==null){
-			throw new RuntimeException("未登陆用户");
+			result.put("msg", "未登录用户！");
+		}else if(reply.getContent().length()<10){
+			result.put("msg", "回复内容太短，请修改!");
+		}else{
+			reply.setUserId(user.getId());
+			reply.setPostId(reply.getPostId());
+			reply.setCreateTime(new Date());
+			bbsService.saveReply(reply);
+			reply.set("bbsUser", user);
+			reply.setUser(user);
+			result.put("msg", "评论成功！");
+			result.put("err", 0);
 		}
-		
-		if(reply.getContent().length()<10){
-			throw new RuntimeException("内容太短");
-		}
-		reply.setUserId(user.getId());
-		reply.setPostId(reply.getPostId());
-		reply.setCreateTime(new Date());
-		bbsService.saveReply(reply);
-		reply.set("bbsUser", user);
-		reply.setUser(user);
-		view.addObject("reply",reply);
-		return view;
+		return result;
 	}
 
 	@RequestMapping("/bbs/user/{id}")
@@ -213,8 +244,6 @@ public class BBSController {
 		view.addObject("user", user);
 		return view;
 	}
-
-	
 	
 	// ============== 上传文件路径：项目根目录 upload
 	@RequestMapping("/bbs/upload")
@@ -222,23 +251,29 @@ public class BBSController {
 	public Map<String, Object> upload(@RequestParam("editormd-image-file") MultipartFile file, HttpServletRequest request, HttpServletResponse response){
 		String rootPath = filePath;
 		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("success", false);
 		try {
 			BbsUser user = webUtils.currentUser(request, response);
 			if (null == user) {
 				map.put("error", 1);
-				map.put("message", "上传出错，请先登陆！");
+				map.put("msg", "上传出错，请先登录！");
 				return map;
 			}
-			String newName = System.currentTimeMillis() + file.getOriginalFilename();
-			
-			String filePath = rootPath + "/upload/" + newName;
-			FileCopyUtils.copy(file.getBytes(), new File(filePath));
-			map.put("url", request.getContextPath()+"/bbs/showPic/" + newName);
-			map.put("success", 1);
-			return map;
+			//从剪切板粘贴上传没有后缀名，通过此方法可以获取后缀名
+			Matcher matcher = Pattern.compile("^image/(.+)$",Pattern.CASE_INSENSITIVE).matcher(file.getContentType());
+			if(matcher.find()){
+				String newName = UUID.randomUUID().toString()+System.currentTimeMillis()+"."+matcher.group(1);
+				String filePath = rootPath + "/upload/" + newName;
+				FileCopyUtils.copy(file.getBytes(), new File(filePath));
+				map.put("file_path", request.getContextPath()+"/bbs/showPic/" + newName);
+				map.put("msg","图片上传成功！");
+				map.put("success", true);
+				return map;
+			}else{
+				map.put("success","不支持的上传文件格式！");
+			}
 		} catch (Exception e) {
-			map.put("success", 0);
-			map.put("message", "上传出错！");
+			map.put("msg", "图片上传出错！");
 		}
 		return map;
 	}
@@ -262,55 +297,59 @@ public class BBSController {
 	// ======================= admin
 
 	
-
-	@RequestMapping("/bbs/admin/topic/nice/{id}")
-	public ModelAndView editNiceTopic(ModelAndView view,@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+	@ResponseBody
+	@PostMapping("/bbs/admin/topic/nice/{id}")
+	public JSONObject editNiceTopic(@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+		JSONObject result = new JSONObject();
 		if(!webUtils.isAdmin(request, response)){
 			//如果有非法使用，不提示具体信息，直接返回null
-			return null;
-		}
-		BbsTopic db = bbsService.getTopic(id);
-		Integer nice = db.getIsNice();
-		if(nice>0){
-			db.setIsNice(0);
+			result.put("err", 1);
+			result.put("msg", "呵呵~~");
 		}else{
-			db.setIsNice(1);
+			BbsTopic db = bbsService.getTopic(id);
+			Integer nice = db.getIsNice();
+			db.setIsNice(nice>0?0:1);
+			sql.updateById(db);
+			result.put("err", 0);
+			result.put("msg", "success");
 		}
-		sql.updateById(db);
-		view.setView(new RedirectView( "/bbs/index"));
-		return view;
+		return result;
 	}
 	
-	
-	@RequestMapping("/bbs/admin/topic/up/{id}")
-	public ModelAndView editUpTopic(ModelAndView view,@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+	@ResponseBody
+	@PostMapping("/bbs/admin/topic/up/{id}")
+	public JSONObject editUpTopic(@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+		JSONObject result = new JSONObject();
 		if(!webUtils.isAdmin(request, response)){
 			//如果有非法使用，不提示具体信息，直接返回null
-			return null;
-		}
-		BbsTopic db = bbsService.getTopic(id);
-		Integer up = db.getIsUp();
-		if(up>0){
-			db.setIsUp(0);
+			result.put("err", 1);
+			result.put("msg", "呵呵~~");
 		}else{
-			db.setIsUp(1);
+			BbsTopic db = bbsService.getTopic(id);
+			Integer up = db.getIsUp();
+			db.setIsUp(up>0?0:1);
+			sql.updateById(db);
+			result.put("err", 0);
+			result.put("msg", "success");
 		}
-		sql.updateById(db);
-		view.setViewName( "forward:/bbs/index");
-		return view;
+		return result;
 	}
 
 	
-
-	@RequestMapping("/bbs/admin/topic/delete/{id}")
-	public ModelAndView deleteTopic(ModelAndView view, @PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+	@ResponseBody
+	@PostMapping("/bbs/admin/topic/delete/{id}")
+	public JSONObject deleteTopic(@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+		JSONObject result = new JSONObject();
 		if(!webUtils.isAdmin(request, response)){
 			//如果有非法使用，不提示具体信息，直接返回null
-			return null;
+			result.put("err", 1);
+			result.put("msg", "呵呵~~");
+		}else{
+			bbsService.deleteTopic(id);
+			result.put("err", 0);
+			result.put("msg", "success");
 		}
-		bbsService.deleteTopic(id);
-		view.setViewName( "forward:/bbs/index");
-		return view;
+		return result;
 	}
 
 	@RequestMapping("/bbs/admin/post/{p}")
@@ -331,28 +370,57 @@ public class BBSController {
 		return view;
 	}
 
-	@RequestMapping("/bbs/admin/post/update.html")
-	public ModelAndView updatePost(ModelAndView view, BbsPost post,HttpServletRequest request, HttpServletResponse response){
+	/**
+	 * ajax方式编辑内容
+	 * @param view
+	 * @param post
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/bbs/admin/post/update")
+	public JSONObject updatePost(ModelAndView view, BbsPost post,HttpServletRequest request, HttpServletResponse response){
+		JSONObject result = new JSONObject();
+		result.put("err", 1);
 		if(post.getContent().length()<10){
-			throw new RuntimeException("内容太短");
+			result.put("msg", "输入的内容太短，请重新编辑！");
+		}else{
+			BbsPost db = sql.unique(BbsPost.class, post.getId());
+			if(canUpdatePost(db,request,response)){
+				db.setContent(post.getContent());
+				sql.updateById(db);
+				result.put("msg", "/bbs/topic/"+db.getTopicId()+"-1.html");
+				result.put("err", 0);
+			}else{
+				result.put("msg", "不是自己发表的内容无法编辑！");
+			}
 		}
-		BbsPost db = sql.unique(BbsPost.class, post.getId());
-		canUpdatePost(db,request,response);
-		db.setContent(post.getContent());
-		sql.updateById(db);
-		view.setViewName("forward:/bbs/topic/"+db.getTopicId()+"-1.html");
-		return view;
+		return result;
 	}
 
+	/**
+	 * ajax方式删除内容
+	 * @param view
+	 * @param id
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
 	@RequestMapping("/bbs/admin/post/delete/{id}")
-	public ModelAndView deletePost(ModelAndView view, @PathVariable int id,HttpServletRequest request, HttpServletResponse response){
-		
+	public JSONObject deletePost(ModelAndView view, @PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+		JSONObject result = new JSONObject();
 		BbsPost post = sql.unique(BbsPost.class, id);
-		canUpdatePost(post,request,response);
-		Integer topicId = post.getTopicId();
-		bbsService.deletePost(id);
-		view.setViewName("forward:/bbs/topic/"+topicId+"-1.html");
-		return view;
+		if(canUpdatePost(post,request,response)){
+			bbsService.deletePost(id);
+			result.put("err", 0);
+			result.put("msg", "删除成功！");
+		}else{
+			result.put("err", 1);
+			result.put("msg", "不是自己发表的内容无法删除！");
+		}
+		return result;
 	}
 
 	
@@ -375,8 +443,7 @@ public class BBSController {
 			return true;
 		}
 		
-		throw new RuntimeException("非本人不能修改"+post.getId());
-		
+		return false;
 	}
 	
 	

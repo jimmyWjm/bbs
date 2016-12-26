@@ -51,7 +51,7 @@ public class BbsMain extends SpringBootServletInitializer  {
 	public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(BbsMain.class);
         app.setBannerMode(Banner.Mode.OFF);
-        PageQuery.DEFAULT_PAGE_SIZE =5 ;
+        PageQuery.DEFAULT_PAGE_SIZE =10 ;
         app.run(args);
 
     }

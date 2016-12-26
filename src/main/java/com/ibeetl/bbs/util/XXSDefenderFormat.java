@@ -30,7 +30,7 @@ public class XXSDefenderFormat implements Format {
 	}
 	
 	public static void main(String[] args){
-		String js =  "中文<script>hi</script>";
+		String js =  "中文<script>hi</script><h5></h5>";
 		System.out.println(js);
 		js = StringEscapeUtils.escapeHtml4(js);
 		System.out.println(js);

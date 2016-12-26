@@ -1,174 +1,113 @@
 <!DOCTYPE html>
 <html>
-
-
-<!-- Mirrored from www.zi-han.net/theme/hplus/mailbox.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 03 Mar 2016 12:28:42 GMT -->
 <head>
-
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-
     <title>Beetl 论坛</title>
     <meta name="keywords" content="Beetl,BeetlSql">
     <meta name="description" content="论坛模板">
-
-    <link rel="shortcut icon" href="favicon.ico"> <link href="${ctxPath}/css/bootstrap.min14ed.css?v=3.3.6" rel="stylesheet">
-    <link href="${ctxPath}/css/font-awesome.min93e3.css?v=4.4.0" rel="stylesheet">
-    <link href="${ctxPath}/css/plugins/iCheck/custom.css" rel="stylesheet">
-    <link href="${ctxPath}/css/animate.min.css" rel="stylesheet">
-    <link href="${ctxPath}/css/style.min862f.css?v=4.1.0" rel="stylesheet">
-	
+    <link rel="shortcut icon" href="favicon.ico">
+<!-- 	<link href="${ctxPath}/css/bootstrap.min.css" rel="stylesheet"> -->
+	<link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script><!-- 部分content的里面可能用到jQuery，所以前置了 -->
+    <script src="${ctxPath}/js/alert.js"></script><!-- 自己写的一个简单的jq弹窗插件 -->
 </head>
-
-<body class="gray-bg">
-    <div class="wrapper wrapper-content">
+<body>
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-sm-3">
-                <div class="ibox float-e-margins">
-                    <div class="ibox-content mailbox-content">
-                        <div class="file-manager">
-                          <div class="widget style1 yellow-bg">
-			                    <div class="row">
-			                        <div class="col-xs-4">
-			                            <i class="fa fa-music fa-5x"></i>
-			                        </div>
-			                        <div class="col-xs-8 text-right">
-			                            <span> 1.0 试用版本 </span>
-			                            <h2 class="font-bold"><a href="http://git.oschina.net/xiandafu/beetl-bbs">Beetl-BBS</a></h2>
-			                        </div>
-			                    </div>
-                			</div>
-                            <h5>板块</h5>
-                            <ul class="folder-list m-b-md" style="padding: 0">
-                                <li>
-                                    <a href="${ctxPath}/bbs/index/1.html"> <i class="fa fa-inbox "></i> 首页综合 >
-                                    </a>
-                                </li>
-                                @for(moudle in moduleList){
-                                <li>
-                                    <a href="${ctxPath}/bbs/topic/module/${moudle.id}-1.html"> <i class="fa fa-inbox "></i> ${moudle.name} 
-                                    </a>
-                                </li>
-                                @}
-                                <!--   目前暂时不支持
-                                <li>
-                                    <a href="#"> <i class="fa fa-certificate"></i> 我参与 <span class="label label-warning pull-right">2</span></a>
-                                </li>
-                                <li>
-                                    <a href="#"> <i class="fa fa-file-text-o"></i> 我的收藏 <span class="label label-danger pull-right">2</span>
-                                    </a>
-                                </li>
-                               	-->
-                               
-                            </ul>
-                           
-                            <div class="clearfix"></div>
-                        </div>
-                    </div>
-                </div>
+            <div class="col-sm-4 col-md-3">
+           		<h3>Beetl-BBS <small>1.0试用版本</small></h3>
+            	<div class="panel panel-default">
+					<div class="panel-heading">板块</div>
+					<ul class="list-group">
+						<li class="list-group-item"><a href="${ctxPath}/bbs/index/1.html"> <i class="fa fa-bookmark "></i> 首页综合</a></li>
+						@for(moudle in moduleList){
+						<li class="list-group-item"><a href="${ctxPath}/bbs/topic/module/${moudle.id}-1.html"> <i class="fa fa-bookmark"></i> ${moudle.name} </a></li>
+						@}
+						<!--   目前暂时不支持
+						<li class="list-group-item"><a href="#"> <i class="fa fa-certificate"></i> 我参与 <span class="label label-warning pull-right">2</span></a></li>
+						<li class="list-group-item"><a href="#"> <i class="fa fa-file-text-o"></i> 我的收藏 <span class="label label-danger pull-right">2</span></a></li>
+						-->
+					</ul>
+				</div>            	
                 @ if(!has(inLogin)){
 	                @  var _user = c.currentUser(request, servlet.response); 
 	                @ if(_user==null){
-	                 <div class="ibox-content">
-	                        <div class="row">
-	                            <div class="">
-	                                <h3 class="m-t-none m-b">登录</h3>
-	                                <p>欢迎登录Beetl</p>
-	                                <form role="form" action="${ctxPath}/bbs/user/login.html" method="post">
-	                                    <div class="form-group">
-	                                        <label>用户名</label>
-	                                        <input  placeholder="请输入您用户名" name="userName"  class="form-control">
-	                                    </div>
-	                                    <div class="form-group">
-	                                        <label>密码</label>
-	                                        <input type="password" placeholder="请输入密码" name="password" class="form-control">
-	                                    </div>
-	                                    <div>
-	                                    <a href="${ctxPath}/bbs/user/register.html" class="btn btn-sm btn-primary pull-left m-t-n-xs" ><strong>注册</strong></a>
-	                                        <button class="btn btn-sm btn-danger pull-right m-t-n-xs" type="submit"><strong>登 录</strong>
-	                                        </button>
-	                                      
-	                                    </div>
-	                                </form>
-	                            </div>
-	                           
-	                        </div>
-	                    </div>
-	                   @}else{
-	                     <a class="btn btn-block btn-primary compose-mail" href="${ctxPath}/bbs/topic/add.html">发帖(提交数据将在1.1正式版发布前删除)</a>
-                            <div class="space-25"></div>
-	                    <div class="alert alert-success">
-	                            欢迎你 ${_user.userName} ${level(_user.level)},你已有 ${_user.score} 积分 <a class="alert-link" href="${ctxPath}/bbs/user/logout.html">点击注销</a>.
-	                     </div>
-	                   @}
-	                  @} //end
+	            	<div class="panel panel-default">
+						<div class="panel-heading">登录 <small>欢迎登录Beetl</small></div>
+						<div class="panel-body">
+			                <form action="${ctxPath}/bbs/user/login" onsubmit="return ajaxSubmit(this,'reload')">
+				                <div class="form-group">
+									<label>用户名</label>
+									<input type="text" placeholder="请输入您用户名" name="userName"  class="form-control">
+								</div>
+		                        <div class="form-group">
+		                            <label>密码</label>
+									<input type="password" placeholder="请输入密码" name="password" class="form-control">
+		                        </div>
+								<a href="${ctxPath}/bbs/user/register.html" class="btn btn-primary" >注 册</a>
+								<button class="btn btn-danger pull-right" type="submit">登 录</button>
+			                </form>
+						</div>
+					</div>      
+					@}else{
+	            	<div class="panel panel-default">
+						<div class="panel-heading"><a class="btn btn-link btn-block" href="${ctxPath}/bbs/topic/add.html">发帖(数据将在正式版发布前删除)</a></div>
+						<div class="panel-body">
+                            <p>欢迎你<span class="label label-primary">${_user.userName}</span> <span class="label label-danger">${level(_user.level)}</span></p>
+                            <p>你已有<span class="label label-success">${_user.score}</span>积分</p>
+                            <p><a href="javascript:;" onclick="$.post('${ctxPath}/bbs/user/logout',function(){location.reload()})">点击注销</a></p>
+						</div>
+					</div>  
+					@}
+				@} //end
             </div>
-            
+            <div class="col-sm-8 col-md-9">
            	${layoutContent}
+           	</div>
         </div>
     </div>
-    <script src="${ctxPath}/js/jquery.min63b9.js?v=2.1.4"></script>
-    <script src="${ctxPath}/js/bootstrap.min14ed.js?v=3.3.6"></script>
-    <script src="${ctxPath}/js/content.mine209.js?v=1.0.0"></script>
-    @ if(requriedUEditor!false){	
-    <link rel="stylesheet" href="${ctxPath}/md/css/editormd.css" />
-    <script src="${ctxPath}/md/lib/marked.min.js"></script>
-    <script src="${ctxPath}/md/lib/prettify.min.js"></script>
-    <script src="${ctxPath}/md/lib/raphael.min.js"></script>
-     <script src="${ctxPath}/md/lib/underscore.min.js"></script>
-     <script src="${ctxPath}/md/lib/sequence-diagram.min.js"></script>
-     <script src="${ctxPath}/md/lib/flowchart.min.js"></script>
-     <script src="${ctxPath}/md/lib/jquery.flowchart.min.js"></script>
-    
-    
-    <script src="${ctxPath}/md/editormd.js"></script>
-    <script>
-    	
-    
-       		var testEditor;
-
-            $(function() {
-                
-                testEditor = editormd("test-editormd", {
-                    watch : false,
-                    height  : 370,
-                    syncScrolling : "single",
-                    path    : "${ctxPath}/md/lib/",
-                   // autoHeight : true,
-                    imageUpload    : true,
-                    imageFormats   : ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
-                    imageUploadURL : "${ctxPath}/bbs/upload",
-                    toolbarIcons : function() {
-          				
-                    return ["undo", "redo", "|", "bold", "hr", "|", "list-ul", "list-ol",
-            			"h1", "h2", "h3", "h4",  "|","link", "reference-link", "image", "code",  "code-block", "table",  "||", "watch"]
-                    }
-                });
-                
-                //将所有的md内容转为html
-                $(".md-content").each(function(){
-            		var id =  $(this).attr("id");
-            		testEditormdView2 = editormd.markdownToHTML(id, {
-                        htmlDecode      : "style,script,iframe",  // you can filter tags decode
-                        emoji           : true,
-                        taskList        : true,
-                        tex             : true,  // 默认不解析
-                        flowChart       : true,  // 默认不解析
-                        sequenceDiagram : true,  // 默认不解析
-                    });
-
-
-            	});
-                
-               
-            });
-     </script>
-      @}
-        
- 
-    <script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    @if(requiredEditor!false){
+    <link rel="stylesheet" href="${ctxPath}/simditor/simditor.min.css" />
+    <script src="//cdn.bootcss.com/marked/0.3.6/marked.min.js"></script>
+    <script src="//cdn.bootcss.com/to-markdown/3.0.3/to-markdown.min.js"></script>
+    <script type="text/javascript" src="${ctxPath}/simditor/simditor.min.js"></script>
+    <script type="text/javascript">
+		var editor = new Simditor({
+			textarea: $('#postContent'),
+			defaultImage:'http://ibeetl.com/img/logo.png',
+			pasteImage:true,
+			cleanPaste:true,
+			toolbar:['title','bold','italic','underline','strikethrough','fontScale','color','ol','ul','blockquote','code','table','link','image','hr','indent','outdent','alignment','|','markdown'],
+			//按Beetl论坛的用处来看，暂时只需要如下几个语言（HTML、XML、json、java、javascript、markdown、sql）,如有需要再扩展
+			codeLanguages:[{name:'HTML,XML',value:'html'},{name:'JSON',value:'json'},{name:'Java',value:'java'},{name:'JavaScript',value:'js'},{name:'Markdown',value:'markdown'},{name:'SQL',value:'sql'}],
+			upload:{
+				url: '${ctxPath}/bbs/upload',
+				fileKey: 'editormd-image-file',
+				connectionCount: 3,
+				leaveConfirm: '上传正在进行中，确定要离开当前页面吗？'
+			}
+		});
+		 function preview(){
+			 	var preWin = window.open('about:blank','preview');
+				preWin.document.write('<meta name="google" value="notranslate"><link href="http://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"><style>.panel img{max-width:100% !important;heightLauto !important;}.panel{margin-top:20px;}</style>');
+				preWin.document.write('<div class="container-fluid"><div class="row"><div class="col-sm-8 col-sm-offset-2"><div class="panel panel-default"><div class="panel-heading">内容提交预览</div><div class="panel-body">'+editor.sync()+'</div><div class="panel-footer"><a href="javascript:;" class="btn btn-link" onclick="window.close();">关闭预览</a></div></div></div></div></div>');
+				preWin.document.write('<link href="http://cdn.bootcss.com/highlight.js/9.8.0/styles/github-gist.min.css" rel="stylesheet"><script src="http://cdn.bootcss.com/highlight.js/9.8.0/highlight.min.js"></scr'+'ipt><script>hljs.initHighlightingOnLoad();</scr'+'ipt>');
+				preWin.document.close();
+		}
     </script>
-    
+    @}
+    <script>
+    //全局表单ajax提交(onsubmit="return ajaxSubmit(this,reload)")
+	 function ajaxSubmit(form,reload){
+		 form = $(form);
+		 $.post(form.attr('action'),form.serialize(),function(json){
+			 json.err?$.alert(json.msg):reload?location.reload():location.replace('${ctxPath}'+json.msg);
+		 })
+		 return false;
+	 }
+    </script>
 </body>
 </html>
