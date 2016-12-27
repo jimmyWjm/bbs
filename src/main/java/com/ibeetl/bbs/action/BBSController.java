@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -28,6 +29,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.common.WebUtils;
+import com.ibeetl.bbs.model.BbsMessage;
 import com.ibeetl.bbs.model.BbsPost;
 import com.ibeetl.bbs.model.BbsReply;
 import com.ibeetl.bbs.model.BbsTopic;
@@ -77,6 +79,24 @@ public class BBSController {
 		bbsService.getTopics(query);
 		view.addObject("topicPage", query);
 		return view;
+	}
+	
+	@RequestMapping("/bbs/myMessage.html")
+	public ModelAndView  myPage(HttpServletRequest request, HttpServletResponse response){
+		ModelAndView view = new ModelAndView();
+		view.setViewName("/message.html");
+		BbsUser user = webUtils.currentUser(request, response);
+		List<BbsTopic> list = bbsService.getMyTopics(user.getId());
+		view.addObject("list", list);
+		return view;
+	}
+	
+	@RequestMapping("/bbs/my/{p}.html")
+	public RedirectView  openMyTopic(@PathVariable int p,HttpServletRequest request, HttpServletResponse response){
+		BbsUser user = webUtils.currentUser(request, response);
+		BbsMessage message = bbsService.makeOneBbsMessage(user.getId(), p);
+		this.bbsService.updateMyTopic(message.getId(), 0);
+		return  new RedirectView( request.getContextPath()+"/bbs/topic/"+p+"-1.html");
 	}
 
 	@RequestMapping("/bbs/topic/hot")
@@ -193,11 +213,16 @@ public class BBSController {
 		}else{
 			post.setHasReply(0);
 			post.setCreateTime(new Date());
-			bbsService.savePost(post, webUtils.currentUser(request, response));
+			BbsUser user =  webUtils.currentUser(request, response);
+			bbsService.savePost(post,user);
 			BbsTopic topic = bbsService.getTopic(post.getTopicId());
 			int totalPost = topic.getPostCount() + 1;
 			topic.setPostCount(totalPost);
 			sql.updateById(topic);
+			//新
+//			BbsMessage msg = bbsService.makeOneBbsMessage(topic.getUserId(), topic.getId());
+//			bbsService.updateMyTopic(msg.getId(), 1);
+			
 			int pageSize = (int)PageQuery.DEFAULT_PAGE_SIZE;
 			int page = (totalPost/pageSize)+(totalPost%pageSize==0?0:1);
 			result.put("msg", "/bbs/topic/"+post.getTopicId()+"-"+page+".html");
@@ -445,7 +470,13 @@ public class BBSController {
 		
 		return false;
 	}
-	
+	/**
+	 * 告诉此贴的所有参与者，有帖子回复
+	 * @param topicId
+	 */
+	private void updateMessage(Integer topicId){
+		
+	}
 	
 
 }

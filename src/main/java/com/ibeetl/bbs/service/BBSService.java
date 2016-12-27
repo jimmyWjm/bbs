@@ -1,9 +1,11 @@
 package com.ibeetl.bbs.service;
 
 import java.util.Date;
+import java.util.List;
 
 import org.beetl.sql.core.engine.PageQuery;
 
+import com.ibeetl.bbs.model.BbsMessage;
 import com.ibeetl.bbs.model.BbsPost;
 import com.ibeetl.bbs.model.BbsReply;
 import com.ibeetl.bbs.model.BbsTopic;
@@ -13,7 +15,15 @@ public interface BBSService {
 	BbsTopic getTopic(int id);
 	
 	void getTopics(PageQuery query);
-
+	
+	List<BbsTopic> getMyTopics(int userId);
+	
+	Integer getMyTopicsCount(int userId);
+	
+	public void updateMyTopic(int msgId,int status);
+	
+	public BbsMessage makeOneBbsMessage(int userId,int topicId);
+	
 	void getHotTopics(PageQuery query);
 
 	void getNiceTopics(PageQuery query);

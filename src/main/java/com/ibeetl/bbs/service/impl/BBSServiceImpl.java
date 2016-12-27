@@ -16,6 +16,7 @@ import com.ibeetl.bbs.dao.BbsPostDao;
 import com.ibeetl.bbs.dao.BbsReplyDao;
 import com.ibeetl.bbs.dao.BbsTopicDao;
 import com.ibeetl.bbs.dao.BbsUserDao;
+import com.ibeetl.bbs.model.BbsMessage;
 import com.ibeetl.bbs.model.BbsPost;
 import com.ibeetl.bbs.model.BbsReply;
 import com.ibeetl.bbs.model.BbsTopic;
@@ -52,6 +53,38 @@ public class BBSServiceImpl implements BBSService {
 	public void getTopics(PageQuery query) {
 		
 		topicDao.queryTopic(query);
+	}
+	
+	public List<BbsTopic> getMyTopics(int userId){
+		return topicDao.queryMyMessageTopic(userId);
+	}
+	
+	public Integer getMyTopicsCount(int userId){
+		return topicDao.queryMyMessageTopicCount(userId);
+	}
+	
+	
+	public void updateMyTopic(int msgId,int status){
+		BbsMessage msg = new BbsMessage();
+		msg.setStatus(status);
+		msg.setId(msgId);
+		sql.updateTemplateById(msg);
+		
+	}
+	
+	public BbsMessage makeOneBbsMessage(int userId,int topicId){
+		BbsMessage msg = new BbsMessage();
+		msg.setUserId(userId);
+		msg.setTopicId(topicId);
+		List<BbsMessage> list = sql.template(msg);
+		if(list.size()==0){
+			msg.setStatus(1);
+			sql.insert(msg,true);
+			return msg;
+		}else{
+			return list.get(0);
+		}
+			
 	}
 
 	@Override

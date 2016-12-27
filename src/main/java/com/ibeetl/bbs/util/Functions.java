@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.model.BbsUser;
+import com.ibeetl.bbs.service.BBSService;
 
 /**
  * beetl 自定义函数
@@ -24,7 +25,8 @@ public class Functions {
 	@Autowired
 	WebUtils webUtils;
 	
-
+	@Autowired
+	BBSService bbsService;
 	
 	/**
 	 * 继续encode URL (url,传参tomcat会自动解码)
@@ -51,6 +53,10 @@ public class Functions {
 	 */
 	public BbsUser currentUser(HttpServletRequest request, HttpServletResponse response) {
 		return webUtils.currentUser(request, response);
+	}
+	
+	public Integer myMessageCount(Integer userId){
+		return bbsService.getMyTopicsCount(userId);
 	}
 
 }

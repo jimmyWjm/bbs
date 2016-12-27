@@ -31,7 +31,7 @@ public class Test {
 		cfg.setPreferDate(true);
 		sql.genALL("com.ibeetl.bbs.model", cfg, new GenFilter(){
 			public boolean accept(String tableName){
-				if(tableName.startsWith("bbs_")){
+				if(tableName.startsWith("bbs_message")){
 					return true;
 				}else{
 					return false;
