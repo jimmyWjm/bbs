@@ -40,7 +40,7 @@ public  class WebUtils {
 	 * @return GitUserModel
 	 */
 	public BbsUser currentUser(HttpServletRequest request, HttpServletResponse response) {
-		BbsUser user = (BbsUser)request.getAttribute("user");
+		BbsUser user = (BbsUser)request.getSession().getAttribute("user");
 		if(user!=null){
 			return user;
 		}
@@ -89,7 +89,7 @@ public  class WebUtils {
 			return null;
 		}
 		user =  userDao.unique(Integer.valueOf(userId));
-		request.setAttribute("user", user);
+		request.getSession().setAttribute("user", user);
 		return user;
 	}
 
@@ -140,7 +140,7 @@ public  class WebUtils {
 	 * @return void
 	 */
 	public static void logoutUser(HttpServletRequest request,HttpServletResponse response) {
-		request.removeAttribute("user");
+		request.getSession().removeAttribute("user");
 		removeCookie(response, Const.USER_COOKIE_KEY);
 		
 	}

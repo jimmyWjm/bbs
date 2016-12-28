@@ -57,4 +57,15 @@ getTopicAndPostCount
 	select t.*,(select count(1) from bbs_post where topic_id=#id#) post_count from bbs_topic t where t.id =#id#
 
 
-	
+getParticipantUserId
+===
+
+* 查询某个帖子的参与恩，包含post和reply俩种，用于群发通知
+
+	select user_id from bbs_post where topic_id = #topicId#
+
+	union 
+
+	select  user_id from bbs_post where topic_id= #topicId#
+
+

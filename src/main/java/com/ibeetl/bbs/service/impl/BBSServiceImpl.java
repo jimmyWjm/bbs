@@ -8,6 +8,8 @@ import java.util.Map;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -50,20 +52,24 @@ public class BBSServiceImpl implements BBSService {
 	
 
 	@Override
-	public void getTopics(PageQuery query) {
+	@Cacheable("TOPIC")
+	public PageQuery getTopics(PageQuery query) {
 		
 		topicDao.queryTopic(query);
+		return query;
 	}
-	
+	@Override
+//	@Cacheable("MY-MESSAGE")
 	public List<BbsTopic> getMyTopics(int userId){
 		return topicDao.queryMyMessageTopic(userId);
 	}
-	
+	@Override
+//	@Cacheable("MY-MESSAGE-COUNT")
 	public Integer getMyTopicsCount(int userId){
 		return topicDao.queryMyMessageTopicCount(userId);
 	}
 	
-	
+	@Override
 	public void updateMyTopic(int msgId,int status){
 		BbsMessage msg = new BbsMessage();
 		msg.setStatus(status);
@@ -71,20 +77,38 @@ public class BBSServiceImpl implements BBSService {
 		sql.updateTemplateById(msg);
 		
 	}
-	
-	public BbsMessage makeOneBbsMessage(int userId,int topicId){
+	@Override
+	public BbsMessage makeOneBbsMessage(int userId,int topicId,int status){
 		BbsMessage msg = new BbsMessage();
 		msg.setUserId(userId);
 		msg.setTopicId(topicId);
 		List<BbsMessage> list = sql.template(msg);
-		if(list.size()==0){
-			msg.setStatus(1);
+		if(list.isEmpty()){
+			msg.setStatus(status);
 			sql.insert(msg,true);
 			return msg;
 		}else{
-			return list.get(0);
+			msg =  list.get(0);
+			if(msg.getStatus()!=status){
+				msg.setStatus(status);
+				sql.updateById(msg);
+			}
+			return msg;
 		}
 			
+	}
+	
+	@Override
+//	@CacheEvict(cacheNames={"MY-MESSAGE","MY-MESSAGE-COUNT"}, allEntries=true)
+	public void notifyParticipant(int topicId,int ownerId){
+		List<Integer> userIds = topicDao.getParticipantUserId(topicId);
+		for(Integer userId:userIds){
+			if(userId==ownerId){
+				continue;
+			}
+			//TODO,以后改成批处理,但存在insert&update问题
+			makeOneBbsMessage(userId,topicId,1);
+		}
 	}
 
 	@Override
@@ -93,7 +117,6 @@ public class BBSServiceImpl implements BBSService {
 		paras.put("type", "hot");
 		query.setParas(paras);
 		topicDao.queryTopic(query);
-//		fillTopic(query);
 	}
 
 	@Override
@@ -134,6 +157,7 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
+	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void saveTopic(BbsTopic topic, BbsPost post, BbsUser user) {
 		topic.setUserId(user.getId());
 		topic.setCreateTime(new Date());
@@ -146,6 +170,7 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
+	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void savePost(BbsPost post, BbsUser user) {
 		post.setUserId(user.getId());
 		postDao.insert(post);
@@ -161,6 +186,7 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
+	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void deleteTopic(int id) {
 		sql.deleteById(BbsTopic.class, id);
 		postDao.deleteByTopicId(id);
@@ -168,6 +194,7 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
+	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void deletePost(int id) {
 		sql.deleteById(BbsPost.class, id);
 		replyDao.deleteByPostId(id);
@@ -178,6 +205,9 @@ public class BBSServiceImpl implements BBSService {
 		return postDao.getLatestPostDate(userId);
 	}
 
-	
+	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+	public void updateTopic(BbsTopic topic){
+		sql.updateById(topic);
+	}
 
 }

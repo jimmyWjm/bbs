@@ -26,6 +26,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
@@ -40,7 +41,7 @@ import com.ibeetl.bbs.util.Functions;
 
 
 @SpringBootApplication
-@Cacheable
+@EnableCaching
 public class BbsMain extends SpringBootServletInitializer  {
 
 	@Override
@@ -51,7 +52,7 @@ public class BbsMain extends SpringBootServletInitializer  {
 	public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(BbsMain.class);
         app.setBannerMode(Banner.Mode.OFF);
-        PageQuery.DEFAULT_PAGE_SIZE =10 ;
+//        PageQuery.DEFAULT_PAGE_SIZE =10 ;
         app.run(args);
 
     }

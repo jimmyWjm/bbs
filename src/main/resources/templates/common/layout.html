@@ -17,7 +17,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-4 col-md-3">
-           		<h3>Beetl-BBS <small>1.0试用版本</small></h3>
+           		<h3>Beetl-BBS<small><a href="http://git.oschina.net/xiandafu/beetl-bbs" >1.1版本</a> </small></h3>
            	 	@  var _user = c.currentUser(request, servlet.response); 
             	<div class="panel panel-default">
 					<div class="panel-heading">板块</div>
@@ -55,7 +55,7 @@
 					</div>      
 					@}else{
 	            	<div class="panel panel-default">
-						<div class="panel-heading"><a class="btn btn-link btn-block" href="${ctxPath}/bbs/topic/add.html">发帖(数据将在正式版发布前删除)</a></div>
+						<div class="panel-heading"><a class="btn btn-link btn-block" href="${ctxPath}/bbs/topic/add.html">点击发帖</a></div>
 						<div class="panel-body">
                             <p>欢迎你<span class="label label-primary">${_user.userName}</span> <span class="label label-danger">${level(_user.level)}</span></p>
                             <p>你已有<span class="label label-success">${_user.score}</span>积分</p>

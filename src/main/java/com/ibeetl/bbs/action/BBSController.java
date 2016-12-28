@@ -76,7 +76,8 @@ public class BBSController {
 		ModelAndView view = new ModelAndView();
 		view.setViewName("/index.html");
 		PageQuery query = new PageQuery(p, null);
-		bbsService.getTopics(query);
+		//因为用了spring boot缓存,sb是用返回值做缓存,所以service再次返回了pageQuery以缓存查询结果
+		query = bbsService.getTopics(query);
 		view.addObject("topicPage", query);
 		return view;
 	}
@@ -94,7 +95,7 @@ public class BBSController {
 	@RequestMapping("/bbs/my/{p}.html")
 	public RedirectView  openMyTopic(@PathVariable int p,HttpServletRequest request, HttpServletResponse response){
 		BbsUser user = webUtils.currentUser(request, response);
-		BbsMessage message = bbsService.makeOneBbsMessage(user.getId(), p);
+		BbsMessage message = bbsService.makeOneBbsMessage(user.getId(), p,0);
 		this.bbsService.updateMyTopic(message.getId(), 0);
 		return  new RedirectView( request.getContextPath()+"/bbs/topic/"+p+"-1.html");
 	}
@@ -197,6 +198,7 @@ public class BBSController {
 			topic.setContent(title);
 			post.setContent(postContent);
 			bbsService.saveTopic(topic, post, user);
+			
 			result.put("err", 0);
 			result.put("msg", "/bbs/topic/"+topic.getId()+"-1.html");
 		}
@@ -219,9 +221,8 @@ public class BBSController {
 			int totalPost = topic.getPostCount() + 1;
 			topic.setPostCount(totalPost);
 			sql.updateById(topic);
-			//新
-//			BbsMessage msg = bbsService.makeOneBbsMessage(topic.getUserId(), topic.getId());
-//			bbsService.updateMyTopic(msg.getId(), 1);
+			
+			bbsService.notifyParticipant(topic.getId(),user.getId());
 			
 			int pageSize = (int)PageQuery.DEFAULT_PAGE_SIZE;
 			int page = (totalPost/pageSize)+(totalPost%pageSize==0?0:1);
@@ -258,6 +259,10 @@ public class BBSController {
 			reply.setUser(user);
 			result.put("msg", "评论成功！");
 			result.put("err", 0);
+			
+			BbsTopic topic = bbsService.getTopic(reply.getTopicId());			
+			bbsService.notifyParticipant(reply.getTopicId(),user.getId());
+			
 		}
 		return result;
 	}
@@ -334,7 +339,7 @@ public class BBSController {
 			BbsTopic db = bbsService.getTopic(id);
 			Integer nice = db.getIsNice();
 			db.setIsNice(nice>0?0:1);
-			sql.updateById(db);
+			bbsService.updateTopic(db);
 			result.put("err", 0);
 			result.put("msg", "success");
 		}
@@ -353,7 +358,7 @@ public class BBSController {
 			BbsTopic db = bbsService.getTopic(id);
 			Integer up = db.getIsUp();
 			db.setIsUp(up>0?0:1);
-			sql.updateById(db);
+			bbsService.updateTopic(db);
 			result.put("err", 0);
 			result.put("msg", "success");
 		}
@@ -470,13 +475,7 @@ public class BBSController {
 		
 		return false;
 	}
-	/**
-	 * 告诉此贴的所有参与者，有帖子回复
-	 * @param topicId
-	 */
-	private void updateMessage(Integer topicId){
-		
-	}
+	
 	
 
 }

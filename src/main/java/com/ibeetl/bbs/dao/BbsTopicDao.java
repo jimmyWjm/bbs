@@ -16,4 +16,7 @@ public interface BbsTopicDao extends BaseMapper<BbsTopic> {
 	@SqlStatement(params="userId")
 	Integer queryMyMessageTopicCount(int userId);
 	
+	@SqlStatement(params="topicId",returnType=Integer.class)
+	List<Integer> getParticipantUserId(Integer topicId);
+	
 }
