@@ -14,15 +14,20 @@
 
 * run BbsMain
 
-* access  http://127.0.0.1:8080/bbs/index/1.html,login as admin/123456 or register new user
+* access  http://127.0.0.1:8080/bbs/bbs/index/1.html,login as admin/123456 or register new user
 
+* maven install  生成的war包部署到服务器上
 
 ## 合作开发
 
 开发之前必须先写个issue，然后指定给自己，也可以只提issue，然后各位自己领取
 
 
-当前为1.0测试版本
+当前为1.1
 
 ![Alt text](show.png)
 ![Alt text](show2.png)
+
+## 作者
+
+闲大赋，Darren
