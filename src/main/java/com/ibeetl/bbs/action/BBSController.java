@@ -465,7 +465,7 @@ public class BBSController {
 	private boolean canUpdatePost(BbsPost post,HttpServletRequest request, HttpServletResponse response){
 		
 		BbsUser user = this.webUtils.currentUser(request, response);
-		if(post.getUserId()==user.getId()){
+		if(post.getUserId().equals(user.getId())){
 			return true ;
 		}
 		//如果是admin
