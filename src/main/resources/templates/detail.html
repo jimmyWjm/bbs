@@ -7,6 +7,10 @@
 			<div class="panel-heading">
 				<span class="label label-primary">${post.bbsUser.userName}</span>
 				<span class="label label-default">${printTime(post.createTime)}</span>
+				@if(postLP.index==1){
+				<span class="label label-default">${topic.pv}</span>
+				@}
+				
 				@if(_user!=null){
 				<div class="btn-group btn-group-xs pull-right">
 					@if(_user.id!0==post.userId||isAdmin){
