@@ -27,7 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.ibeetl.bbs.common.Const;
 import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.model.BbsMessage;
 import com.ibeetl.bbs.model.BbsPost;
@@ -72,16 +74,19 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/index/{p}.html")
-	public ModelAndView  index(@PathVariable int p){
+	public ModelAndView  index(@PathVariable int p,String keyword){
 		ModelAndView view = new ModelAndView();
 		view.setViewName("/index.html");
-		PageQuery query = new PageQuery(p, null);
+		PageQuery query = new PageQuery(p, new HashMap(){{put("keyword", keyword);}});
+		query.setPageSize(Const.TOPIC_PAGE_SIZE);
+//		query.setPageSize(2);
 		//因为用了spring boot缓存,sb是用返回值做缓存,所以service再次返回了pageQuery以缓存查询结果
 		query = bbsService.getTopics(query);
 		view.addObject("topicPage", query);
+		view.addObject("pagename", "首页综合");
 		return view;
 	}
-	
+
 	@RequestMapping("/bbs/myMessage.html")
 	public ModelAndView  myPage(HttpServletRequest request, HttpServletResponse response){
 		ModelAndView view = new ModelAndView();
@@ -144,12 +149,18 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/topic/module/{id}-{p}.html")
-	public ModelAndView module(@PathVariable final int id, @PathVariable int p){
+	public ModelAndView module(@PathVariable final int id, @PathVariable int p,String keyword){
 		ModelAndView view = new ModelAndView();
 		view.setViewName("/index.html");
-		PageQuery query = new PageQuery(p, new HashMap(){{put("moduleId", id);}});
+		PageQuery query = new PageQuery(p, new HashMap(){{put("moduleId", id);put("keyword", keyword);}});
+		query.setPageSize(Const.TOPIC_PAGE_SIZE);
+//		query.setPageSize(2);
 		bbsService.getTopics(query);
 		view.addObject("topicPage", query);
+		if(query.getList().size() >0){
+			BbsTopic bbsTopic = (BbsTopic) query.getList().get(0);
+			view.addObject("pagename",bbsTopic.getTails().get("moduleName"));
+		}
 		return view;
 	}
 

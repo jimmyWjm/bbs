@@ -1,53 +1,58 @@
 @layout("/common/layout.html"){
 @ var _user = c.currentUser(request, servlet.response); 
 @ var isAdmin = 'admin'== (_user.userName!"");
-		<h3>列表</h3>
-       <div class="well well-sm">
-	       <table class="table table-hover table-striped" id="post-list">
-	       	<thead>
-	       		<tr>
-	       		<th></th>
-	       		<th>发帖</th>
-	       		<th style="width:40%">标题</th>
-	       		
-	       		<th>回复</th>
-	       		<th></th>
-	       		@if(isAdmin){   
-				<th >管理</th>
-				@}
-				</tr>
-	       	</thead>
-	           <tbody>
-	           	@ for(topic in topicPage.list!){
-	               <tr data-topic="${topic.id}">
-	                   <td>
-	                   @if(topic.isUp>0){
-							<span class="label label-danger">重要</span>
-						@}
-						@if(topic.isNice>0){
-							<span class="label label-warning ">精品</span> 
-						@}
-	                   </td>
-	                   <td><a href="#">${topic.userName}</a></td>
-	                   <td><a href="${ctxPath}/bbs/topic/${topic.id}-1.html">${topic.content,xss}</a></td>
-	                   
-	                   <td><span class="label label-warning ">${topic.postCount}</span></td>
-	                   <td class="text-right ">${printTime(topic.createTime)}</td>
-	                   @if(isAdmin){
-					<td class="text-right mail-date">
-						<div class="btn-group" id="admin">
+<style>
+		.topic{position:relative;width: 100%;overflow: hidden;padding: 10px 0;border-top: 1px solid #ddd}
+   		.topic>div{float: left;}
+   		.topic .div1{width: 50px;height: 40px;text-align: center;background-color: #009a61;color: #fff;}
+    	.topic .div1>div:first-child,.topic .div2>div:first-child{line-height: 25px;height: 25px;}
+		.topic .div1>div:last-child,.topic .div2>div:last-child{font-size: 12px;line-height: 10px;height: 10px;}
+   		.topic .div2{width: 75px;height: 40px;text-align: center;color: #999}
+   		.topic .div3{width: calc(100% - 125px);}
+   		.topic .div3>div:first-child{color: #999;font-size: 13px;margin-bottom: 3px;}
+   		.topic a{color: #000;}
+   		.topic .div3>div:last-child a:last-child{font-size: 12px;padding: 0 6px;display: inline-block;height: 20px;line-height: 20px;color: #017E66;background: #EBF5F3;text-decoration: none;}
+    	.topic .div3>div:last-child a:last-child:hover{background: #017E66;color: #fff}
+    	.topic .div3>div:last-child a:first-child{font-size: 15px;}
+    	.topic .div4{position: absolute;top:10px;right: 0px;}
+</style>
+			<h4>${pagename!}</h4>
+			<div id="post-list">
+       		@ for(topic in topicPage.list!){
+				<div class="topic">
+					<div class="div1">
+							<div>${topic.postCount}</div>
+							<div>回答</div>
+					</div>
+					<div class="div2">
+							<div>${topic.pv}</div>
+							<div>浏览</div>
+					</div>
+					<div class="div3">
+						<div>
+							@if(topic.isUp>0){
+										<span class="label label-danger">重要</span>
+							@}
+							@if(topic.isNice>0){
+									<span class="label label-warning ">精品</span> 
+							@}
+							<a href="javascript:;">
+								${topic.tails.userName}
+							</a>
+							&nbsp;&nbsp;${printTime(topic.createTime)}</div>	
+						<div><a href="${ctxPath}/bbs/topic/${topic.id}-1.html">${topic.content,xss}</a>&nbsp;&nbsp;<a href="${ctxPath}/bbs/topic/module/${topic.moduleId}-1.html">${topic.tails.moduleName}</a></div>	
+					</div>
+					@if(isAdmin){
+					<div class="div4" data-topic=${topic.id}>
 							<a href="javascript:;"  class="btn btn-default btn-xs nice-btn">精华</a>
 							<a href="javascript:;"  class="btn btn-default btn-xs top-btn">置顶</a>
 							<a href="javascript:;"  class="btn btn-default btn-xs del-btn">删除</a>
-						</div>
-					</td>
+					</div>
 					@}
-	               </tr>
-	               @}
-	           </tbody>
-	       </table>
-	       <#page query="${topicPage}"/>
+				</div>
+			@}
        </div>
+	   <#page query="${topicPage}"/>
        <script>
        $('#post-list').on('click','.nice-btn',function(){
     	   $.post('${ctxPath}/bbs/admin/topic/nice/'+$(this).parents('tr').data('topic'),function(json){

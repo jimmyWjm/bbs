@@ -11,6 +11,9 @@ queryTopic
      @if(!isEmpty(moduleId)){
      	 and `module_id`=#moduleId#
      @}
+     @if(!isEmpty(keyword)){
+     	 and content like #'%'+keyword+'%'#
+     @}
      @if("normal" == type){
          order by is_up desc,create_time desc
      @}
