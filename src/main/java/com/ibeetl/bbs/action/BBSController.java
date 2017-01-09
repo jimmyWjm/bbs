@@ -79,7 +79,6 @@ public class BBSController {
 		view.setViewName("/index.html");
 		PageQuery query = new PageQuery(p, new HashMap(){{put("keyword", keyword);}});
 		query.setPageSize(Const.TOPIC_PAGE_SIZE);
-//		query.setPageSize(2);
 		//因为用了spring boot缓存,sb是用返回值做缓存,所以service再次返回了pageQuery以缓存查询结果
 		query = bbsService.getTopics(query);
 		view.addObject("topicPage", query);
@@ -154,7 +153,6 @@ public class BBSController {
 		view.setViewName("/index.html");
 		PageQuery query = new PageQuery(p, new HashMap(){{put("moduleId", id);put("keyword", keyword);}});
 		query.setPageSize(Const.TOPIC_PAGE_SIZE);
-//		query.setPageSize(2);
 		bbsService.getTopics(query);
 		view.addObject("topicPage", query);
 		if(query.getList().size() >0){
