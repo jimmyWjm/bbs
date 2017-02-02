@@ -148,10 +148,10 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/topic/module/{id}-{p}.html")
-	public ModelAndView module(@PathVariable final int id, @PathVariable int p,String keyword){
+	public ModelAndView module(@PathVariable final int id, @PathVariable int p){
 		ModelAndView view = new ModelAndView();
 		view.setViewName("/index.html");
-		PageQuery query = new PageQuery(p, new HashMap(){{put("moduleId", id);put("keyword", keyword);}});
+		PageQuery query = new PageQuery(p, new HashMap(){{put("moduleId", id);}});
 		query.setPageSize(Const.TOPIC_PAGE_SIZE);
 		bbsService.getTopics(query);
 		view.addObject("topicPage", query);
