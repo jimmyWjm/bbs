@@ -24,8 +24,7 @@ public class PageUrlPatternFunction implements Function {
 			String url = req.getServletPath();
 			int index = url.lastIndexOf("-");
 			if(index==-1){
-				index = url.lastIndexOf(".");
-				return url.substring(0, index-1);
+				return url.substring(0, url.lastIndexOf("/")+1);
 			}else{
 				return url.substring(0, index+1);
 			}
