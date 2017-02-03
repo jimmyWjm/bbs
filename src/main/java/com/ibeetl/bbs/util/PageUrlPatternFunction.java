@@ -22,6 +22,7 @@ public class PageUrlPatternFunction implements Function {
 	public String call(Object[] paras, Context ctx) {
 			HttpServletRequest  req = (HttpServletRequest)ctx.getGlobal("request");
 			String url = req.getServletPath();
+			//网站有俩种翻页url格式
 			int index = url.lastIndexOf("-");
 			if(index==-1){
 				return url.substring(0, url.lastIndexOf("/")+1);
