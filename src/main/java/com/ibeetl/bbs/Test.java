@@ -16,6 +16,8 @@ import org.beetl.sql.ext.DebugInterceptor;
 import org.beetl.sql.ext.gen.GenConfig;
 import org.beetl.sql.ext.gen.GenFilter;
 
+import com.ibeetl.bbs.model.BbsUser;
+
 
 public class Test {
 
@@ -27,19 +29,23 @@ public class Test {
 		SQLManager 	sql = new SQLManager(style,loader,cs,new UnderlinedNameConversion(), new Interceptor[]{new DebugInterceptor()});
 //		sql.genPojoCodeToConsole("project");
 		
-		GenConfig cfg = new GenConfig();
-		cfg.setPreferDate(true);
-		sql.genALL("com.ibeetl.bbs.model", cfg, new GenFilter(){
-			public boolean accept(String tableName){
-				if(tableName.startsWith("bbs_message")){
-					return true;
-				}else{
-					return false;
-				}
-//				 return false; //全部生成，当心覆盖
-			}
-		});
 		
+//		GenConfig cfg = new GenConfig();
+//		cfg.setPreferDate(true);
+//		sql.genALL("com.ibeetl.bbs.model", cfg, new GenFilter(){
+//			public boolean accept(String tableName){
+//				if(tableName.startsWith("bbs_message")){
+//					return true;
+//				}else{
+//					return false;
+//				}
+////				 return false; //全部生成，当心覆盖
+//			}
+//		});
+		
+		
+		BbsUser bbsUser = sql.unique(BbsUser.class, 1);
+		System.out.println(bbsUser.getBalance());
 
 	
 	}
