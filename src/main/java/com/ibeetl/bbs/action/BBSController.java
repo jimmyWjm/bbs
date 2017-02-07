@@ -47,7 +47,6 @@ public class BBSController {
 	@Autowired
 	BbsUserService gitUserService;
 
-
 	@Autowired
 	BBSService bbsService;
 

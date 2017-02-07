@@ -56,15 +56,15 @@
 	   <#page query="${topicPage}"/>
        <script>
        $('#post-list').on('click','.nice-btn',function(){
-    	   $.post('${ctxPath}/bbs/admin/topic/nice/'+$(this).parents('tr').data('topic'),function(json){
+    	   $.post('${ctxPath}/bbs/admin/topic/nice/'+$(this).parents('div').data('topic'),function(json){
     		   json.err||location.reload();
     	   })
        }).on('click','.top-btn',function(){
-    	   $.post('${ctxPath}/bbs/admin/topic/up/'+$(this).parents('tr').data('topic'),function(json){
+    	   $.post('${ctxPath}/bbs/admin/topic/up/'+$(this).parents('div').data('topic'),function(json){
     		   json.err||location.reload();
     	   })
        }).on('click','.del-btn',function(){
-    	   var topicid = $(this).parents('tr').data('topic');
+    	   var topicid = $(this).parents('div').data('topic');
     	   $.confirm('确定要删除该主题么？',function(e){
     		   e&&$.post('${ctxPath}/bbs/admin/topic/delete/'+topicid,function(json){
         		   json.err||location.reload();
