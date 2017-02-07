@@ -27,6 +27,7 @@ import com.ibeetl.bbs.util.VerifyCodeUtils;
 @Controller
 public class LoginController {
 	
+	
 	@Autowired
 	SQLManager sql;
 

@@ -1,6 +1,7 @@
 @layout("/common/layout.html"){
 @ var _user = c.currentUser(request, servlet.response); 
 @ var isAdmin = 'admin'== (_user.userName!"");
+
 <style>
 		.topic{position:relative;width: 100%;overflow: hidden;padding: 10px 0;border-top: 1px solid #ddd}
    		.topic>div{float: left;}
