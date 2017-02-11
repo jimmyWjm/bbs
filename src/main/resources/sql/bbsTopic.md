@@ -71,4 +71,14 @@ getParticipantUserId
 
 	select  user_id from bbs_post where topic_id= #topicId#
 
-
+getBbsTopicListByDate
+===
+	
+	SELECT id tid,content topiccontent FROM bbs_topic 
+	WHERE create_time BETWEEN  
+	@if(isEmpty(fileupdateDate)){
+		''
+	@}else{
+		#fileupdateDate#
+	@}
+	AND #lastupdateDate# ORDER BY id DESC

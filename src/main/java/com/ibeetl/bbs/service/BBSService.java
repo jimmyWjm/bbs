@@ -2,6 +2,7 @@ package com.ibeetl.bbs.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.beetl.sql.core.engine.PageQuery;
 
@@ -51,4 +52,15 @@ public interface BBSService {
 	void updateTopic(BbsTopic topic);
 	
 	Date getLatestPost(int userId);
+	
+	/**
+	 * 获取索引数据
+	 * 	1.当无索引文件夹时获取  第一条数据 到 最新提交时间（主题贴和回复贴）  的前一天的所有数据
+	 * 	2.当有索引文件夹时获取  上次索引文件夹修改日期 到 最新提交时间（主题贴和回复贴）  的前一天 的所有数据
+	 * @param fileupdateDate
+	 * @return
+	 * @throws Exception
+	 */
+	Map<String,List<Map<String,Object>>> getBbsTopicPostList(Date fileupdateDate) throws Exception;
+	
 }

@@ -1,8 +1,11 @@
 package com.ibeetl.bbs.dao;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.beetl.sql.core.annotatoin.SqlStatement;
+import org.beetl.sql.core.annotatoin.SqlStatementType;
 import org.beetl.sql.core.engine.PageQuery;
 import org.beetl.sql.core.mapper.BaseMapper;
 
@@ -19,4 +22,13 @@ public interface BbsTopicDao extends BaseMapper<BbsTopic> {
 	@SqlStatement(params="topicId",returnType=Integer.class)
 	List<Integer> getParticipantUserId(Integer topicId);
 	
+	/**
+	   * 新增索引
+	   * @param fileupdateDate 索引文件最后更新时间
+	   * @param lastupdateDate 最后提交时间
+	   * @return
+	   */
+	    @SqlStatement(type=SqlStatementType.SELECT,params="fileupdateDate,lastupdateDate",returnType = Map.class )
+		List<Map<String,Object>> getBbsTopicListByDate(Date fileupdateDate,Date lastupdateDate);
+
 }

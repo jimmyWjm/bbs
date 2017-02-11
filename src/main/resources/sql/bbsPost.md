@@ -56,4 +56,21 @@ condition
 	@if(!isEmpty(updateTime)){
 	 and `update_time`=#updateTime#
 	@}
+
+getLastPostDate
+===
+
+	SELECT max(t.create_time) topiclastupdate,max(p.create_time) postlastupdate 
+	FROM bbs_topic t 	LEFT JOIN bbs_post p ON t.id = p.topic_id
 	
+getBbsPostListByDate
+===
+
+	SELECT id pid,topic_id tid,content postcontent FROM bbs_post 
+	WHERE create_time BETWEEN 
+	@if(isEmpty(fileupdateDate)){
+		''
+	@}else{
+		#fileupdateDate#
+	@}
+	AND #lastupdateDate# ORDER BY id DESC	

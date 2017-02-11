@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ import com.ibeetl.bbs.model.BbsTopic;
 import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BBSService;
 import com.ibeetl.bbs.service.BbsUserService;
+import com.ibeetl.bbs.util.lucene.LuceneUtil;
+import com.ibeetl.bbs.util.lucene.entity.SearchResult;
 
 @Controller
 public class BBSController {
@@ -75,13 +78,22 @@ public class BBSController {
 	@RequestMapping("/bbs/index/{p}.html")
 	public ModelAndView  index(@PathVariable int p,String keyword){
 		ModelAndView view = new ModelAndView();
-		view.setViewName("/index.html");
-		PageQuery query = new PageQuery(p, new HashMap(){{put("keyword", keyword);}});
-		query.setPageSize(Const.TOPIC_PAGE_SIZE);
-		//因为用了spring boot缓存,sb是用返回值做缓存,所以service再次返回了pageQuery以缓存查询结果
-		query = bbsService.getTopics(query);
-		view.addObject("topicPage", query);
-		view.addObject("pagename", "首页综合");
+		if (StringUtils.isBlank(keyword)) {
+			view.setViewName("/index.html");
+			PageQuery query = new PageQuery(p, null);
+			query.setPageSize(Const.TOPIC_PAGE_SIZE);
+			//因为用了spring boot缓存,sb是用返回值做缓存,所以service再次返回了pageQuery以缓存查询结果
+			query = bbsService.getTopics(query);
+			view.addObject("topicPage", query);
+			view.addObject("pagename", "首页综合");
+		}else{
+			LuceneUtil.createDataIndexer(bbsService);
+			PageQuery<SearchResult> searcherKeywordPage = LuceneUtil.searcherKeyword(keyword,Const.TOPIC_PAGE_SIZE, p);
+			view.setViewName("/lucene/index.html");
+			view.addObject("searcherPage", searcherKeywordPage);
+			view.addObject("pagename", keyword);
+			view.addObject("resultnum", searcherKeywordPage.getTotalRow());
+		}
 		return view;
 	}
 
