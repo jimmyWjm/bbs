@@ -14,7 +14,6 @@ import org.beetl.sql.core.Interceptor;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.UnderlinedNameConversion;
 import org.beetl.sql.core.db.MySqlStyle;
-import org.beetl.sql.core.engine.PageQuery;
 import org.beetl.sql.ext.DebugInterceptor;
 import org.beetl.sql.ext.spring4.BeetlSqlDataSource;
 import org.beetl.sql.ext.spring4.BeetlSqlScannerConfigurer;
@@ -25,7 +24,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -38,6 +36,7 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.ibeetl.bbs.common.Const;
 import com.ibeetl.bbs.dao.BbsModuleDao;
 import com.ibeetl.bbs.util.Functions;
+import com.ibeetl.bbs.util.lucene.LuceneUtil;
 
 
 @SpringBootApplication
@@ -139,8 +138,14 @@ public class BbsMain extends SpringBootServletInitializer  {
 		druidDataSource.setValidationQuery("SELECT 1 FROM DUAL");
 		druidDataSource.setInitialSize(5);
 		druidDataSource.setMaxActive(10);
-	
 		return druidDataSource;
 	}
 
+    @Bean(name = "luceneUtil")
+    public LuceneUtil luceneUtil(Environment env){
+    	LuceneUtil luceneUtil = new LuceneUtil();
+    	luceneUtil.setIndexDer(env.getProperty("lucene.indexder"));
+    	return luceneUtil;
+    }
+    
 }

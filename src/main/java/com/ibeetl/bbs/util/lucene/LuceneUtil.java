@@ -39,7 +39,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.beetl.sql.core.engine.PageQuery;
 
-import com.ibeetl.bbs.service.BBSService;
 import com.ibeetl.bbs.util.lucene.entity.IKAnalyzer5x;
 import com.ibeetl.bbs.util.lucene.entity.SearchResult;
 
@@ -49,24 +48,40 @@ import com.ibeetl.bbs.util.lucene.entity.SearchResult;
  *  
  */  
 public class LuceneUtil {  
-	private static Directory directory = null;
-	private static Analyzer analyzer = null;
-	public static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	public final static String INDEX_DER = "D://Lucene//index";// 索引存放目录 
+	private  Directory directory = null;
+	private  Analyzer analyzer = null;
+	private String indexDer = null;// 索引存放目录 
+	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");// 索引存放目录 
+
 	
-	
-	public static Analyzer getAnalyzer() {
+	public SimpleDateFormat getDateFormat() {
+		return dateFormat;
+	}
+
+	public LuceneUtil() {
+		super();
+	}
+
+	public String getIndexDer() {
+		return indexDer;
+	}
+
+	public void setIndexDer(String indexDer) {
+		this.indexDer = indexDer;
+	}
+
+	public Analyzer getAnalyzer() {
 		if(analyzer == null){
-//			analyzer = new SmartChineseAnalyzer();//中文分词器
-			 //创建IKAnalyzer中文分词对象  
+			//analyzer = new SmartChineseAnalyzer();//中文分词器
+			//创建IKAnalyzer中文分词对象  
 	         analyzer = new IKAnalyzer5x(true);  
 		}
 		return analyzer;
 	}
 
-	public static Directory getDirectory() throws IOException {
+	public Directory getDirectory() throws IOException {
 		if(directory == null){
-			File indexrepository_file = new File(INDEX_DER);
+			File indexrepository_file = new File(this.indexDer);
 	        Path path = indexrepository_file.toPath();
 	        directory = FSDirectory.open(path);
 		}
@@ -76,71 +91,46 @@ public class LuceneUtil {
 
 	/**
 	 * 创建索引
-	 * @param sql
+	 * @param bbsTopicList
+	 * @param bbsPostList
 	 */
-    public static void createDataIndexer(BBSService bbsService) {
-    	
-        //查看索引文件最后修改日期
-    	File file = new File(INDEX_DER);
-    	Date fileupdateDate = null;
-    	if(file.exists()){
-    		fileupdateDate = new Date(file.lastModified());
+    public void createDataIndexer(List<Map<String, Object>> bbsContentList) {
+    	if(bbsContentList.size()>0){
+    	 IndexWriter indexWriter = null;
+	     try {
+				        // 创建一个分析器对象
+				        // 创建一个IndexwriterConfig对象
+				        IndexWriterConfig config = new IndexWriterConfig(getAnalyzer());
+				        // 创建一个IndexWriter对象，对于索引库进行写操作
+				         indexWriter = new IndexWriter(getDirectory(), config);
+				         //删除以前的索引
+				         //indexWriter.deleteAll();
+				         
+				        for (Map<String, Object> t : bbsContentList) {
+				            // 创建一个Document对象
+				            Document document = new Document();
+				            // 向Document对象中添加域信息
+				            // 参数：1、域的名称；2、域的值；3、是否存储；
+				            Field contentField = new TextField("content", labelformat(t.get("content").toString()), Store.YES);
+				            // storedFiled默认存储
+				            Field tidField = new StoredField("tid", t.get("tid").toString());
+				            // 将域添加到document对象中
+				            document.add(contentField);
+				            document.add(tidField);
+				            // 将信息写入到索引库中
+				           indexWriter.addDocument(document);
+				        }
+				      
+	        } catch (Exception e) {
+	    		e.printStackTrace();
+	    	}finally {
+	    			try {
+						indexWriter.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+	    		}
+			}
     	}
-    	
-        IndexWriter indexWriter = null;
-        try {
-        	//获取索引的数据 ：主题和回复
-        	Map<String, List<Map<String, Object>>> bbsTopicPostList = bbsService .getBbsTopicPostList(fileupdateDate);
-        	
-        	List<Map<String, Object>> bbsTopicList = bbsTopicPostList.get("bbsTopics");
-        	List<Map<String, Object>> bbsPostList = bbsTopicPostList.get("bbsPosts");
-        // 创建一个分析器对象
-        // 创建一个IndexwriterConfig对象
-        IndexWriterConfig config = new IndexWriterConfig(getAnalyzer());
-        // 创建一个IndexWriter对象，对于索引库进行写操作
-         indexWriter = new IndexWriter(getDirectory(), config);
-         //删除以前的索引
-//        indexWriter.deleteAll();
-         
-        for (Map<String, Object> t : bbsTopicList) {
-            // 创建一个Document对象
-            Document document = new Document();
-            // 向Document对象中添加域信息
-            // 参数：1、域的名称；2、域的值；3、是否存储；
-            Field contentField = new TextField("content", labelformat(t.get("topiccontent").toString()), Store.YES);
-            // storedFiled默认存储
-            Field tidField = new StoredField("tid", t.get("tid").toString());
-            // 将域添加到document对象中
-            document.add(contentField);
-            document.add(tidField);
-            // 将信息写入到索引库中
-           indexWriter.addDocument(document);
-        }
-        for (Map<String, Object> p : bbsPostList) {
-        	// 创建一个Document对象
-        	Document document = new Document();
-        	// 向Document对象中添加域信息
-        	// 参数：1、域的名称；2、域的值；3、是否存储；
-        	Field contentField = new TextField("content", labelformat(p.get("postcontent").toString()), Store.YES);
-        	// storedFiled默认存储
-        	Field tidField = new StoredField("tid", p.get("tid").toString());
-        	Field pidField = new StoredField("pid", p.get("pid").toString());
-        	// 将域添加到document对象中
-        	document.add(contentField);
-        	document.add(tidField);
-        	document.add(pidField);
-        	// 将信息写入到索引库中
-        	indexWriter.addDocument(document);
-        }
-        } catch (Exception e) {
-    		e.printStackTrace();
-    	}finally {
-    			try {
-					indexWriter.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-    		}
-		}      
     }
 
     /**
@@ -149,7 +139,7 @@ public class LuceneUtil {
      * @param pageSize 页面大小
      * @param currentPage 当前页
      */
-    public static PageQuery<SearchResult> searcherKeyword(String keyword,Integer pageSize,Integer currentPage){
+    public PageQuery<SearchResult> searcherKeyword(String keyword,Integer pageSize,Integer currentPage){
     	if(keyword == null) throw new RuntimeException("关键字不能为空");
     	if(pageSize == 0)pageSize = 10;
 		IndexReader indexReader = null;
@@ -189,18 +179,11 @@ public class LuceneUtil {
 			    float score = scoreDoc.score;
 			    // 根据ID去document对象
 			    Document document = indexSearcher.doc(docID);
-			    String pid = document.get("pid");
-			    String topContent = null,postContent = null;
-			    if(pid == null){
-			    	topContent = stringFormatHighlighterOut(getAnalyzer(), highlighter,  document,"content");
-			    }else{
-			    	postContent= stringFormatHighlighterOut(getAnalyzer(), highlighter,  document,"content");
-			    }
-				searchResults.add( new SearchResult(document.get("tid"), topContent, pid, postContent,score));
+			    String content = stringFormatHighlighterOut(getAnalyzer(), highlighter,  document,"content");
+				searchResults.add( new SearchResult(document.get("tid"), content,score));
 //			    System.out.println("相关度得分：" + score);
 //				System.out.println("content:"+stringFormatHighlighterOut(getAnalyzer(), highlighter,  document,"content"));  
 //				System.out.println("tid:"+document.get("tid"));  
-//				System.out.println("pid:"+document.get("pid"));  
 //			    System.out.println("=======================");
 			}
 
@@ -232,7 +215,7 @@ public class LuceneUtil {
      * @return ScoreDoc
      * @throws IOException 
      */  
-    private static ScoreDoc getLastScoreDoc(Integer currentPage,Integer pageSize,Query query,IndexSearcher searcher) throws IOException {  
+    private ScoreDoc getLastScoreDoc(Integer currentPage,Integer pageSize,Query query,IndexSearcher searcher) throws IOException {  
         if(currentPage==1)return null;//如果是第一页就返回空  
         int num = pageSize*(currentPage-1);//获取上一页的最后数量  
         TopDocs tds = searcher.search(query, num); 
@@ -245,7 +228,7 @@ public class LuceneUtil {
 	 * @param query
 	 * @return
 	 */
-	private static Highlighter addStringHighlighter(Query query){
+	private Highlighter addStringHighlighter(Query query){
 		//算分  
         QueryScorer scorer=new QueryScorer(query);  
         //显示得分高的片段  
@@ -259,7 +242,7 @@ public class LuceneUtil {
 		highlighter.setTextFragmenter(fragmenter); 
 		return highlighter;
 	}
-	private static String stringFormatHighlighterOut(Analyzer analyzer,Highlighter highlighter,Document document,String field) throws Exception{
+	private String stringFormatHighlighterOut(Analyzer analyzer,Highlighter highlighter,Document document,String field) throws Exception{
 		String fieldValue = document.get(field);
 		if(fieldValue!=null){  
 				//把全部得分高的摘要给显示出来  
@@ -275,7 +258,7 @@ public class LuceneUtil {
 	 * @param content
 	 * @return
 	 */
-	private static String labelformat(String content){
+	private String labelformat(String content){
 		if(StringUtils.isBlank(content))return "";
 		return content.replaceAll("<a", "&lt;a").replaceAll("</a>", "&lt;/a&gt;");
 	}
@@ -284,9 +267,9 @@ public class LuceneUtil {
 	 * @param date
 	 * @return
 	 */
-  public static LocalDate getLocalDate(Date date){
+  public LocalDate getLocalDate(Date date){
 	  if(date == null)return null;
-	  return LocalDate.parse(dateFormat.format(date));
+	  return LocalDate.parse(new SimpleDateFormat("yyyy-MM-dd").format(date));
   }
   /**
    * 日期比较（只比较日期部分）
@@ -296,7 +279,7 @@ public class LuceneUtil {
    * @return
    * @throws ParseException 
    */
-  public static boolean  dateCompare(Date date1,Date date2){
+  public boolean  dateCompare(Date date1,Date date2){
 			  if(date1 == null)return false;
 			  if(date2 == null)return true;
 			  if(date1.getTime() > date2.getTime())return true;

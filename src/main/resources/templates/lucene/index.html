@@ -12,9 +12,9 @@
 			<div id="searcher-list">
        		@ for(searcher in searcherPage.list!){
 				<div class="searcher">
-					<div>${!isEmpty(searcher.postId)?'回复贴':'主题贴'}&nbsp;&nbsp;<small>匹配度：${searcher.score,'##.##'}</small></div>
+					<div>匹配度：<small>${searcher.score,'##.##'}</small></div>
 					<a href="${ctxPath}/bbs/topic/${searcher.topicId}-1.html">
-						${!isEmpty(searcher.postId)?searcher.postContent:searcher.topContent}
+						${searcher.content}
 					</a>
 				</div>
 			@}

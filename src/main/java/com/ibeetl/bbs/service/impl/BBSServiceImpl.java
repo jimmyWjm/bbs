@@ -1,5 +1,6 @@
 package com.ibeetl.bbs.service.impl;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -214,25 +215,28 @@ public class BBSServiceImpl implements BBSService {
 
 
 	@Override
-	public Map<String,List<Map<String,Object>>> getBbsTopicPostList(Date fileupdateDate) throws Exception{
-		Map<String,List<Map<String,Object>>>  map = new HashMap<>();
+	public List<Map<String,Object>> getBbsTopicPostList(LuceneUtil luceneUtil,Date fileupdateDate){
+		List<Map<String,Object>>  map = new ArrayList<>();
 		//获取主题和回复最后的提交时间
-		Map<String,Date> lastPostDate = postDao.getLastPostDate();
-		Date topiclastupdate = LuceneUtil.dateFormat.parse(LuceneUtil.dateFormat.format(lastPostDate.get("topiclastupdate")));
-		Date postlastupdate = LuceneUtil.dateFormat.parse(LuceneUtil.dateFormat.format(lastPostDate.get("postlastupdate")));
-		if(fileupdateDate != null)fileupdateDate =  LuceneUtil.dateFormat.parse(LuceneUtil.dateFormat.format(fileupdateDate));
-		
-		List<Map<String,Object>> bbsTopics = new ArrayList<>();
-		List<Map<String,Object>> bbsPosts = new ArrayList<>();
-		if(fileupdateDate == null || (topiclastupdate != null && LuceneUtil.dateCompare(topiclastupdate,fileupdateDate))){
-			bbsTopics = topicDao.getBbsTopicListByDate(fileupdateDate, topiclastupdate);
+		List<Map<String, Object>> bbsTopics = null;
+		List<Map<String, Object>> bbsPosts = null;
+		try {
+			Map<String,Date> lastPostDate = postDao.getLastPostDate();
+			Date topiclastupdate = luceneUtil.getDateFormat().parse(luceneUtil.getDateFormat().format(lastPostDate.get("topiclastupdate")));
+			Date postlastupdate = luceneUtil.getDateFormat().parse(luceneUtil.getDateFormat().format(lastPostDate.get("postlastupdate")));
+			if(fileupdateDate != null)fileupdateDate =  luceneUtil.getDateFormat().parse(luceneUtil.getDateFormat().format(fileupdateDate));
+			
+			if(fileupdateDate == null || (topiclastupdate != null && luceneUtil.dateCompare(topiclastupdate,fileupdateDate))){
+				bbsTopics = topicDao.getBbsTopicListByDate(fileupdateDate, topiclastupdate);
+			}
+			if(fileupdateDate == null || (postlastupdate != null &&luceneUtil.dateCompare(postlastupdate,fileupdateDate))){
+				bbsPosts = postDao.getBbsPostListByDate(fileupdateDate, postlastupdate);
+			}
+		} catch (ParseException e) {
+			e.printStackTrace();
 		}
-		if(fileupdateDate == null || (postlastupdate != null &&LuceneUtil.dateCompare(postlastupdate,fileupdateDate))){
-			bbsPosts = postDao.getBbsPostListByDate(fileupdateDate, postlastupdate);
-		}
-		map.put("bbsTopics", bbsTopics);
-		map.put("bbsPosts", bbsPosts);
-//		System.out.println("fileupdateDate:"+fileupdateDate+"  topic:"+topiclastupdate.toString() +"    post:"+postlastupdate.toString());
+		if(bbsTopics!=null)map.addAll(bbsTopics);
+		if(bbsPosts!=null)map.addAll(bbsPosts);
 //		System.out.println("================");
 //		System.out.println(JSONObject.toJSONString(map));
 		return map;

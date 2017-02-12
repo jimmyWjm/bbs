@@ -74,7 +74,7 @@ getParticipantUserId
 getBbsTopicListByDate
 ===
 	
-	SELECT id tid,content topiccontent FROM bbs_topic 
+	SELECT id tid,content FROM bbs_topic 
 	WHERE create_time BETWEEN  
 	@if(isEmpty(fileupdateDate)){
 		''

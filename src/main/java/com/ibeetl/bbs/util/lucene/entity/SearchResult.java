@@ -4,33 +4,13 @@ package com.ibeetl.bbs.util.lucene.entity;
 public class SearchResult implements Comparable<SearchResult>{
 	
 	private String topicId;
-	private String topContent;
-	private String postId;
-	private String postContent;
+	private String content;
 	private float score;//相似度
 	public String getTopicId() {
 		return topicId;
 	}
 	public void setTopicId(String topicId) {
 		this.topicId = topicId;
-	}
-	public String getTopContent() {
-		return topContent;
-	}
-	public void setTopContent(String topContent) {
-		this.topContent = topContent;
-	}
-	public String getPostId() {
-		return postId;
-	}
-	public void setPostid(String postId) {
-		this.postId = postId;
-	}
-	public String getPostContent() {
-		return postContent;
-	}
-	public void setPostContent(String postContent) {
-		this.postContent = postContent;
 	}
 	
 	public float getScore() {
@@ -39,17 +19,22 @@ public class SearchResult implements Comparable<SearchResult>{
 	public void setScore(float score) {
 		this.score = score;
 	}
-	
-	public SearchResult(String topicId, String topContent, String postId, String postContent, float score) {
-		super();
-		this.topicId = topicId;
-		this.topContent = topContent;
-		this.postId = postId;
-		this.postContent = postContent;
-		this.score = score;
+
+	public String getContent() {
+		return content;
+	}
+	public void setContent(String content) {
+		this.content = content;
 	}
 	public SearchResult() {
 		super();
+	}
+	
+	public SearchResult(String topicId, String content, float score) {
+		super();
+		this.topicId = topicId;
+		this.content = content;
+		this.score = score;
 	}
 	@Override
 	public int compareTo(SearchResult o) {

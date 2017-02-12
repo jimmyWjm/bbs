@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.common.Const;
 import com.ibeetl.bbs.common.WebUtils;
@@ -56,6 +56,9 @@ public class BBSController {
 
 	@Autowired
 	WebUtils webUtils;
+	
+	@Autowired
+	LuceneUtil luceneUtil;
 	
 	
 	static String filePath = null;
@@ -87,8 +90,17 @@ public class BBSController {
 			view.addObject("topicPage", query);
 			view.addObject("pagename", "首页综合");
 		}else{
-			LuceneUtil.createDataIndexer(bbsService);
-			PageQuery<SearchResult> searcherKeywordPage = LuceneUtil.searcherKeyword(keyword,Const.TOPIC_PAGE_SIZE, p);
+			//查看索引文件最后修改日期
+	    	File file = new File(luceneUtil.getIndexDer());
+	    	Date fileupdateDate = null;
+	    	if(file.exists()){fileupdateDate = new Date(file.lastModified());}
+			//获取索引的数据 ：主题和回复
+	    	List<Map<String, Object>> bbsContentList = bbsService.getBbsTopicPostList(luceneUtil,fileupdateDate);
+	    	
+	    	//创建索引
+	    	luceneUtil.createDataIndexer(bbsContentList);
+	    	//查询索引
+			PageQuery<SearchResult> searcherKeywordPage = luceneUtil.searcherKeyword(keyword,Const.TOPIC_PAGE_SIZE, p);
 			view.setViewName("/lucene/index.html");
 			view.addObject("searcherPage", searcherKeywordPage);
 			view.addObject("pagename", keyword);

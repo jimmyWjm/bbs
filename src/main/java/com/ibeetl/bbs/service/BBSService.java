@@ -11,6 +11,7 @@ import com.ibeetl.bbs.model.BbsPost;
 import com.ibeetl.bbs.model.BbsReply;
 import com.ibeetl.bbs.model.BbsTopic;
 import com.ibeetl.bbs.model.BbsUser;
+import com.ibeetl.bbs.util.lucene.LuceneUtil;
 
 public interface BBSService {
 	BbsTopic getTopic(int id);
@@ -57,10 +58,11 @@ public interface BBSService {
 	 * 获取索引数据
 	 * 	1.当无索引文件夹时获取  第一条数据 到 最新提交时间（主题贴和回复贴）  的前一天的所有数据
 	 * 	2.当有索引文件夹时获取  上次索引文件夹修改日期 到 最新提交时间（主题贴和回复贴）  的前一天 的所有数据
+	 * @param luceneUtil
 	 * @param fileupdateDate
 	 * @return
 	 * @throws Exception
 	 */
-	Map<String,List<Map<String,Object>>> getBbsTopicPostList(Date fileupdateDate) throws Exception;
+	List<Map<String,Object>> getBbsTopicPostList(LuceneUtil luceneUtil,Date fileupdateDate);
 	
 }
