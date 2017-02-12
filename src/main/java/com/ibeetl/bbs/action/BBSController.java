@@ -93,7 +93,7 @@ public class BBSController {
 			//查看索引文件最后修改日期
 	    	File file = new File(luceneUtil.getIndexDer());
 	    	Date fileupdateDate = null;
-	    	if(file.exists()){fileupdateDate = new Date(file.lastModified());}
+	    	if(file.exists() && file.listFiles().length  > 0 ){fileupdateDate = new Date(file.lastModified());}
 			//获取索引的数据 ：主题和回复
 	    	List<Map<String, Object>> bbsContentList = bbsService.getBbsTopicPostList(luceneUtil,fileupdateDate);
 	    	

@@ -120,9 +120,14 @@ public class LuceneUtil {
 				            // 将信息写入到索引库中
 				           indexWriter.addDocument(document);
 				        }
-				      
+				        indexWriter.commit();
 	        } catch (Exception e) {
 	    		e.printStackTrace();
+	    		try {
+					indexWriter.rollback();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 	    	}finally {
 	    			try {
 						indexWriter.close();
