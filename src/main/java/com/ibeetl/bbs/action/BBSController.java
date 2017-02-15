@@ -90,6 +90,7 @@ public class BBSController {
 			view.addObject("topicPage", query);
 			view.addObject("pagename", "首页综合");
 		}else{
+			keyword = keyword.replaceAll("\\(|\\)", "");
 			//查看索引文件最后修改日期
 	    	File file = new File(luceneUtil.getIndexDer());
 	    	Date fileupdateDate = null;
@@ -325,8 +326,12 @@ public class BBSController {
 			Matcher matcher = Pattern.compile("^image/(.+)$",Pattern.CASE_INSENSITIVE).matcher(file.getContentType());
 			if(matcher.find()){
 				String newName = UUID.randomUUID().toString()+System.currentTimeMillis()+"."+matcher.group(1);
-				String filePath = rootPath + "/upload/" + newName;
-				FileCopyUtils.copy(file.getBytes(), new File(filePath));
+				String filePaths = rootPath + "/upload/";
+				File fileout = new File(filePaths);
+				if(!fileout.exists()){
+					fileout.mkdirs();
+				}
+				FileCopyUtils.copy(file.getBytes(), new File(filePaths+ newName));
 				map.put("file_path", request.getContextPath()+"/bbs/showPic/" + newName);
 				map.put("msg","图片上传成功！");
 				map.put("success", true);
@@ -335,6 +340,7 @@ public class BBSController {
 				map.put("success","不支持的上传文件格式！");
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			map.put("msg", "图片上传出错！");
 		}
 		return map;
@@ -349,7 +355,6 @@ public class BBSController {
 			FileInputStream fins = new FileInputStream(filePath);
 			response.setContentType("image/jpeg");
 			FileCopyUtils.copy(fins, response.getOutputStream());
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
