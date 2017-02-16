@@ -66,7 +66,7 @@ getLastPostDate
 getBbsPostListByDate
 ===
 
-	SELECT topic_id tid,content FROM bbs_post 
+	SELECT topic_id topicId,content FROM bbs_post 
 	WHERE create_time BETWEEN 
 	@if(isEmpty(fileupdateDate)){
 		''

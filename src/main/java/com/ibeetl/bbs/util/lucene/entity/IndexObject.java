@@ -1,7 +1,7 @@
 package com.ibeetl.bbs.util.lucene.entity;
 
 
-public class SearchResult implements Comparable<SearchResult>{
+public class IndexObject implements Comparable<IndexObject>{
 	
 	private String topicId;
 	private String content;
@@ -26,18 +26,19 @@ public class SearchResult implements Comparable<SearchResult>{
 	public void setContent(String content) {
 		this.content = content;
 	}
-	public SearchResult() {
+	
+	public IndexObject() {
 		super();
 	}
-	
-	public SearchResult(String topicId, String content, float score) {
+
+	public IndexObject(String topicId, String content, float score) {
 		super();
 		this.topicId = topicId;
 		this.content = content;
 		this.score = score;
 	}
 	@Override
-	public int compareTo(SearchResult o) {
+	public int compareTo(IndexObject o) {
 		if(this.score < o.getScore()){
 			return 1;
 		}else if(this.score > o.getScore()){
@@ -45,7 +46,6 @@ public class SearchResult implements Comparable<SearchResult>{
 		}
 		return 0;
 	}
-	
 	
 	
 }

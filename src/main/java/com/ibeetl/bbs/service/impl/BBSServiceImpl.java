@@ -28,6 +28,7 @@ import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BBSService;
 import com.ibeetl.bbs.service.BbsUserService;
 import com.ibeetl.bbs.util.lucene.LuceneUtil;
+import com.ibeetl.bbs.util.lucene.entity.IndexObject;
 
 @Service
 public class BBSServiceImpl implements BBSService {
@@ -215,11 +216,11 @@ public class BBSServiceImpl implements BBSService {
 
 
 	@Override
-	public List<Map<String,Object>> getBbsTopicPostList(LuceneUtil luceneUtil,Date fileupdateDate){
-		List<Map<String,Object>>  map = new ArrayList<>();
+	public List<IndexObject> getBbsTopicPostList(LuceneUtil luceneUtil,Date fileupdateDate){
+		List<IndexObject>  map = new ArrayList<>();
 		//获取主题和回复最后的提交时间
-		List<Map<String, Object>> bbsTopics = null;
-		List<Map<String, Object>> bbsPosts = null;
+		List<IndexObject> bbsTopics = null;
+		List<IndexObject> bbsPosts = null;
 		try {
 			Map<String,Date> lastPostDate = postDao.getLastPostDate();
 			Date topiclastupdate = luceneUtil.getDateFormat().parse(luceneUtil.getDateFormat().format(lastPostDate.get("topiclastupdate")));

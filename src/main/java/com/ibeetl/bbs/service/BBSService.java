@@ -12,6 +12,7 @@ import com.ibeetl.bbs.model.BbsReply;
 import com.ibeetl.bbs.model.BbsTopic;
 import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.util.lucene.LuceneUtil;
+import com.ibeetl.bbs.util.lucene.entity.IndexObject;
 
 public interface BBSService {
 	BbsTopic getTopic(int id);
@@ -63,6 +64,6 @@ public interface BBSService {
 	 * @return
 	 * @throws Exception
 	 */
-	List<Map<String,Object>> getBbsTopicPostList(LuceneUtil luceneUtil,Date fileupdateDate);
+	List<IndexObject> getBbsTopicPostList(LuceneUtil luceneUtil,Date fileupdateDate);
 	
 }

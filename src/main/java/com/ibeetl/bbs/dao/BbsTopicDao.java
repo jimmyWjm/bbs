@@ -10,6 +10,7 @@ import org.beetl.sql.core.engine.PageQuery;
 import org.beetl.sql.core.mapper.BaseMapper;
 
 import com.ibeetl.bbs.model.BbsTopic;
+import com.ibeetl.bbs.util.lucene.entity.IndexObject;
 
 public interface BbsTopicDao extends BaseMapper<BbsTopic> {
 	void queryTopic(PageQuery query);
@@ -28,7 +29,7 @@ public interface BbsTopicDao extends BaseMapper<BbsTopic> {
 	   * @param lastupdateDate 最后提交时间
 	   * @return
 	   */
-	    @SqlStatement(type=SqlStatementType.SELECT,params="fileupdateDate,lastupdateDate",returnType = Map.class )
-		List<Map<String,Object>> getBbsTopicListByDate(Date fileupdateDate,Date lastupdateDate);
+	    @SqlStatement(type=SqlStatementType.SELECT,params="fileupdateDate,lastupdateDate",returnType = IndexObject.class )
+		List<IndexObject> getBbsTopicListByDate(Date fileupdateDate,Date lastupdateDate);
 
 }

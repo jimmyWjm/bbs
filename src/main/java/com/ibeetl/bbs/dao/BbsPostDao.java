@@ -11,6 +11,7 @@ import org.beetl.sql.core.engine.PageQuery;
 import org.beetl.sql.core.mapper.BaseMapper;
 
 import com.ibeetl.bbs.model.BbsPost;
+import com.ibeetl.bbs.util.lucene.entity.IndexObject;
 
 public interface BbsPostDao extends BaseMapper<BbsPost> {
 	@SqlStatement(type=SqlStatementType.SELECT)
@@ -31,7 +32,7 @@ public interface BbsPostDao extends BaseMapper<BbsPost> {
    * @param lastupdateDate 最后提交时间
    * @return
    */
-    @SqlStatement(type=SqlStatementType.SELECT,params="fileupdateDate,lastupdateDate",returnType = Map.class )
-	List<Map<String,Object>> getBbsPostListByDate(Date fileupdateDate,Date lastupdateDate);
+    @SqlStatement(type=SqlStatementType.SELECT,params="fileupdateDate,lastupdateDate",returnType = IndexObject.class )
+	List<IndexObject> getBbsPostListByDate(Date fileupdateDate,Date lastupdateDate);
 
 }

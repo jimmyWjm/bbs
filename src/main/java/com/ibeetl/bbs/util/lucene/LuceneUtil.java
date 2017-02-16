@@ -40,7 +40,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.beetl.sql.core.engine.PageQuery;
 
 import com.ibeetl.bbs.util.lucene.entity.IKAnalyzer5x;
-import com.ibeetl.bbs.util.lucene.entity.SearchResult;
+import com.ibeetl.bbs.util.lucene.entity.IndexObject;
 
 /** 
  * 生成查询索引工具类 
@@ -94,7 +94,7 @@ public class LuceneUtil {
 	 * @param bbsTopicList
 	 * @param bbsPostList
 	 */
-    public void createDataIndexer(List<Map<String, Object>> bbsContentList) {
+    public void createDataIndexer(List<IndexObject> bbsContentList) {
     	if(bbsContentList.size()>0){
     	 IndexWriter indexWriter = null;
 	     try {
@@ -106,14 +106,14 @@ public class LuceneUtil {
 				         //删除以前的索引
 				         //indexWriter.deleteAll();
 				         
-				        for (Map<String, Object> t : bbsContentList) {
+				        for (IndexObject t : bbsContentList) {
 				            // 创建一个Document对象
 				            Document document = new Document();
 				            // 向Document对象中添加域信息
 				            // 参数：1、域的名称；2、域的值；3、是否存储；
-				            Field contentField = new TextField("content", labelformat(t.get("content").toString()), Store.YES);
+				            Field contentField = new TextField("content", labelformat(t.getContent()), Store.YES);
 				            // storedFiled默认存储
-				            Field tidField = new StoredField("tid", t.get("tid").toString());
+				            Field tidField = new StoredField("tid", t.getTopicId());
 				            // 将域添加到document对象中
 				            document.add(contentField);
 				            document.add(tidField);
@@ -144,12 +144,12 @@ public class LuceneUtil {
      * @param pageSize 页面大小
      * @param currentPage 当前页
      */
-    public PageQuery<SearchResult> searcherKeyword(String keyword,Integer pageSize,Integer currentPage){
+    public PageQuery<IndexObject> searcherKeyword(String keyword,Integer pageSize,Integer currentPage){
     	if(keyword == null) throw new RuntimeException("关键字不能为空");
     	if(pageSize == 0)pageSize = 10;
 		IndexReader indexReader = null;
-		PageQuery<SearchResult> pageQuery = null;
-		List<SearchResult> searchResults = new ArrayList<>();
+		PageQuery<IndexObject> pageQuery = null;
+		List<IndexObject> searchResults = new ArrayList<>();
 		try {
 			// 打开索引库
 			 indexReader = DirectoryReader.open(getDirectory());
@@ -185,7 +185,7 @@ public class LuceneUtil {
 			    // 根据ID去document对象
 			    Document document = indexSearcher.doc(docID);
 			    String content = stringFormatHighlighterOut(getAnalyzer(), highlighter,  document,"content");
-				searchResults.add( new SearchResult(document.get("tid"), content,score));
+				searchResults.add( new IndexObject(document.get("tid"), content,score));
 //			    System.out.println("相关度得分：" + score);
 //				System.out.println("content:"+stringFormatHighlighterOut(getAnalyzer(), highlighter,  document,"content"));  
 //				System.out.println("tid:"+document.get("tid"));  
