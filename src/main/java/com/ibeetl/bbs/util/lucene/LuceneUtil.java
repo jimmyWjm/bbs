@@ -95,7 +95,7 @@ public class LuceneUtil {
 	 * @param bbsPostList
 	 */
     public void createDataIndexer(List<IndexObject> bbsContentList) {
-    	if(bbsContentList.size()>0){
+    	
     	 IndexWriter indexWriter = null;
 	     try {
 				        // 创建一个分析器对象
@@ -120,7 +120,9 @@ public class LuceneUtil {
 				            // 将信息写入到索引库中
 				           indexWriter.addDocument(document);
 				        }
-				        indexWriter.commit();
+				        if(bbsContentList.size()>0){
+				        	indexWriter.commit();
+				        }
 	        } catch (Exception e) {
 	    		e.printStackTrace();
 	    		try {
@@ -136,7 +138,6 @@ public class LuceneUtil {
 	    		}
 			}
     	}
-    }
 
     /**
      * 查询索引

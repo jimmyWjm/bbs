@@ -15,6 +15,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.dao.BbsModuleDao;
 import com.ibeetl.bbs.dao.BbsPostDao;
 import com.ibeetl.bbs.dao.BbsReplyDao;
@@ -217,7 +218,7 @@ public class BBSServiceImpl implements BBSService {
 
 	@Override
 	public List<IndexObject> getBbsTopicPostList(LuceneUtil luceneUtil,Date fileupdateDate){
-		List<IndexObject>  map = new ArrayList<>();
+		List<IndexObject>  indexObjectsList = new ArrayList<>();
 		//获取主题和回复最后的提交时间
 		List<IndexObject> bbsTopics = null;
 		List<IndexObject> bbsPosts = null;
@@ -236,10 +237,10 @@ public class BBSServiceImpl implements BBSService {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		if(bbsTopics!=null)map.addAll(bbsTopics);
-		if(bbsPosts!=null)map.addAll(bbsPosts);
+		if(bbsTopics!=null)indexObjectsList.addAll(bbsTopics);
+		if(bbsPosts!=null)indexObjectsList.addAll(bbsPosts);
 //		System.out.println("================");
-//		System.out.println(JSONObject.toJSONString(map));
-		return map;
+//		System.out.println(JSONObject.toJSONString(indexObjectsList));
+		return indexObjectsList;
 	}
 }
