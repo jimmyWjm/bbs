@@ -217,21 +217,21 @@ public class BBSServiceImpl implements BBSService {
 
 
 	@Override
-	public List<IndexObject> getBbsTopicPostList(LuceneUtil luceneUtil,Date fileupdateDate){
+	public List<IndexObject> getBbsTopicPostList(Date fileupdateDate){
 		List<IndexObject>  indexObjectsList = new ArrayList<>();
 		//获取主题和回复最后的提交时间
 		List<IndexObject> bbsTopics = null;
 		List<IndexObject> bbsPosts = null;
 		try {
 			Map<String,Date> lastPostDate = postDao.getLastPostDate();
-			Date topiclastupdate = luceneUtil.getDateFormat().parse(luceneUtil.getDateFormat().format(lastPostDate.get("topiclastupdate")));
-			Date postlastupdate = luceneUtil.getDateFormat().parse(luceneUtil.getDateFormat().format(lastPostDate.get("postlastupdate")));
-			if(fileupdateDate != null)fileupdateDate =  luceneUtil.getDateFormat().parse(luceneUtil.getDateFormat().format(fileupdateDate));
+			Date topiclastupdate = LuceneUtil.dateFormat.parse(LuceneUtil.dateFormat.format(lastPostDate.get("topiclastupdate")));
+			Date postlastupdate = LuceneUtil.dateFormat.parse(LuceneUtil.dateFormat.format(lastPostDate.get("postlastupdate")));
+			if(fileupdateDate != null)fileupdateDate =  LuceneUtil.dateFormat.parse(LuceneUtil.dateFormat.format(fileupdateDate));
 			
-			if(fileupdateDate == null || (topiclastupdate != null && luceneUtil.dateCompare(topiclastupdate,fileupdateDate))){
+			if(fileupdateDate == null || (topiclastupdate != null && LuceneUtil.dateCompare(topiclastupdate,fileupdateDate))){
 				bbsTopics = topicDao.getBbsTopicListByDate(fileupdateDate, topiclastupdate);
 			}
-			if(fileupdateDate == null || (postlastupdate != null &&luceneUtil.dateCompare(postlastupdate,fileupdateDate))){
+			if(fileupdateDate == null || (postlastupdate != null &&LuceneUtil.dateCompare(postlastupdate,fileupdateDate))){
 				bbsPosts = postDao.getBbsPostListByDate(fileupdateDate, postlastupdate);
 			}
 		} catch (ParseException e) {

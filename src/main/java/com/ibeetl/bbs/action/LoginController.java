@@ -56,7 +56,7 @@ public class LoginController {
 			password = HashKit.md5(password);
 			BbsUser user = bbsUserService.getUserAccount(userName, password);
 			if(user==null){
-				result.put("msg","用户不存在");
+				result.put("msg","用户不存在或密码错误");
 			}else{
 				WebUtils.loginUser(request, response, user, true);
 				result.put("msg", "/bbs/index/1.html");

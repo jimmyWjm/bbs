@@ -89,13 +89,12 @@ public class BBSController {
 			view.addObject("topicPage", query);
 			view.addObject("pagename", "首页综合");
 		}else{
-			keyword = keyword.replaceAll("\\(|\\)", "");
 			//查看索引文件最后修改日期
 	    	File file = new File(luceneUtil.getIndexDer());
 	    	Date fileupdateDate = null;
 	    	if(file.exists() && file.listFiles().length  > 0 ){fileupdateDate = new Date(file.lastModified());}
 			//获取索引的数据 ：主题和回复
-	    	List<IndexObject> bbsContentList = bbsService.getBbsTopicPostList(luceneUtil,fileupdateDate);
+	    	List<IndexObject> bbsContentList = bbsService.getBbsTopicPostList(fileupdateDate);
 	    	
 	    	//创建索引
 	    	luceneUtil.createDataIndexer(bbsContentList);

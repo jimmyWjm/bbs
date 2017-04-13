@@ -51,12 +51,7 @@ public class LuceneUtil {
 	private  Directory directory = null;
 	private  Analyzer analyzer = null;
 	private String indexDer = null;// 索引存放目录 
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");// 索引存放目录 
-
-	
-	public SimpleDateFormat getDateFormat() {
-		return dateFormat;
-	}
+	public static  SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");// 索引存放目录 
 
 	public LuceneUtil() {
 		super();
@@ -146,7 +141,6 @@ public class LuceneUtil {
      * @param currentPage 当前页
      */
     public PageQuery<IndexObject> searcherKeyword(String keyword,Integer pageSize,Integer currentPage){
-    	if(keyword == null) throw new RuntimeException("关键字不能为空");
     	if(pageSize == 0)pageSize = 10;
 		IndexReader indexReader = null;
 		PageQuery<IndexObject> pageQuery = null;
@@ -161,6 +155,8 @@ public class LuceneUtil {
              //第二个参数是分析器Analyzer 
             QueryParser parser = new QueryParser("content", getAnalyzer());  
          // 创建一个查询对象    
+            //特殊字符转义
+            keyword = QueryParser.escape(keyword);
             //根据传进来的par查找  
             Query query = parser.parse(keyword);  
 			// 执行查询
@@ -285,7 +281,7 @@ public class LuceneUtil {
    * @return
    * @throws ParseException 
    */
-  public boolean  dateCompare(Date date1,Date date2){
+  public static boolean  dateCompare(Date date1,Date date2){
 			  if(date1 == null)return false;
 			  if(date2 == null)return true;
 			  if(date1.getTime() > date2.getTime())return true;
