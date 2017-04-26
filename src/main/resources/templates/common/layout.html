@@ -13,10 +13,14 @@
     <script src="//cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script><!-- 部分content的里面可能用到jQuery，所以前置了 -->
     <script src="${ctxPath}/js/alert.js"></script><!-- 自己写的一个简单的jq弹窗插件 -->
     <style type="text/css">
-    	body { padding-top: 70px;font-family: PingFang SC,Microsoft YaHei,sans-serif; }
+    	.ani{-webkit-transition: all .3s ease-out;-ms-transition: all .3s ease-out;-moz-transition: all .3s ease-out;-o-transition: all .3s ease-out;transition: all .3s ease-out;}
+		.form-control:focus {border-color: #ccc;box-shadow: inset 0 1px 1px rgba(0,0,0,.075);}
+    	body { padding-top: 70px;font-family: PingFang SC,Microsoft YaHei,sans-serif; background-color: #f9f9f9;}
     	.navbar-brand>svg{width: 24px;vertical-align: middle;fill:#777;}
     	.mcount{background-color: orange;position: relative;top: -1px;}
-   		
+
+   		.navbar-default{background: #fff;border-color:#fff;}
+		.container .postTitle{font-size: 16px}
    		
     </style>
 </head>
@@ -81,7 +85,7 @@
 </nav>
 
 	
-    <div class="container-fluid">
+    <div class="container">
            	${layoutContent}
     </div>
    @ if(_user==null){
