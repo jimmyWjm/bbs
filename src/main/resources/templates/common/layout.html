@@ -21,7 +21,8 @@
 
    		.navbar-default{background: #fff;border-color:#fff;}
 		.container .postTitle{font-size: 16px}
-   		
+		
+   		#serach-btn:hover{cursor: pointer;}
     </style>
 </head>
 <body>
@@ -55,9 +56,11 @@
       </ul>
       <form class="navbar-form navbar-left">
         <div class="form-group">
-          <input type="text" class="form-control" id="keyword" name="keyword" placeholder="关键字搜索">
-        </div>
-        <button type="button" class="btn btn-default" id="serach-btn">搜索</button>
+	        <div class="input-group">
+	         	<input type="text" class="form-control" id="keyword" name="keyword" placeholder="关键字搜索">
+			  	<span class="input-group-addon" id="serach-btn">搜索</span>
+			</div>
+         </div>
       </form>
       
       <ul class="nav navbar-nav navbar-right">
