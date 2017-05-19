@@ -73,12 +73,28 @@ getParticipantUserId
 
 getBbsTopicListByDate
 ===
-	
-	SELECT id topicId,content FROM bbs_topic 
-	WHERE create_time BETWEEN  
+SELECT
+	t.id topicId,
+	t.user_id userId,
+	t.is_nice isUp,
+	t.is_up isNice,
+	t.is_nice,
+	(SELECT user_name FROM bbs_user WHERE id = t.user_id) userName,
+	t.create_time createTime,
+	t.post_count postCount,
+	t.pv pv,
+	t.module_id moduleId,
+	(SELECT name FROM bbs_module WHERE id = t.module_id ) moduleName,
+	t.content topicContent,
+	IFNULL((SELECT content FROM bbs_post WHERE topic_id = t.id ORDER BY id LIMIT 1),'') postContent ,
+  	'1' indexType
+	FROM
+	bbs_topic t
+	WHERE t.create_time BETWEEN  
 	@if(isEmpty(fileupdateDate)){
 		''
 	@}else{
 		#fileupdateDate#
 	@}
-	AND #lastupdateDate# ORDER BY id DESC
+	AND #lastupdateDate# ORDER BY t.id DESC
+

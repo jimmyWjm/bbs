@@ -38,7 +38,6 @@ import com.ibeetl.bbs.model.BbsTopic;
 import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BBSService;
 import com.ibeetl.bbs.service.BbsUserService;
-import com.ibeetl.bbs.util.lucene.LuceneUtil;
 import com.ibeetl.bbs.util.lucene.entity.IndexObject;
 
 @Controller
@@ -56,8 +55,7 @@ public class BBSController {
 	@Autowired
 	WebUtils webUtils;
 	
-	@Autowired
-	LuceneUtil luceneUtil;
+
 	
 	
 	static String filePath = null;
@@ -89,18 +87,10 @@ public class BBSController {
 			view.addObject("topicPage", query);
 			view.addObject("pagename", "首页综合");
 		}else{
-			//查看索引文件最后修改日期
-	    	File file = new File(luceneUtil.getIndexDer());
-	    	Date fileupdateDate = null;
-	    	if(file.exists() && file.listFiles().length  > 0 ){fileupdateDate = new Date(file.lastModified());}
-			//获取索引的数据 ：主题和回复
-	    	List<IndexObject> bbsContentList = bbsService.getBbsTopicPostList(fileupdateDate);
-	    	
-	    	//创建索引
-	    	luceneUtil.createDataIndexer(bbsContentList);
+			
 	    	//查询索引
-			PageQuery<IndexObject> searcherKeywordPage = luceneUtil.searcherKeyword(keyword,Const.TOPIC_PAGE_SIZE, p);
-			view.setViewName("/lucene/index.html");
+			PageQuery<IndexObject> searcherKeywordPage = this.bbsService.getQueryPage(keyword,p);
+			view.setViewName("/lucene/lucene.html");
 			view.addObject("searcherPage", searcherKeywordPage);
 			view.addObject("pagename", keyword);
 			view.addObject("resultnum", searcherKeywordPage.getTotalRow());

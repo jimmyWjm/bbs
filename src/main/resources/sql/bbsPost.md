@@ -66,11 +66,29 @@ getLastPostDate
 getBbsPostListByDate
 ===
 
-	SELECT topic_id topicId,content FROM bbs_post 
-	WHERE create_time BETWEEN 
+SELECT
+	t.id topicId,
+	t.user_id userId,
+	t.is_nice isUp,
+	t.is_up isNice,
+	t.is_nice,
+	(SELECT user_name FROM bbs_user WHERE id = t.user_id) userName,
+	t.create_time createTime,
+	t.post_count postCount,
+	t.pv pv,
+	t.module_id moduleId,
+	(SELECT name FROM bbs_module WHERE id = t.module_id ) moduleName,
+	p.topic_id topicId,
+	p.content postContent,
+	'2' indexType,
+	t.content topicContent
+FROM
+	bbs_post p
+LEFT JOIN bbs_topic t ON p.topic_id = t.id
+	WHERE p.create_time BETWEEN 
 	@if(isEmpty(fileupdateDate)){
 		''
 	@}else{
 		#fileupdateDate#
 	@}
-	AND #lastupdateDate# ORDER BY id DESC	
+	AND #lastupdateDate# ORDER BY p.id DESC	

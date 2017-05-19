@@ -1,5 +1,6 @@
 package com.ibeetl.bbs.service.impl;
 
+import java.io.File;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.ibeetl.bbs.common.Const;
 import com.ibeetl.bbs.dao.BbsModuleDao;
 import com.ibeetl.bbs.dao.BbsPostDao;
 import com.ibeetl.bbs.dao.BbsReplyDao;
@@ -45,6 +47,8 @@ public class BBSServiceImpl implements BBSService {
 	BbsReplyDao replyDao;
 	@Autowired
 	SQLManager sql ;
+	@Autowired
+	LuceneUtil luceneUtil;
 	
 	@Autowired
 	BbsUserService gitUserService;
@@ -242,5 +246,22 @@ public class BBSServiceImpl implements BBSService {
 //		System.out.println("================");
 //		System.out.println(JSONObject.toJSONString(indexObjectsList));
 		return indexObjectsList;
+	}
+
+
+
+	@Override
+	public PageQuery<IndexObject> getQueryPage(String keyword,int p) {
+		//查看索引文件最后修改日期
+    	File file = new File(luceneUtil.getIndexDer());
+    	Date fileupdateDate = null;
+    	if(file.exists() && file.listFiles().length  > 0 ){fileupdateDate = new Date(file.lastModified());}
+		//获取索引的数据 ：主题和回复
+    	List<IndexObject> bbsContentList = this.getBbsTopicPostList(fileupdateDate);
+    	
+    	//创建索引
+    	luceneUtil.createDataIndexer(bbsContentList);
+    	
+    	return luceneUtil.searcherKeyword(keyword,Const.TOPIC_PAGE_SIZE, p);
 	}
 }

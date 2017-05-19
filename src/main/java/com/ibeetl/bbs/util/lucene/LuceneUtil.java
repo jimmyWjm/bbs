@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -99,19 +98,52 @@ public class LuceneUtil {
 				        // 创建一个IndexWriter对象，对于索引库进行写操作
 				         indexWriter = new IndexWriter(getDirectory(), config);
 				         //删除以前的索引
-				         //indexWriter.deleteAll();
+//				         indexWriter.deleteAll();
 				         
 				        for (IndexObject t : bbsContentList) {
 				            // 创建一个Document对象
 				            Document document = new Document();
-				            // 向Document对象中添加域信息
-				            // 参数：1、域的名称；2、域的值；3、是否存储；
-				            Field contentField = new TextField("content", labelformat(t.getContent()), Store.YES);
-				            // storedFiled默认存储
-				            Field tidField = new StoredField("tid", t.getTopicId());
-				            // 将域添加到document对象中
-				            document.add(contentField);
-				            document.add(tidField);
+				            
+				            Field contentField = null;
+				            Field contentStoreField = null;
+				            if(t.getIndexType().equals(1)){	//主题贴
+									// 向Document对象中添加域信息
+									// 参数：1、域的名称；2、域的值；3、是否存储；
+									contentField = new TextField("content", labelformat(t.getTopicContent()), Store.YES);
+									// storedFiled默认存储
+									 contentStoreField = new StoredField("postContent", t.getPostContent());								
+				            } else if(t.getIndexType().equals(2)){	//回复贴
+									 contentField = new TextField("content", labelformat(t.getPostContent()), Store.YES);
+									 contentStoreField = new StoredField("topicContent", t.getTopicContent());
+				            }
+				            
+				            Field topicIdField = new StoredField("topicId", t.getTopicId());
+							Field indexTypeField = new StoredField("indexType", t.getIndexType());
+							Field isUpField = new StoredField("isUp", t.getIsUp());
+							Field isNiceField = new StoredField("isNice", t.getIsNice());
+							Field userIdField = new StoredField("userId", t.getUserId());
+							Field userNameField = new StoredField("userName", t.getUserName());
+							Field createTimeField = new StoredField("createTime", t.getCreateTime().getTime());
+							Field postCountField = new StoredField("postCount", t.getPostCount());
+							Field pvField = new StoredField("pv", t.getPv());
+							Field moduleIdField = new StoredField("moduleId", t.getModuleId());
+							Field moduleNameField = new StoredField("moduleName", t.getModuleName());
+							
+							// 将域添加到document对象中
+							document.add(topicIdField);
+							document.add(indexTypeField);
+							document.add(contentStoreField);
+							document.add(contentField);
+							document.add(isUpField);
+							document.add(isNiceField);
+							document.add(userIdField);
+							document.add(userNameField);
+							document.add(createTimeField);
+							document.add(postCountField);
+							document.add(pvField);
+							document.add(moduleIdField);
+							document.add(moduleNameField);
+				            
 				            // 将信息写入到索引库中
 				           indexWriter.addDocument(document);
 				        }
@@ -182,7 +214,41 @@ public class LuceneUtil {
 			    // 根据ID去document对象
 			    Document document = indexSearcher.doc(docID);
 			    String content = stringFormatHighlighterOut(getAnalyzer(), highlighter,  document,"content");
-				searchResults.add( new IndexObject(document.get("tid"), content,score));
+			    
+			    if(document.get("indexType").equals("1")){	//主题贴
+			    	searchResults.add(new IndexObject(
+			    			Integer.valueOf(document.get("topicId")),
+			    			Integer.valueOf(document.get("isUp")),
+			    			Integer.valueOf(document.get("isNice")),
+			    			Integer.valueOf(document.get("userId")),
+			    			document.get("userName"),
+			    			new Date(Long.valueOf(document.get("createTime"))),
+			    			Integer.valueOf(document.get("postCount")),
+			    			Integer.valueOf(document.get("pv")),
+			    			Integer.valueOf(document.get("moduleId")),
+			    			document.get("moduleName"),
+			    			content,
+			    			document.get("postContent"), 
+			    			1,
+			    			score));
+			    }else  if(document.get("indexType").equals("2")){	//回复贴
+			    	searchResults.add(new IndexObject(
+			    			Integer.valueOf(document.get("topicId")),
+			    			Integer.valueOf(document.get("isUp")),
+			    			Integer.valueOf(document.get("isNice")),
+			    			Integer.valueOf(document.get("userId")),
+			    			document.get("userName"),
+			    			new Date(Long.valueOf(document.get("createTime"))),
+			    			Integer.valueOf(document.get("postCount")),
+			    			Integer.valueOf(document.get("pv")),
+			    			Integer.valueOf(document.get("moduleId")),
+			    			document.get("moduleName"),
+			    			document.get("topicContent"),
+			    			content,
+			    			2,
+			    			score));
+			    }
+				
 //			    System.out.println("相关度得分：" + score);
 //				System.out.println("content:"+stringFormatHighlighterOut(getAnalyzer(), highlighter,  document,"content"));  
 //				System.out.println("tid:"+document.get("tid"));  
