@@ -106,13 +106,23 @@ public class LuceneUtil {
 				            
 				            Field contentField = null;
 				            Field contentStoreField = null;
+				           
 				            if(t.getIndexType().equals(1)){	//主题贴
+				            	
+				            	 if(StringUtils.isBlank(t.getTopicContent())){	//如果为空结束该次循环
+						            	continue;
+						          }
+				            	
 									// 向Document对象中添加域信息
 									// 参数：1、域的名称；2、域的值；3、是否存储；
 									contentField = new TextField("content", labelformat(t.getTopicContent()), Store.YES);
 									// storedFiled默认存储
 									 contentStoreField = new StoredField("postContent", t.getPostContent());								
 				            } else if(t.getIndexType().equals(2)){	//回复贴
+					            	 if(StringUtils.isBlank(t.getPostContent())){//如果为空结束该次循环
+							            	continue;
+							          }
+				            	
 									 contentField = new TextField("content", labelformat(t.getPostContent()), Store.YES);
 									 contentStoreField = new StoredField("topicContent", t.getTopicContent());
 				            }

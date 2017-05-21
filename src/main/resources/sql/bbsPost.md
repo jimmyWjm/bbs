@@ -79,7 +79,7 @@ SELECT
 	t.module_id moduleId,
 	(SELECT name FROM bbs_module WHERE id = t.module_id ) moduleName,
 	p.topic_id topicId,
-	p.content postContent,
+	IFNULL(p.content,'') postContent,
 	'2' indexType,
 	t.content topicContent
 FROM
