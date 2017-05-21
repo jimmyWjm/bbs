@@ -74,6 +74,7 @@ public class BbsMain extends SpringBootServletInitializer  {
                 put("v", Const.TIMESTAMP);
                 put("moduleList", moduleDao.all());
             }});
+            
             return beetlGroupUtilConfiguration;
         } catch (Exception e) {
             throw new RuntimeException(e);

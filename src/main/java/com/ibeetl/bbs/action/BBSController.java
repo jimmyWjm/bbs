@@ -64,7 +64,10 @@ public class BBSController {
 	static {
 		filePath = System.getProperty("user.dir");
 		File file = new File("upload",filePath);
-		file.mkdirs();
+		if(!file.exists()){
+			file.mkdirs();
+		}
+		
 	}
 
 	@RequestMapping("/bbs/share")
