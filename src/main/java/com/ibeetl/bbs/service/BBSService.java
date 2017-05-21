@@ -65,4 +65,14 @@ public interface BBSService {
 	 */
 	List<IndexObject> getBbsTopicPostList(Date fileupdateDate);
 	
+	/**
+	 * 创建所有并返回搜索结果
+	* @param keyword
+	* @param p	当前第几页
+	* @return
+	* PageQuery<IndexObject>
+	* @author ykb yang.kb@topcheer.com   
+	* @date 2017年5月19日 下午4:54:46
+	 */
+	PageQuery<IndexObject> getQueryPage(String keyword,int p);
 }
