@@ -63,7 +63,7 @@ public class BbsMain extends SpringBootServletInitializer  {
         ResourcePatternResolver patternResolver = ResourcePatternUtils.getResourcePatternResolver(new DefaultResourceLoader());
 
         try {
-            ClasspathResourceLoader cploder = new ClasspathResourceLoader("/templates");
+            ClasspathResourceLoader cploder = new ClasspathResourceLoader(BbsMain.class.getClassLoader(),"templates/");
             beetlGroupUtilConfiguration.setResourceLoader(cploder);
 
             beetlGroupUtilConfiguration.setConfigFileResource(patternResolver.getResource("classpath:beetl.properties"));
