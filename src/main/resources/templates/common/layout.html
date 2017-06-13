@@ -27,24 +27,28 @@
    		.navbar-default .navbar-nav>.open>a, .navbar-default .navbar-nav>.open>a:focus, .navbar-default .navbar-nav>.open>a:hover {color: #000; background-color: #ffbf00;}
 		.navbar-default .navbar-nav>li>a:focus, .navbar-default .navbar-nav>li>a:hover{ color: #000; background-color: #ffbf00;}
    		
-   		
-		.container .postTitle{font-size: 16px;height: 35px;padding: 10px 0}
-		
    		#serach-btn:hover{cursor: pointer;}
+   		
+   		.navbar-default .navbar-toggle:focus, .navbar-default .navbar-toggle:hover {border-color: #f56a00;background-color: #ffce3d;}
+		.navbar-default .navbar-toggle {border-color: #f56a00;}
+   		.navbar-default .navbar-toggle .icon-bar {background-color: #f56a00;}
+   		.navbar-default .navbar-collapse, .navbar-default .navbar-form{border-color: #f56a00}
 /*    		分页插件样式 */
    		.pagination>li>a, .pagination>li>span,.pagination>li>a:hover{color: #000;}
 		.pagination>li>a:focus, .pagination>li>a:hover, .pagination>li>span:focus, .pagination>li>span:hover{background-color: #ffbf00;    border-color: #ffbf00;color: #fff;}
     	.pagination>.active>a, .pagination>.active>a:focus, .pagination>.active>a:hover, .pagination>.active>span, .pagination>.active>span:focus, .pagination>.active>span:hover{color: #fff;background-color: #f56a00;border-color: #f56a00;}
     	.pagination>li:first-child>a,.pagination>li:first-child>span, .pagination>li:last-child>a,  .pagination>li:last-child>span{border-radius: 0px}
    		
-   		.author-panel{background: #fff;padding: 15px;overflow: hidden;margin-top: 48px;}
+   		.author-panel{background: #fff;padding: 15px;overflow: hidden;}
     	.author-panel	.head { width: 50%;overflow: hidden;border-radius: 50%;}
    		.author-panel .name{margin-top: 15px;}
    		.author-panel .home a{color: #555}
-		.author-panel .help{width: 70%}
+		.author-panel .help{width: 100%}
    		
-   		
-   		
+/*    		滚动条样式 */
+   		::-webkit-scrollbar {width: 10px!important;height: 5px!important;-webkit-appearance: none;}
+		::-webkit-scrollbar-thumb {height: 5px;border: 1px solid transparent;border-top: none;border-bottom: none;-webkit-border-radius: 6px;background-color: rgba(0,0,0,.3);background-clip: padding-box;}
+
     </style>
 </head>
 <body>
@@ -118,7 +122,7 @@
   			<div class="col-sm-3">
   					<div class="author-panel">
   							<div class="head"><img alt="" width="100%" src="${ctxPath}/static/images/xiandafu.png"></div>
-	  						<div class="name">作者：闲.大赋</div>
+	  						<div class="name">作者：闲大赋</div>
 	  						<div class="home">
 	  							官网：
 	  							<a href="http://ibeetl.com" target="_Blank"><i class="fa fa-home"></i></a>
@@ -138,7 +142,12 @@
 	  						<div class="QQ">qq群：219324263</div>
   							<div class="help">
   								<b>捐助</b>：
-  								<img alt="" src="http://ibeetl.com/img/weixinpay.png" width="150%">
+<!--   								<img alt="" src="http://ibeetl.com/img/weixinpay.png" width="150%"> -->
+<!--   								<img alt="" src="http://ibeetl.com/img/alipay.png" width="150%"> -->
+  								<div>	
+  									<img src="${ctxPath}/static/images/weixinpay.png" width="100%">
+  									<img src="${ctxPath}/static/images/alipay.png" width="100%">
+  								</div>
   							</div>
   					</div>
   			</div>
