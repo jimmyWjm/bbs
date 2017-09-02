@@ -6,7 +6,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.boot.autoconfigure.web.ErrorController;
+import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -18,9 +19,14 @@ import org.springframework.web.servlet.ModelAndView;
  * @date 2016年12月29日 上午9:38:33
 */
 @Controller
-public class CustomErrorController implements ErrorController {
+public class CustomErrorController extends AbstractErrorController {
 
-	private static final String ERROR_PATH = "/error";
+	public CustomErrorController(ErrorAttributes errorAttributes) {
+		super(errorAttributes);
+		// TODO Auto-generated constructor stub
+	}
+
+	private static final String ERROR_PATH = "/error123";
 	
 	@RequestMapping(ERROR_PATH)
 	public ModelAndView getErrorPath(ModelAndView mv,HttpServletRequest request,HttpServletResponse response){

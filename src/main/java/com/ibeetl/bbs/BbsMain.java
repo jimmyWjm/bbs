@@ -23,7 +23,7 @@ import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -63,7 +63,7 @@ public class BbsMain extends SpringBootServletInitializer  {
         ResourcePatternResolver patternResolver = ResourcePatternUtils.getResourcePatternResolver(new DefaultResourceLoader());
 
         try {
-            ClasspathResourceLoader cploder = new ClasspathResourceLoader(BbsMain.class.getClassLoader(),"templates/");
+            ClasspathResourceLoader cploder = new ClasspathResourceLoader(BbsMain.class.getClassLoader(),"templates");
             beetlGroupUtilConfiguration.setResourceLoader(cploder);
 
             beetlGroupUtilConfiguration.setConfigFileResource(patternResolver.getResource("classpath:beetl.properties"));
@@ -87,6 +87,7 @@ public class BbsMain extends SpringBootServletInitializer  {
         BeetlSpringViewResolver beetlSpringViewResolver = new BeetlSpringViewResolver();
         beetlSpringViewResolver.setContentType("text/html;charset=UTF-8");
         beetlSpringViewResolver.setOrder(0);
+        beetlSpringViewResolver.setViewNames("*.html");
         beetlSpringViewResolver.setConfig(beetlGroupUtilConfiguration);
         return beetlSpringViewResolver;
     }
