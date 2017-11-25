@@ -209,7 +209,7 @@ public class BBSController {
 		result.put("err", 1);
 		if(user==null){
 			result.put("msg", "请先登录后再继续！");
-		}else if(title.length()<10||postContent.length()<10){
+		}else if(title.length()<5||postContent.length()<10){
 			//客户端需要完善
 			result.put("msg", "标题或内容太短！");
 		}else{
@@ -234,7 +234,7 @@ public class BBSController {
 	public JSONObject savePost(BbsPost post, HttpServletRequest request, HttpServletResponse response){
 		JSONObject result = new JSONObject();
 		result.put("err", 1);
-		if(post.getContent().length()<10){
+		if(post.getContent().length()<5){
 			result.put("msg", "内容太短，请重新编辑！");
 		}else{
 			post.setHasReply(0);
@@ -272,7 +272,7 @@ public class BBSController {
 		BbsUser user = webUtils.currentUser(request, response);
 		if(user==null){
 			result.put("msg", "未登录用户！");
-		}else if(reply.getContent().length()<10){
+		}else if(reply.getContent().length()<2){
 			result.put("msg", "回复内容太短，请修改!");
 		}else{
 			reply.setUserId(user.getId());
