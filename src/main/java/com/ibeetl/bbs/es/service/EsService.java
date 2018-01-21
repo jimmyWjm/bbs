@@ -179,25 +179,26 @@ public class EsService{
 		if(p <= 0) {p = 1;}
 		int pageNumber = p;
 		int pageSize = 3;
-		//TODO 过滤低评分
+		
 		PageQuery<IndexObject> pageQuery = new PageQuery<>(pageNumber, pageSize);
 		try {
 		
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 	
-			Map<String, Object> params = new HashMap<>();
-			Map<String, Object> queryParams = new HashMap<>();
-			Map<String, Object> matchParams = new HashMap<>();
 			
-			params.put("from", pageSize*(pageNumber -1));
-			params.put("size",   pageSize);
-			params.put("query", queryParams);
+			String esJson = "{" + 
+					"	\"from\":"+(pageSize*(pageNumber -1))+"," + 
+					"	\"size\":"+pageSize+"," + 
+					"	\"query\":{" + 
+					"		\"match\":{" + 
+					"			\"content\":\""+keyword+"\""+
+					"			}" + 
+					"		}" + 
+					"}";
 			
-			queryParams.put("match", matchParams);
-			matchParams.put("content", keyword);
-		
-			HttpEntity<String>  httpEntity = new HttpEntity<String>(new ObjectMapper().writeValueAsString(params),headers);
+			
+			HttpEntity<String>  httpEntity = new HttpEntity<String>(esJson,headers);
 			
 			String result = restTemplate.postForObject("http://127.0.0.1:9200/bbs/content/_search", httpEntity, String.class);
 			
