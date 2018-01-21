@@ -31,6 +31,12 @@ import org.springframework.web.servlet.view.RedirectView;
 import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.common.Const;
 import com.ibeetl.bbs.common.WebUtils;
+import com.ibeetl.bbs.es.annotation.EsEntityType;
+import com.ibeetl.bbs.es.annotation.EsIndexType;
+import com.ibeetl.bbs.es.annotation.EsIndexs;
+import com.ibeetl.bbs.es.annotation.EsOperateType;
+import com.ibeetl.bbs.es.service.EsService;
+import com.ibeetl.bbs.es.vo.IndexObject;
 import com.ibeetl.bbs.model.BbsMessage;
 import com.ibeetl.bbs.model.BbsPost;
 import com.ibeetl.bbs.model.BbsReply;
@@ -38,7 +44,6 @@ import com.ibeetl.bbs.model.BbsTopic;
 import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BBSService;
 import com.ibeetl.bbs.service.BbsUserService;
-import com.ibeetl.bbs.util.lucene.entity.IndexObject;
 
 @Controller
 public class BBSController {
@@ -47,13 +52,12 @@ public class BBSController {
 	SQLManager sql;
 	@Autowired
 	BbsUserService gitUserService;
-
 	@Autowired
 	BBSService bbsService;
-
-
 	@Autowired
 	WebUtils webUtils;
+	@Autowired
+	EsService esService;
 	
 
 	
@@ -92,7 +96,7 @@ public class BBSController {
 		}else{
 			
 	    	//查询索引
-			PageQuery<IndexObject> searcherKeywordPage = this.bbsService.getQueryPage(keyword,p);
+			PageQuery<IndexObject> searcherKeywordPage = this.esService.getQueryPage(keyword,p);
 			view.setViewName("/lucene/lucene.html");
 			view.addObject("searcherPage", searcherKeywordPage);
 			view.addObject("pagename", keyword);
@@ -149,6 +153,7 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/topic/{id}-{p}.html")
+	@EsIndexType(entityType= EsEntityType.BbsTopic ,operateType = EsOperateType.UPDATE)
 	public ModelAndView topic(@PathVariable final int id, @PathVariable int p){
 		ModelAndView view = new  ModelAndView();
 		view.setViewName("/detail.html");
@@ -195,6 +200,10 @@ public class BBSController {
 	 */
 	@ResponseBody
 	@PostMapping("/bbs/topic/save")
+	@EsIndexs({
+		@EsIndexType(entityType= EsEntityType.BbsTopic ,operateType = EsOperateType.ADD,key = "tid"),
+		@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.ADD,key = "pid")
+	})
 	public JSONObject saveTopic(BbsTopic topic, BbsPost post, String title, String postContent,HttpServletRequest request, HttpServletResponse response){
 		//@TODO， 防止频繁提交
 		BbsUser user = webUtils.currentUser(request, response);
@@ -224,6 +233,8 @@ public class BBSController {
 			bbsService.saveTopic(topic, post, user);
 			
 			result.put("err", 0);
+			result.put("tid",topic.getId());
+			result.put("pid",post.getId());
 			result.put("msg", "/bbs/topic/"+topic.getId()+"-1.html");
 		}
 		return result;
@@ -231,6 +242,7 @@ public class BBSController {
 
 	@ResponseBody
 	@RequestMapping("/bbs/post/save")
+	@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.ADD)
 	public JSONObject savePost(BbsPost post, HttpServletRequest request, HttpServletResponse response){
 		JSONObject result = new JSONObject();
 		result.put("err", 1);
@@ -252,6 +264,7 @@ public class BBSController {
 			int page = (totalPost/pageSize)+(totalPost%pageSize==0?0:1);
 			result.put("msg", "/bbs/topic/"+post.getTopicId()+"-"+page+".html");
 			result.put("err", 0);
+			result.put("id",post.getId());
 		}
 		return result;
 	}
@@ -266,6 +279,7 @@ public class BBSController {
 	 */
 	@ResponseBody
 	@PostMapping("/bbs/reply/save")
+	@EsIndexType(entityType= EsEntityType.BbsReply ,operateType = EsOperateType.ADD)
 	public JSONObject saveReply(BbsReply reply, HttpServletRequest request, HttpServletResponse response){
 		JSONObject result = new JSONObject();
 		result.put("err", 1);
@@ -286,7 +300,7 @@ public class BBSController {
 			
 			BbsTopic topic = bbsService.getTopic(reply.getTopicId());			
 			bbsService.notifyParticipant(reply.getTopicId(),user.getId());
-			
+			result.put("id",reply.getId());
 		}
 		return result;
 	}
@@ -357,6 +371,7 @@ public class BBSController {
 	
 	@ResponseBody
 	@PostMapping("/bbs/admin/topic/nice/{id}")
+	@EsIndexType(entityType= EsEntityType.BbsTopic ,operateType = EsOperateType.UPDATE)
 	public JSONObject editNiceTopic(@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
 		JSONObject result = new JSONObject();
 		if(!webUtils.isAdmin(request, response)){
@@ -376,6 +391,7 @@ public class BBSController {
 	
 	@ResponseBody
 	@PostMapping("/bbs/admin/topic/up/{id}")
+	@EsIndexType(entityType= EsEntityType.BbsTopic ,operateType = EsOperateType.UPDATE)
 	public JSONObject editUpTopic(@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
 		JSONObject result = new JSONObject();
 		if(!webUtils.isAdmin(request, response)){
@@ -396,6 +412,7 @@ public class BBSController {
 	
 	@ResponseBody
 	@PostMapping("/bbs/admin/topic/delete/{id}")
+	@EsIndexType(entityType= EsEntityType.BbsTopic ,operateType = EsOperateType.DELETE)
 	public JSONObject deleteTopic(@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
 		JSONObject result = new JSONObject();
 		if(!webUtils.isAdmin(request, response)){
@@ -438,6 +455,7 @@ public class BBSController {
 	 */
 	@ResponseBody
 	@RequestMapping("/bbs/admin/post/update")
+	@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.UPDATE)
 	public JSONObject updatePost(ModelAndView view, BbsPost post,HttpServletRequest request, HttpServletResponse response){
 		JSONObject result = new JSONObject();
 		result.put("err", 1);
@@ -448,6 +466,7 @@ public class BBSController {
 			if(canUpdatePost(db,request,response)){
 				db.setContent(post.getContent());
 				sql.updateById(db);
+				result.put("id", post.getId());
 				result.put("msg", "/bbs/topic/"+db.getTopicId()+"-1.html");
 				result.put("err", 0);
 			}else{
@@ -467,6 +486,7 @@ public class BBSController {
 	 */
 	@ResponseBody
 	@RequestMapping("/bbs/admin/post/delete/{id}")
+	@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.DELETE)
 	public JSONObject deletePost(ModelAndView view, @PathVariable int id,HttpServletRequest request, HttpServletResponse response){
 		JSONObject result = new JSONObject();
 		BbsPost post = sql.unique(BbsPost.class, id);
@@ -484,6 +504,7 @@ public class BBSController {
 	
 
 	@RequestMapping("/bbs/admin/reply/delete/{id}")
+	@EsIndexType(entityType= EsEntityType.BbsReply ,operateType = EsOperateType.DELETE)
 	public ModelAndView deleteReply(ModelAndView view, @PathVariable int id){
 		sql.deleteById(BbsReply.class, id);
 		view.setViewName( "forward:/bbs/admin/reply/1");
@@ -504,6 +525,26 @@ public class BBSController {
 		return false;
 	}
 	
-	
+	/**
+	 * 初始化索引
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/bbs/admin/es/init")
+	public JSONObject initEsIndex(HttpServletRequest request, HttpServletResponse response){
+		JSONObject result = new JSONObject();
+		if(!webUtils.isAdmin(request, response)){
+			//如果有非法使用，不提示具体信息，直接返回null
+			result.put("err", 1);
+			result.put("msg", "呵呵~~");
+		}else{
+			esService.initIndex();
+			result.put("err", 0);
+			result.put("msg", "success");
+		}
+		return result;
+	}
 
 }

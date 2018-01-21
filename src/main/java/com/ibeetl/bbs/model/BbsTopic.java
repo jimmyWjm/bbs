@@ -1,4 +1,5 @@
 package com.ibeetl.bbs.model;
+import java.io.Serializable;
 import java.util.Date;
 
 import org.beetl.sql.core.TailBean;
@@ -7,7 +8,9 @@ import org.beetl.sql.core.TailBean;
 * 
 * gen by beetlsql 2016-06-13
 */
-public class BbsTopic  extends TailBean {
+public class BbsTopic  extends TailBean implements Serializable{
+	private static final long serialVersionUID = -2086183299152059973L;
+	
 	private Integer id ;
 	private Integer emotion ;
 	private Integer isNice ;

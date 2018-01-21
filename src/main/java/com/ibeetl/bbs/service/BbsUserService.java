@@ -40,6 +40,6 @@ public interface  BbsUserService {
 	
 	public boolean hasUser(String userName);
 	
-	
+	public BbsUser getUser(Integer id);
 
 }

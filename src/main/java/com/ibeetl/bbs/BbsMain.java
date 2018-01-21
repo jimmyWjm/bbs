@@ -36,7 +36,6 @@ import com.alibaba.druid.pool.DruidDataSource;
 import com.ibeetl.bbs.common.Const;
 import com.ibeetl.bbs.dao.BbsModuleDao;
 import com.ibeetl.bbs.util.Functions;
-import com.ibeetl.bbs.util.lucene.LuceneUtil;
 
 
 @SpringBootApplication
@@ -145,11 +144,4 @@ public class BbsMain extends SpringBootServletInitializer  {
 		return druidDataSource;
 	}
 
-    @Bean(name = "luceneUtil")
-    public LuceneUtil luceneUtil(Environment env){
-    	LuceneUtil luceneUtil = new LuceneUtil();
-    	luceneUtil.setIndexDer(env.getProperty("lucene.indexder"));
-    	return luceneUtil;
-    }
-    
 }

@@ -1,8 +1,5 @@
 package com.ibeetl.bbs.service.impl;
 
-import java.io.File;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,15 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import com.alibaba.fastjson.JSONObject;
-import com.ibeetl.bbs.common.Const;
 import com.ibeetl.bbs.dao.BbsModuleDao;
 import com.ibeetl.bbs.dao.BbsPostDao;
 import com.ibeetl.bbs.dao.BbsReplyDao;
 import com.ibeetl.bbs.dao.BbsTopicDao;
 import com.ibeetl.bbs.dao.BbsUserDao;
+import com.ibeetl.bbs.es.vo.IndexObject;
 import com.ibeetl.bbs.model.BbsMessage;
 import com.ibeetl.bbs.model.BbsPost;
 import com.ibeetl.bbs.model.BbsReply;
@@ -30,10 +27,9 @@ import com.ibeetl.bbs.model.BbsTopic;
 import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BBSService;
 import com.ibeetl.bbs.service.BbsUserService;
-import com.ibeetl.bbs.util.lucene.LuceneUtil;
-import com.ibeetl.bbs.util.lucene.entity.IndexObject;
 
 @Service
+@Transactional
 public class BBSServiceImpl implements BBSService {
 	@Autowired
 	BbsTopicDao topicDao;
@@ -47,21 +43,28 @@ public class BBSServiceImpl implements BBSService {
 	BbsReplyDao replyDao;
 	@Autowired
 	SQLManager sql ;
-	@Autowired
-	LuceneUtil luceneUtil;
 	
 	@Autowired
 	BbsUserService gitUserService;
 
 	@Override
-	public BbsTopic getTopic(int id) {
-		return topicDao.unique(id);
+	public BbsTopic getTopic(Integer topicId) {
+		return topicDao.getTopic(topicId);
 	}
 	
+	@Override
+	public BbsPost getPost(int id) {
+		return postDao.unique(id);
+	}
+	
+	@Override
+	public BbsReply getReply(int id) {
+		return replyDao.unique(id);
+	}
 	
 
 	@Override
-	@Cacheable("TOPIC")
+//	@Cacheable("TOPIC")
 	public PageQuery getTopics(PageQuery query) {
 		
 		topicDao.queryTopic(query);
@@ -166,7 +169,7 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
-	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void saveTopic(BbsTopic topic, BbsPost post, BbsUser user) {
 		topic.setUserId(user.getId());
 		topic.setCreateTime(new Date());
@@ -174,15 +177,15 @@ public class BBSServiceImpl implements BBSService {
 		post.setUserId(user.getId());
 		post.setTopicId(topic.getId());
 		post.setCreateTime(new Date());
-		postDao.insert(post);
+		postDao.insert(post,true);
 		gitUserService.addTopicScore(user.getId());
 	}
 
 	@Override
-	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void savePost(BbsPost post, BbsUser user) {
 		post.setUserId(user.getId());
-		postDao.insert(post);
+		postDao.insert(post,true);
 		gitUserService.addPostScore(user.getId());
 	}
 
@@ -195,7 +198,7 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
-	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void deleteTopic(int id) {
 		sql.deleteById(BbsTopic.class, id);
 		postDao.deleteByTopicId(id);
@@ -203,7 +206,7 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
-	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void deletePost(int id) {
 		sql.deleteById(BbsPost.class, id);
 		replyDao.deleteByPostId(id);
@@ -214,54 +217,13 @@ public class BBSServiceImpl implements BBSService {
 		return postDao.getLatestPostDate(userId);
 	}
 
-	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void updateTopic(BbsTopic topic){
 		sql.updateById(topic);
 	}
 
 
-	@Override
-	public List<IndexObject> getBbsTopicPostList(Date fileupdateDate){
-		List<IndexObject>  indexObjectsList = new ArrayList<>();
-		//获取主题和回复最后的提交时间
-		List<IndexObject> bbsTopics = null;
-		List<IndexObject> bbsPosts = null;
-		try {
-			Map<String,Date> lastPostDate = postDao.getLastPostDate();
-			Date topiclastupdate = LuceneUtil.dateFormat.parse(LuceneUtil.dateFormat.format(lastPostDate.get("topiclastupdate")));
-			Date postlastupdate = LuceneUtil.dateFormat.parse(LuceneUtil.dateFormat.format(lastPostDate.get("postlastupdate")));
-			if(fileupdateDate != null)fileupdateDate =  LuceneUtil.dateFormat.parse(LuceneUtil.dateFormat.format(fileupdateDate));
-			
-			if(fileupdateDate == null || (topiclastupdate != null && LuceneUtil.dateCompare(topiclastupdate,fileupdateDate))){
-				bbsTopics = topicDao.getBbsTopicListByDate(fileupdateDate, topiclastupdate);
-			}
-			if(fileupdateDate == null || (postlastupdate != null &&LuceneUtil.dateCompare(postlastupdate,fileupdateDate))){
-				bbsPosts = postDao.getBbsPostListByDate(fileupdateDate, postlastupdate);
-			}
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		if(bbsTopics!=null)indexObjectsList.addAll(bbsTopics);
-		if(bbsPosts!=null)indexObjectsList.addAll(bbsPosts);
-//		System.out.println("================");
-//		System.out.println(JSONObject.toJSONString(indexObjectsList));
-		return indexObjectsList;
-	}
 
 
 
-	@Override
-	public PageQuery<IndexObject> getQueryPage(String keyword,int p) {
-		//查看索引文件最后修改日期
-    	File file = new File(luceneUtil.getIndexDer());
-    	Date fileupdateDate = null;
-    	if(file.exists() && file.listFiles().length  > 0 ){fileupdateDate = new Date(file.lastModified());}
-		//获取索引的数据 ：主题和回复
-    	List<IndexObject> bbsContentList = this.getBbsTopicPostList(fileupdateDate);
-    	
-    	//创建索引
-    	luceneUtil.createDataIndexer(bbsContentList);
-    	
-    	return luceneUtil.searcherKeyword(keyword,Const.TOPIC_PAGE_SIZE, p);
-	}
 }

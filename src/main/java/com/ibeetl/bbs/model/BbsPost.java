@@ -1,15 +1,17 @@
 package com.ibeetl.bbs.model;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 import org.beetl.sql.core.TailBean;
-import org.beetl.sql.core.engine.PageQuery;
 
 /*
 * 
 * gen by beetlsql 2016-06-13
 */
-public class BbsPost  extends TailBean{
+public class BbsPost  extends TailBean implements Serializable{
+	private static final long serialVersionUID = 2365496820528154205L;
+	
 	private Integer id ;
 	private Integer hasReply ;
 	private Integer topicId ;

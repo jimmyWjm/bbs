@@ -108,4 +108,12 @@ public class BbsUserServiceImpl implements BbsUserService {
 		return !list.isEmpty();
 	}
 
+
+
+
+	@Override
+	public BbsUser getUser(Integer id) {
+		return sqlManager.unique(BbsUser.class, id);
+	}
+
 }

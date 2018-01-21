@@ -1,4 +1,4 @@
-package com.ibeetl.bbs.util.lucene.entity;
+package com.ibeetl.bbs.es.vo;
 
 import java.util.Date;
 
@@ -22,8 +22,8 @@ public class IndexObject implements Comparable<IndexObject>{
 	private String moduleName;
 	
 	private String topicContent;
-	private String postContent;
-	private Integer indexType;		//用于判断该索引对象是主题贴还是回复贴:	1：主题帖，2：回复贴
+	private String postContent;// 可能为postContent或replayContent的内容
+	private Integer indexType;		//用于判断该索引对象是主题贴还是回复贴:	1：主题帖，2：回复贴，3：对回复的回复贴
 	private float score;//相似度
 
 

@@ -1,16 +1,16 @@
 package com.ibeetl.bbs.model;
-import java.math.*;
+import java.io.Serializable;
 import java.util.Date;
 
 import org.beetl.sql.core.TailBean;
-
-import java.sql.Timestamp;
 
 /*
 * 
 * gen by beetlsql 2016-06-13
 */
-public class BbsReply extends TailBean {
+public class BbsReply extends TailBean  implements Serializable{
+	private static final long serialVersionUID = 4351960407287422152L;
+	
 	private Integer id ;
 	private Integer postId ;
 	private Integer topicId ;
