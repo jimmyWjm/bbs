@@ -55,4 +55,6 @@ public interface BBSService {
 	
 	Date getLatestPost(int userId);
 	
+	BbsPost getFirstPost(Integer topicId);
+	
 }

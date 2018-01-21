@@ -502,15 +502,38 @@ public class BBSController {
 	}
 
 	
-
-	@RequestMapping("/bbs/admin/reply/delete/{id}")
+	@ResponseBody
+	@PostMapping("/bbs/admin/reply/delete/{id}")
 	@EsIndexType(entityType= EsEntityType.BbsReply ,operateType = EsOperateType.DELETE)
-	public ModelAndView deleteReply(ModelAndView view, @PathVariable int id){
-		sql.deleteById(BbsReply.class, id);
-		view.setViewName( "forward:/bbs/admin/reply/1");
-		return view;
+	public JSONObject deleteReply(HttpServletRequest request, HttpServletResponse response, @PathVariable int id){
+		
+		JSONObject result = new JSONObject();
+		if( canDeleteReply(request, response, id)){
+			sql.deleteById(BbsReply.class, id);
+			result.put("err", 0);
+			result.put("msg", "success");
+		}else{
+			result.put("err", 1);
+			result.put("msg", "无法删除他人的回复");
+		}
+		return result;
 	}
 	
+	private boolean canDeleteReply(HttpServletRequest request, HttpServletResponse response,Integer replyId){
+		
+		BbsUser user = this.webUtils.currentUser(request, response);
+		BbsReply reply = bbsService.getReply(replyId);
+		if(reply.getUserId().equals(user.getId())){
+			return true ;
+		}
+		//如果是admin
+		if(user.getUserName().equals("admin")){
+			return true;
+		}
+		
+		return false;
+	}
+
 	private boolean canUpdatePost(BbsPost post,HttpServletRequest request, HttpServletResponse response){
 		
 		BbsUser user = this.webUtils.currentUser(request, response);
@@ -546,5 +569,6 @@ public class BBSController {
 		}
 		return result;
 	}
-
+	
+	
 }

@@ -25,8 +25,8 @@
 			@if(post.replys.~size>0){
 			<ul class="list-group">
 				@for(reply in post.replys){
-					<li class="list-group-item">
-						@include("/common/replyItem.html",{"reply":reply}){}
+					<li class="list-group-item reply">
+						@include("/common/replyItem.html",{"reply":reply,"showbtn":(_user.id!0==reply.userId||isAdmin)}){}
 					</li>
 				@}
 			</ul>
@@ -65,6 +65,20 @@
 <link href="//cdn.bootcss.com/highlight.js/9.8.0/styles/github-gist.min.css" rel="stylesheet">
 <script src="//cdn.bootcss.com/highlight.js/9.8.0/highlight.min.js"></script>
  <script>
+ $(function(){
+	 $('.deleteReply').on('click',function(){
+		 var _this = $(this);
+		 var p = _this.parents('.list-group-item');
+		 $.confirm('确定要删除该回复吗？',function(e){
+			 e&&$.post('${ctxPath}/bbs/admin/reply/delete/'+_this.data('id'),function(json){
+				 json.err?$.alert(json.msg):p.remove();
+			 })
+		 })
+	 })
+
+ })
+ 
+ 
  hljs.initHighlightingOnLoad();
  function showReplyDialog(postid,topicid){
 	 var dialog = $('#reply-dialog').modal('show');
@@ -81,4 +95,5 @@
 		 })
 	 })
  }
+
 </script>

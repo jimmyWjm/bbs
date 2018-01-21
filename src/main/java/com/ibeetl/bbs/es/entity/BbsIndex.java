@@ -6,7 +6,7 @@ import java.util.Date;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 
-import com.ibeetl.bbs.util.HashKit;
+import com.ibeetl.bbs.util.EsUtil;
 
 @Document(indexName="bbs",type="content")
 public class BbsIndex implements Serializable{
@@ -17,24 +17,16 @@ public class BbsIndex implements Serializable{
 	private String id;
 	private Integer topicId;
 	private Integer postId;
-	private Integer replayId;
+	private Integer replyId;
 	private Integer userId;
 	private String content;
 	private Date createTime;
 	
 	public String getId() {
 		if(this.id == null) {
-			StringBuilder key = new StringBuilder();
-			key.append(topicId != null?topicId.toString():"").append(":");
-			key.append(postId != null?postId.toString():"").append(":");
-			key.append(replayId != null?replayId.toString():"").append(":");
-			return HashKit.md5(key.toString());
+			return EsUtil.getEsKey(topicId, postId, replyId);
 		}
 		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
 	}
 
 	public Integer getTopicId() {
@@ -53,12 +45,12 @@ public class BbsIndex implements Serializable{
 		this.postId = postId;
 	}
 
-	public Integer getReplayId() {
-		return replayId;
+	public Integer getReplyId() {
+		return replyId;
 	}
 
-	public void setReplayId(Integer replayId) {
-		this.replayId = replayId;
+	public void setReplyId(Integer replyId) {
+		this.replyId = replyId;
 	}
 
 	public Integer getUserId() {
@@ -85,21 +77,27 @@ public class BbsIndex implements Serializable{
 		this.createTime = createTime;
 	}
 
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public BbsIndex() {
 		super();
 	}
 
-	public BbsIndex(Integer topicId, Integer postId, Integer replayId, Integer userId,
-			String content, Date createTime) {
+	public BbsIndex(Integer topicId, Integer postId, Integer replyId, Integer userId, String content, Date createTime) {
 		super();
 		this.topicId = topicId;
 		this.postId = postId;
-		this.replayId = replayId;
+		this.replyId = replyId;
 		this.userId = userId;
 		this.content = content;
 		this.createTime = createTime;
+		
+		this.id = EsUtil.getEsKey(topicId, postId, replyId);
 	}
 
+	
 	
 	
 }

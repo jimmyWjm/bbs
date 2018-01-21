@@ -1,22 +1,23 @@
 package com.ibeetl.bbs.es.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibeetl.bbs.es.annotation.EsEntityType;
 import com.ibeetl.bbs.es.annotation.EsOperateType;
 import com.ibeetl.bbs.es.entity.BbsIndex;
@@ -28,8 +29,7 @@ import com.ibeetl.bbs.model.BbsReply;
 import com.ibeetl.bbs.model.BbsTopic;
 import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BBSService;
-import com.ibeetl.bbs.service.BbsUserService;
-import com.ibeetl.bbs.util.HashKit;
+import com.ibeetl.bbs.util.EsUtil;
 
 @Service
 public class EsService{
@@ -39,11 +39,11 @@ public class EsService{
 	@Autowired
 	private BBSService bbsService;
 	@Autowired
-	private BbsUserService bbsUserService;
-	@Autowired
 	private ElasticsearchTemplate elasticsearchTemplate;
 	@Autowired
 	SQLManager sqlManager;
+	@Autowired
+	private RestTemplate restTemplate;
 	
 	/**
 	 * 公共操作方法
@@ -51,13 +51,12 @@ public class EsService{
 	 * @param operateType
 	 * @param id
 	 */
-	public void editEsIndex(EsEntityType entityType,EsOperateType operateType,Integer id) {
+	public void editEsIndex(EsEntityType entityType,EsOperateType operateType,Object id) {
 		if(operateType == EsOperateType.ADD || operateType == EsOperateType.UPDATE) {
-			BbsIndex bbsIndex = this.createBbsIndex(entityType, id);
+			BbsIndex bbsIndex = this.createBbsIndex(entityType, (Integer)id);
 			this.saveBbsIndex(bbsIndex);
 		}else if(operateType == EsOperateType.DELETE) {
-			BbsIndex bbsIndex = this.createBbsIndex(entityType, id);
-			this.deleteBbsIndex(bbsIndex.getTopicId(), bbsIndex.getPostId(), bbsIndex.getReplayId());
+			this.deleteBbsIndex((String)id);
 		}
 
 	}
@@ -150,12 +149,7 @@ public class EsService{
 	 */
 	public void saveBbsIndex(BbsIndex bbsIndex) {
 		
-		StringBuilder key = new StringBuilder();
-		key.append(bbsIndex.getTopicId() != null?bbsIndex.getTopicId().toString():"").append(":");
-		key.append(bbsIndex.getPostId() != null?bbsIndex.getPostId().toString():"").append(":");
-		key.append(bbsIndex.getReplayId() != null?bbsIndex.getReplayId().toString():"").append(":");
-		
-		bbsIndex.setId(HashKit.md5(key.toString()));
+		bbsIndex.setId(EsUtil.getEsKey(bbsIndex.getTopicId(), bbsIndex.getPostId(), bbsIndex.getReplyId()));
 		bbsIndexRepository.save(bbsIndex);
 	}
 	/**
@@ -165,13 +159,15 @@ public class EsService{
 	 * @param replayId
 	 */
 	public void deleteBbsIndex(Integer topicId,Integer postId,Integer replayId) {
-		StringBuilder key = new StringBuilder();
-		key.append(topicId != null?topicId.toString():"").append(":");
-		key.append(postId != null?postId.toString():"").append(":");
-		key.append(replayId != null?replayId.toString():"").append(":");
-		
-		bbsIndexRepository.deleteById(HashKit.md5(key.toString()));
+		String key = EsUtil.getEsKey(topicId, postId, replayId);
+		bbsIndexRepository.deleteById(key);
 	}
+	public void deleteBbsIndex(String id) {
+		bbsIndexRepository.deleteById(id);
+	}
+	
+	
+	
 	
 	/**
 	 * 创建所有并返回搜索结果
@@ -180,52 +176,82 @@ public class EsService{
 	 * @return
 	 */
 	public PageQuery<IndexObject> getQueryPage(String keyword,int p){
-		if(p < 0) {p = 0;}
+		if(p <= 0) {p = 1;}
 		int pageNumber = p;
 		int pageSize = 3;
-		
+		//TODO 过滤低评分
 		PageQuery<IndexObject> pageQuery = new PageQuery<>(pageNumber, pageSize);
+		try {
 		
-		PageRequest page = PageRequest.of(pageNumber - 1, pageSize);
-		Page<BbsIndex> indexPage = bbsIndexRepository.getByContent(keyword, page);
-		List<BbsIndex> indexList = indexPage.getContent();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+	
+			Map<String, Object> params = new HashMap<>();
+			Map<String, Object> queryParams = new HashMap<>();
+			Map<String, Object> matchParams = new HashMap<>();
+			
+			params.put("from", pageSize*(pageNumber -1));
+			params.put("size",   pageSize);
+			params.put("query", queryParams);
+			
+			queryParams.put("match", matchParams);
+			matchParams.put("content", keyword);
 		
-		List<IndexObject> indexObjectList = new ArrayList<>();
-		for (BbsIndex index : indexList) {
-			if(index.getTopicId() != null) {
-				IndexObject indexObject = null;
+			HttpEntity<String>  httpEntity = new HttpEntity<String>(new ObjectMapper().writeValueAsString(params),headers);
+			
+			String result = restTemplate.postForObject("http://127.0.0.1:9200/bbs/content/_search", httpEntity, String.class);
+			
+			List<IndexObject> indexObjectList = new ArrayList<>();
+			
+			JsonNode root = new ObjectMapper().readTree(result);
+			long total = root.get("hits").get("total").asLong();
+			
+			Iterator<JsonNode> iterator = root.get("hits").get("hits").iterator();
+			while(iterator.hasNext()) {
+				JsonNode jsonNode = iterator.next();
 				
-				BbsTopic topic = bbsService.getTopic(index.getTopicId());
-				
-				BbsUser user = (BbsUser)topic.get("bbsUser");
-				BbsModule module = (BbsModule)topic.get("bbsModule");
-				
-				int score = 1;
-				if(index.getReplayId() != null) {
-					indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 
-							topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module.getId(), module.getName(), 
-							topic.getContent(), index.getContent(), 3, score);
+				double score = jsonNode.get("_score").asDouble();
+				BbsIndex index = new ObjectMapper().convertValue(jsonNode.get("_source"), BbsIndex.class);
+				if(index.getTopicId() != null) {
+					IndexObject indexObject = null;
 					
-				}else if(index.getPostId() != null) {
-					indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 
-							topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module.getId(), module.getName(), 
-							topic.getContent(), index.getContent(), 2, score);
+					BbsTopic topic = bbsService.getTopic(index.getTopicId());
 					
-				}else if(index.getTopicId() != null) {
-					indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 
-							topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module.getId(), module.getName(), 
-							topic.getContent(), "", 1, score);
+					BbsUser user = (BbsUser)topic.get("bbsUser");
+					BbsModule module = (BbsModule)topic.get("bbsModule");
+					
+					if(index.getReplyId() != null) {
+						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 
+								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module.getId(), module.getName(), 
+								topic.getContent(), index.getContent(), 3, score);
+						
+					}else if(index.getPostId() != null) {
+						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 
+								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module.getId(), module.getName(), 
+								topic.getContent(), index.getContent(), 2, score);
+						
+					}else if(index.getTopicId() != null) {
+						String postContent = "";
+						BbsPost firstPost = bbsService.getFirstPost(index.getTopicId());
+						if(firstPost != null) {
+							postContent = firstPost.getContent();
+						}
+						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 
+								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module.getId(), module.getName(), 
+								topic.getContent(),postContent , 1, score);
+					}
+					
+					indexObjectList.add(indexObject);
 				}
-				
-				indexObjectList.add(indexObject);
 			}
+			pageQuery.setTotalRow(total);
+			pageQuery.setList(indexObjectList);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
-		
-		
-		pageQuery.setTotalRow(indexPage.getTotalElements());
-		pageQuery.setList(indexObjectList);
-		
+	
 		return pageQuery;
 	}
 	

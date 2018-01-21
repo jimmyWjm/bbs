@@ -24,7 +24,7 @@ public class IndexObject implements Comparable<IndexObject>{
 	private String topicContent;
 	private String postContent;// 可能为postContent或replayContent的内容
 	private Integer indexType;		//用于判断该索引对象是主题贴还是回复贴:	1：主题帖，2：回复贴，3：对回复的回复贴
-	private float score;//相似度
+	private double score;//相似度
 
 
 	
@@ -34,10 +34,10 @@ public class IndexObject implements Comparable<IndexObject>{
 	public void setTopicId(Integer topicId) {
 		this.topicId = topicId;
 	}
-	public float getScore() {
+	public double getScore() {
 		return score;
 	}
-	public void setScore(float score) {
+	public void setScore(double score) {
 		this.score = score;
 	}
 
@@ -129,7 +129,7 @@ public class IndexObject implements Comparable<IndexObject>{
 	}
 	public IndexObject(Integer topicId, Integer isUp, Integer isNice, Integer userId, String userName, Date createTime,
 			Integer postCount, Integer pv, Integer moduleId, String moduleName, String topicContent, String postContent,
-			Integer indexType, float score) {
+			Integer indexType, double score) {
 		super();
 		this.topicId = topicId;
 		this.isUp = isUp;

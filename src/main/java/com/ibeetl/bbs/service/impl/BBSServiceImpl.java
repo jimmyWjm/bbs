@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
+import org.beetl.sql.core.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -220,6 +221,17 @@ public class BBSServiceImpl implements BBSService {
 //	@CacheEvict(cacheNames="TOPIC", allEntries=true)
 	public void updateTopic(BbsTopic topic){
 		sql.updateById(topic);
+	}
+
+	@Override
+	public BbsPost getFirstPost(Integer topicId) {
+		Query<BbsPost> query = sql.query(BbsPost.class);
+		List<BbsPost> list = query.andEq("topic_id", topicId)
+		    .orderBy("create_time asc").select();
+		if(list != null && list.size() > 0) {
+			return list.get(0);
+		}
+		return null;
 	}
 
 

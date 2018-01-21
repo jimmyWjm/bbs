@@ -48,7 +48,9 @@
 /*    		滚动条样式 */
    		::-webkit-scrollbar {width: 10px!important;height: 5px!important;-webkit-appearance: none;}
 		::-webkit-scrollbar-thumb {height: 5px;border: 1px solid transparent;border-top: none;border-bottom: none;-webkit-border-radius: 6px;background-color: rgba(0,0,0,.3);background-clip: padding-box;}
-
+		
+		.list-group-item.reply{position: relative;}
+		.deleteReply {position: absolute;top: 5px;right: 0;transform: translateX(-10px);}
     </style>
 </head>
 <body>
@@ -120,7 +122,7 @@
 					${layoutContent}
 			</div>
   			<div class="col-sm-3">
-  					<div class="author-panel">
+  					<div class="author-panel hidden-xs">
   							<div class="head"></div>
 	  						<div class="name">作者：闲大赋</div>
 	  						<div class="home">

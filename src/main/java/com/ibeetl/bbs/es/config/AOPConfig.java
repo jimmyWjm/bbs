@@ -21,7 +21,11 @@ import org.springframework.web.servlet.ModelAndView;
 import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.es.annotation.EsIndexType;
 import com.ibeetl.bbs.es.annotation.EsIndexs;
+import com.ibeetl.bbs.es.annotation.EsOperateType;
+import com.ibeetl.bbs.es.entity.BbsIndex;
 import com.ibeetl.bbs.es.service.EsService;
+import com.ibeetl.bbs.es.vo.EsIndexTypeData;
+import com.ibeetl.bbs.util.EsUtil;
 
 @Configuration
 @Aspect
@@ -43,8 +47,7 @@ public class AOPConfig {
 	        EsIndexType esIndexType = method.getAnnotation(EsIndexType.class);
 	        EsIndexs esIndexs = method.getAnnotation(EsIndexs.class);
 	        
-	        Object o = pjp.proceed();//调用原方法
-	        
+	        //获取索引的注解集合
 	        List<EsIndexType> types = new ArrayList<>();
 	        if(esIndexs != null){
 	        	types.addAll(Arrays.asList(esIndexs.value()));
@@ -52,29 +55,61 @@ public class AOPConfig {
 	        if(esIndexType != null){
 	        	types.add(esIndexType);
 	        }
-	        if(types.size() > 0){
-	        	for (EsIndexType index : types) {
-	        		Integer id = null;
+	        
+	      //获取索引的数据集合
+	       List<EsIndexTypeData> typeDatas = new ArrayList<>();
+	        
+	        //当操作为删除时，需要提前获取id
+	        for (EsIndexType index : types) {
+	        	if(index.operateType() == EsOperateType.DELETE) {
 					String key = index.key();
 					
-			       Map<String, Object> parameterNames = this.getParameterNames(pjp);
-		        	id = (Integer)parameterNames.get(key);
-	        		if(id == null) {
-	        			if(o instanceof ModelAndView) {
-	        				ModelAndView modelAndView = (ModelAndView)o;
-	    	    			id = (Integer)modelAndView.getModel().get(key);
-	        			}else if(o instanceof JSONObject) {
-	        				JSONObject json = (JSONObject)o;
-	        				id = json.getInteger(key);
-	        			}
-	    			}
+	        		Map<String, Object> parameterNames = this.getParameterNames(pjp);
+	        		Integer id = (Integer)parameterNames.get(key);
 	        		if(id == null) {
 	        			throw new RuntimeException(target.getClass().getName()+"$"+msig.getName()+"：未获取到主键，无法更新索引");
 	        		}
-		        	esService.editEsIndex(index.entityType(), index.operateType(), id);
-				}
-	        }
+	        		
+	        		BbsIndex bbsIndex = esService.createBbsIndex(index.entityType(), (Integer)id);
+	        		String md5Id = EsUtil.getEsKey(bbsIndex.getTopicId(),bbsIndex.getPostId(),bbsIndex.getReplyId());
+	        		EsIndexTypeData data = new EsIndexTypeData(index.entityType(), index.operateType(), md5Id);
+	        		typeDatas.add(data); 
+	        	}
+			}
+	        //调用原方法
+	        Object o = pjp.proceed();
+	        //当操作为更新时，可以从返回值中获取id
+        	for (EsIndexType index : types) {
+        		if(index.operateType() != EsOperateType.DELETE) {
+        		Integer id = null;
+				String key = index.key();
+				
+		       Map<String, Object> parameterNames = this.getParameterNames(pjp);
+	        	id = (Integer)parameterNames.get(key);
+        		if(id == null) {
+        			if(o instanceof ModelAndView) {
+        				ModelAndView modelAndView = (ModelAndView)o;
+    	    			id = (Integer)modelAndView.getModel().get(key);
+        			}else if(o instanceof JSONObject) {
+        				JSONObject json = (JSONObject)o;
+        				id = json.getInteger(key);
+        			}
+    			}
+        		if(id == null) {
+        			throw new RuntimeException(target.getClass().getName()+"$"+msig.getName()+"：未获取到主键，无法更新索引");
+        		}
+        		
+        		EsIndexTypeData data = new EsIndexTypeData(index.entityType(), index.operateType(), id);
+        		typeDatas.add(data); 
+	        	
+        		}
+			}
 	        
+        	//更新索引
+        	for (EsIndexTypeData esIndexTypeData : typeDatas) {
+        		esService.editEsIndex(esIndexTypeData.getEntityType(), esIndexTypeData.getOperateType(), esIndexTypeData.getId());
+			}
+        	
 			return o;
 		} catch (Exception e) {
 			throw e;
