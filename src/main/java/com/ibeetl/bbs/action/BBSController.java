@@ -175,6 +175,7 @@ public class BBSController {
 		query.setPageSize(Const.TOPIC_PAGE_SIZE);
 		bbsService.getTopics(query);
 		view.addObject("topicPage", query);
+		//TODO bug query.getList()有时候为空？
 		if(query.getList().size() >0){
 			BbsTopic bbsTopic = (BbsTopic) query.getList().get(0);
 			view.addObject("pagename",bbsTopic.getTails().get("moduleName"));

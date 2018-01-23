@@ -11,6 +11,7 @@ import org.beetl.sql.core.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -20,7 +21,6 @@ import com.ibeetl.bbs.dao.BbsPostDao;
 import com.ibeetl.bbs.dao.BbsReplyDao;
 import com.ibeetl.bbs.dao.BbsTopicDao;
 import com.ibeetl.bbs.dao.BbsUserDao;
-import com.ibeetl.bbs.es.vo.IndexObject;
 import com.ibeetl.bbs.model.BbsMessage;
 import com.ibeetl.bbs.model.BbsPost;
 import com.ibeetl.bbs.model.BbsReply;
@@ -48,48 +48,52 @@ public class BBSServiceImpl implements BBSService {
 	@Autowired
 	BbsUserService gitUserService;
 
+	@Cacheable(cacheNames = "bbsTopic",key = "#topicId")
 	@Override
 	public BbsTopic getTopic(Integer topicId) {
 		return topicDao.getTopic(topicId);
 	}
 	
+	@Cacheable(cacheNames = "bbsPost",key = "#postId")
 	@Override
-	public BbsPost getPost(int id) {
-		return postDao.unique(id);
+	public BbsPost getPost(int postId) {
+		return postDao.unique(postId);
 	}
 	
+	@Cacheable(cacheNames = "bbsReply",key = "#replyId")
 	@Override
-	public BbsReply getReply(int id) {
-		return replyDao.unique(id);
+	public BbsReply getReply(int replyId) {
+		return replyDao.unique(replyId);
 	}
 	
-
+	
+	@Cacheable(cacheNames = "bbsTopicPage",keyGenerator = "pageQueryKeyGenerator")
 	@Override
-//	@Cacheable("TOPIC")
 	public PageQuery getTopics(PageQuery query) {
-		
 		topicDao.queryTopic(query);
 		return query;
-	}
+	} 
+	@Cacheable(cacheNames = "bbsTopicMessageList",key = "#userId")
 	@Override
-//	@Cacheable("MY-MESSAGE")
 	public List<BbsTopic> getMyTopics(int userId){
 		return topicDao.queryMyMessageTopic(userId);
 	}
+	
+	@Cacheable(cacheNames = "bbsTopicMessageCount",key = "#userId")
 	@Override
-//	@Cacheable("MY-MESSAGE-COUNT")
 	public Integer getMyTopicsCount(int userId){
 		return topicDao.queryMyMessageTopicCount(userId);
 	}
 	
+	@CacheEvict(cacheNames = {"bbsTopicMessageList","bbsTopicMessageCount"}, allEntries=true)
 	@Override
 	public void updateMyTopic(int msgId,int status){
 		BbsMessage msg = new BbsMessage();
 		msg.setStatus(status);
 		msg.setId(msgId);
 		sql.updateTemplateById(msg);
-		
 	}
+	@CacheEvict(cacheNames = {"bbsTopicMessageList","bbsTopicMessageCount"}, allEntries=true)
 	@Override
 	public BbsMessage makeOneBbsMessage(int userId,int topicId,int status){
 		BbsMessage msg = new BbsMessage();
@@ -112,38 +116,39 @@ public class BBSServiceImpl implements BBSService {
 	}
 	
 	@Override
-//	@CacheEvict(cacheNames={"MY-MESSAGE","MY-MESSAGE-COUNT"}, allEntries=true)
 	public void notifyParticipant(int topicId,int ownerId){
 		List<Integer> userIds = topicDao.getParticipantUserId(topicId);
 		for(Integer userId:userIds){
 			if(userId==ownerId){
 				continue;
 			}
-			//TODO,以后改成批处理,但存在insert&update问题
 			makeOneBbsMessage(userId,topicId,1);
 		}
 	}
 
+	@Cacheable(cacheNames = "bbsHotTopicPage",keyGenerator = "pageQueryKeyGenerator")
 	@Override
-	public void getHotTopics(PageQuery query) {
+	public PageQuery getHotTopics(PageQuery query) {
 		Map paras = new HashMap();
 		paras.put("type", "hot");
 		query.setParas(paras);
 		topicDao.queryTopic(query);
+		return query;
 	}
 
+	@Cacheable(cacheNames = "bbsNiceTopicPage",keyGenerator = "pageQueryKeyGenerator")
 	@Override
-	public void getNiceTopics(PageQuery query) {
+	public PageQuery getNiceTopics(PageQuery query) {
 		Map paras = new HashMap();
 		paras.put("type", "nice");
 		query.setParas(paras);
 		topicDao.queryTopic(query);
-//		fillTopic(query);
+		return query;
 	}
 
+	@Cacheable(cacheNames = "bbsPostPage",keyGenerator = "pageQueryKeyGenerator")
 	@Override
-	public void getPosts(PageQuery query) {
-//		postDao.getPosts(query, topicId);
+	public PageQuery getPosts(PageQuery query) {
 		postDao.getPosts(query);
 		if(query.getList() != null){
 			for (Object topicObj : query.getList()) {
@@ -153,6 +158,7 @@ public class BBSServiceImpl implements BBSService {
 				
 			}
 		}
+		return query;
 	}
 
 	@Override
@@ -170,7 +176,11 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
-//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames = {"bbsTopic","bbsTopicPage","bbsHotTopicPage","bbsNiceTopicPage"}, allEntries=true),
+			@CacheEvict(cacheNames = {"bbsPost","bbsPostPage","bbsFirstPost","bbsLatestPost"}, allEntries=true)
+			//TODO
+	})
 	public void saveTopic(BbsTopic topic, BbsPost post, BbsUser user) {
 		topic.setUserId(user.getId());
 		topic.setCreateTime(new Date());
@@ -183,7 +193,7 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
-//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+	@CacheEvict(cacheNames = {"bbsPost","bbsPostPage","bbsFirstPost","bbsLatestPost"}, allEntries=true)
 	public void savePost(BbsPost post, BbsUser user) {
 		post.setUserId(user.getId());
 		postDao.insert(post,true);
@@ -192,6 +202,7 @@ public class BBSServiceImpl implements BBSService {
 
 	
 
+	@CacheEvict(cacheNames = {"bbsReply","bbsPostPage"}, allEntries=true)
 	@Override
 	public void saveReply(BbsReply reply) {
 		replyDao.insert(reply,true);
@@ -199,7 +210,11 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
-//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames = {"bbsTopic","bbsTopicPage","bbsHotTopicPage","bbsNiceTopicPage"}, allEntries=true),
+			@CacheEvict(cacheNames = {"bbsPost","bbsPostPage","bbsFirstPost","bbsLatestPost"}, allEntries=true),
+			@CacheEvict(cacheNames = {"bbsReply"}, allEntries=true)
+	})
 	public void deleteTopic(int id) {
 		sql.deleteById(BbsTopic.class, id);
 		postDao.deleteByTopicId(id);
@@ -207,23 +222,28 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 	@Override
-//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+	@Caching(evict = {
+			@CacheEvict(cacheNames = {"bbsPost","bbsPostPage","bbsFirstPost","bbsLatestPost"}, allEntries=true),
+			@CacheEvict(cacheNames = {"bbsReply"}, allEntries=true)
+	})
 	public void deletePost(int id) {
 		sql.deleteById(BbsPost.class, id);
 		replyDao.deleteByPostId(id);
 	}
-
+	
 	@Override
+	@Cacheable(cacheNames = "bbsLatestPost",key = "#userId")
 	public Date getLatestPost(int userId) {
 		return postDao.getLatestPostDate(userId);
 	}
 
-//	@CacheEvict(cacheNames="TOPIC", allEntries=true)
+	@CacheEvict(cacheNames = {"bbsTopic","bbsTopicPage","bbsHotTopicPage","bbsNiceTopicPage"}, allEntries=true)
 	public void updateTopic(BbsTopic topic){
 		sql.updateById(topic);
 	}
 
 	@Override
+	@Cacheable(cacheNames = "bbsFirstPost",key = "#topicId")
 	public BbsPost getFirstPost(Integer topicId) {
 		Query<BbsPost> query = sql.query(BbsPost.class);
 		List<BbsPost> list = query.andEq("topic_id", topicId)

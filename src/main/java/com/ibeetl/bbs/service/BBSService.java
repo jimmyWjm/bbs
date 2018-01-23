@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.beetl.sql.core.engine.PageQuery;
 
-import com.ibeetl.bbs.es.vo.IndexObject;
 import com.ibeetl.bbs.model.BbsMessage;
 import com.ibeetl.bbs.model.BbsPost;
 import com.ibeetl.bbs.model.BbsReply;
@@ -13,9 +12,9 @@ import com.ibeetl.bbs.model.BbsTopic;
 import com.ibeetl.bbs.model.BbsUser;
 
 public interface BBSService {
-	BbsTopic getTopic(Integer id);
-	BbsPost getPost(int id);
-	BbsReply getReply(int id);
+	BbsTopic getTopic(Integer topicId);
+	BbsPost getPost(int postId);
+	BbsReply getReply(int replyId);
 	
 	PageQuery getTopics(PageQuery query);
 	
@@ -30,11 +29,11 @@ public interface BBSService {
 	
 	public void notifyParticipant(int topicId,int ownerId);
 	
-	void getHotTopics(PageQuery query);
+	PageQuery getHotTopics(PageQuery query);
 
-	void getNiceTopics(PageQuery query);
+	PageQuery getNiceTopics(PageQuery query);
 
-	void getPosts(PageQuery query);
+	PageQuery getPosts(PageQuery query);
 
 	void saveUser(BbsUser user);
 

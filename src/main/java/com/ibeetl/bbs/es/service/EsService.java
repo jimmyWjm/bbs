@@ -218,8 +218,8 @@ public class EsService{
 					
 					BbsTopic topic = bbsService.getTopic(index.getTopicId());
 					
-					BbsUser user = (BbsUser)topic.get("bbsUser");
-					BbsModule module = (BbsModule)topic.get("bbsModule");
+					BbsUser user = (BbsUser)topic.get("user");
+					BbsModule module = (BbsModule)topic.get("module");
 					
 					if(index.getReplyId() != null) {
 						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 

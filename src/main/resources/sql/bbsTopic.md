@@ -77,8 +77,10 @@ getTopic
 *查询主题帖
 	
 	SELECT * FROM bbs_topic WHERE id= #topicId#
- 	@orm.single({"userId":"id"},"BbsUser");
- 	@orm.single({"moduleId":"id"},"BbsModule");
+	
+ 	@orm.single({"userId":"id"},"BbsUser",{"alias":"user"});
+ 	
+ 	@orm.single({"moduleId":"id"},"BbsModule",{"alias":"module"});
 
 
 
