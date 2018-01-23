@@ -88,7 +88,6 @@ public class BBSController {
 		if (StringUtils.isBlank(keyword)) {
 			view.setViewName("/index.html");
 			PageQuery query = new PageQuery(p, null);
-			query.setPageSize(Const.TOPIC_PAGE_SIZE);
 			//因为用了spring boot缓存,sb是用返回值做缓存,所以service再次返回了pageQuery以缓存查询结果
 			query = bbsService.getTopics(query);
 			view.addObject("topicPage", query);
@@ -133,7 +132,7 @@ public class BBSController {
 		 ModelAndView view = new ModelAndView();
 		view.setViewName("/bbs/index.html");
 		PageQuery query = new PageQuery(p, null);
-		bbsService.getHotTopics(query);
+		query = bbsService.getHotTopics(query);
 		view.addObject("topicPage", query);
 		return view;
 	}
@@ -147,7 +146,7 @@ public class BBSController {
 	public ModelAndView niceTopic(@PathVariable int p, ModelAndView view){
 		view.setViewName("/bbs/index.html");
 		PageQuery query = new PageQuery(p, null);
-		bbsService.getNiceTopics(query);
+		query = bbsService.getNiceTopics(query);
 		view.addObject("topicPage", query);
 		return view;
 	}
@@ -158,7 +157,7 @@ public class BBSController {
 		ModelAndView view = new  ModelAndView();
 		view.setViewName("/detail.html");
 		PageQuery query = new PageQuery(p, new HashMap(){{put("topicId", id);}});
-		bbsService.getPosts(query);
+		query = bbsService.getPosts(query);
 		view.addObject("postPage", query);
 		BbsTopic topic = bbsService.getTopic(id);
 		topic.setPv(topic.getPv() + 1);
@@ -168,14 +167,12 @@ public class BBSController {
 	}
 
 	@RequestMapping("/bbs/topic/module/{id}-{p}.html")
-	public ModelAndView module(@PathVariable final int id, @PathVariable int p){
+	public ModelAndView module(@PathVariable final Integer id, @PathVariable Integer p){
 		ModelAndView view = new ModelAndView();
 		view.setViewName("/index.html");
-		PageQuery query = new PageQuery(p, new HashMap(){{put("moduleId", id);}});
-		query.setPageSize(Const.TOPIC_PAGE_SIZE);
-		bbsService.getTopics(query);
+		PageQuery query = new PageQuery<>(p, new HashMap(){{put("moduleId", id);}});
+		query = bbsService.getTopics(query);
 		view.addObject("topicPage", query);
-		//TODO bug query.getList()有时候为空？
 		if(query.getList().size() >0){
 			BbsTopic bbsTopic = (BbsTopic) query.getList().get(0);
 			view.addObject("pagename",bbsTopic.getTails().get("moduleName"));

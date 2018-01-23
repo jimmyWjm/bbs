@@ -155,6 +155,16 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <dependencies>
+	                <!-- spring热部署，解决classload不同导致的类型转换异常-->
+					<dependency>
+					    <groupId>org.springframework</groupId>
+					    <artifactId>springloaded</artifactId>
+					    <version>1.2.8.RELEASE</version>
+					</dependency>
+	            </dependencies>
+                
+                
             </plugin>
               <!-- define the project compile level -->  
          <plugin>
