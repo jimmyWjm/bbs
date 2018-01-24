@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.beetl.core.GroupTemplate;
 import org.beetl.core.Template;
 import org.beetl.ext.spring.BeetlGroupUtilConfiguration;
@@ -23,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibeetl.bbs.es.annotation.EsEntityType;
 import com.ibeetl.bbs.es.annotation.EsOperateType;
+import com.ibeetl.bbs.es.config.AOPConfig;
 import com.ibeetl.bbs.es.entity.BbsIndex;
 import com.ibeetl.bbs.es.repository.BbsIndexRepository;
 import com.ibeetl.bbs.es.vo.IndexObject;
@@ -37,6 +40,7 @@ import com.ibeetl.bbs.util.EsUtil;
 @Service
 public class EsService{
 
+	private Logger logger = LogManager.getLogger(EsService.class);  
 	@Autowired
 	private BbsIndexRepository bbsIndexRepository;
 	@Autowired
@@ -67,7 +71,9 @@ public class EsService{
 	public void editEsIndex(EsEntityType entityType,EsOperateType operateType,Object id) {
 		if(operateType == EsOperateType.ADD || operateType == EsOperateType.UPDATE) {
 			BbsIndex bbsIndex = this.createBbsIndex(entityType, (Integer)id);
-			this.saveBbsIndex(bbsIndex);
+			if(bbsIndex != null) {
+				this.saveBbsIndex(bbsIndex);
+			}
 		}else if(operateType == EsOperateType.DELETE) {
 			this.deleteBbsIndex((String)id);
 		}
@@ -115,9 +121,11 @@ public class EsService{
 						bbsIndex = new BbsIndex(reply.getTopicId(), reply.getPostId(), reply.getId(), reply.getUserId(), reply.getContent(), reply.getCreateTime());
 					} 
 					if(bbsIndex == null) {
-						throw new RuntimeException("未定义类型转换");
+						logger.error("未定义类型转换");
+					}else {
+						indexList.add(bbsIndex);
 					}
-					indexList.add(bbsIndex);
+					
 				}
 				bbsIndexRepository.saveAll(indexList);
 				indexList = new ArrayList<>();
@@ -150,7 +158,7 @@ public class EsService{
 			bbsIndex = new BbsIndex(reply.getTopicId(), reply.getPostId(), reply.getId(), reply.getUserId(), reply.getContent(), reply.getCreateTime());
 		}
 		if(bbsIndex == null) {
-			throw new RuntimeException("未定义类型转换");
+			logger.error("未定义类型转换");
 		}
 		return bbsIndex;
 	}

@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
@@ -33,6 +35,8 @@ public class AOPConfig {
 	
 	@Autowired
 	private EsService esService;
+	
+	private Logger logger = LogManager.getLogger(AOPConfig.class);  
 	
 	@Pointcut("@annotation(com.ibeetl.bbs.es.annotation.EsIndexType) || @annotation(com.ibeetl.bbs.es.annotation.EsIndexs)")  
 	private void anyMethod(){}//定义ES的切入点  
@@ -67,13 +71,13 @@ public class AOPConfig {
 	        		Map<String, Object> parameterNames = this.getParameterNames(pjp);
 	        		Integer id = (Integer)parameterNames.get(key);
 	        		if(id == null) {
-	        			throw new RuntimeException(target.getClass().getName()+"$"+msig.getName()+"：未获取到主键，无法更新索引");
+	        			logger.error(target.getClass().getName()+"$"+msig.getName()+"：未获取到主键，无法更新索引");
+	        		}else {
+	        			BbsIndex bbsIndex = esService.createBbsIndex(index.entityType(), (Integer)id);
+		        		String md5Id = EsUtil.getEsKey(bbsIndex.getTopicId(),bbsIndex.getPostId(),bbsIndex.getReplyId());
+		        		EsIndexTypeData data = new EsIndexTypeData(index.entityType(), index.operateType(), md5Id);
+		        		typeDatas.add(data); 
 	        		}
-	        		
-	        		BbsIndex bbsIndex = esService.createBbsIndex(index.entityType(), (Integer)id);
-	        		String md5Id = EsUtil.getEsKey(bbsIndex.getTopicId(),bbsIndex.getPostId(),bbsIndex.getReplyId());
-	        		EsIndexTypeData data = new EsIndexTypeData(index.entityType(), index.operateType(), md5Id);
-	        		typeDatas.add(data); 
 	        	}
 			}
 	        //调用原方法
@@ -96,12 +100,12 @@ public class AOPConfig {
         			}
     			}
         		if(id == null) {
-        			throw new RuntimeException(target.getClass().getName()+"$"+msig.getName()+"：未获取到主键，无法更新索引");
+        			logger.error(target.getClass().getName()+"$"+msig.getName()+"：未获取到主键，无法更新索引");
+        		}else {
+        			EsIndexTypeData data = new EsIndexTypeData(index.entityType(), index.operateType(), id);
+            		typeDatas.add(data); 
         		}
         		
-        		EsIndexTypeData data = new EsIndexTypeData(index.entityType(), index.operateType(), id);
-        		typeDatas.add(data); 
-	        	
         		}
 			}
 	        
@@ -141,16 +145,17 @@ public class AOPConfig {
 	        names = localVariableTableParameterNameDiscoverer.getParameterNames(currentMethod);
 		}
 		if(names == null) {
-			throw new RuntimeException(pjp.getTarget().getClass().getName()+"$"+signature.getName()+"：未获取到参数名称列表");
+			logger.error(pjp.getTarget().getClass().getName()+"$"+signature.getName()+"：未获取到参数名称列表");
 		}
 		if(names.length != args.length ) {
-			throw new RuntimeException(pjp.getTarget().getClass().getName()+"$"+signature.getName()+"：参数名称列表长度与参数值列表长度不相等");
+			logger.error(pjp.getTarget().getClass().getName()+"$"+signature.getName()+"：参数名称列表长度与参数值列表长度不相等");
 		}
 		Map<String, Object> map = new HashMap<>();
-		for (int i = 0; i < names.length; i++) {
-			map.put(names[i], args[i]);
+		if(names != null && names.length == args.length) {
+			for (int i = 0; i < names.length; i++) {
+				map.put(names[i], args[i]);
+			}
 		}
-		
 		return map;
 	}
 	
