@@ -18,16 +18,20 @@
 
 * maven install  生成的war包部署到服务器上
 
+## 技术
+
+Spring Boot2，Spring Cache，Elastic Search,Beetl,BeetlSQL,Java8
+
 ## 合作开发
 
 开发之前必须先写个issue，然后指定给自己，也可以只提issue，然后各位自己领取
 
 
-当前为1.1
+当前为2.0
 
 ![Alt text](show.png)
 ![Alt text](show2.png)
 
 ## 作者
 
-闲大赋，Darren
+闲大赋，Darren,马丁的早晨
