@@ -85,7 +85,7 @@ public class BBSServiceImpl implements BBSService {
 		return topicDao.queryMyMessageTopicCount(userId);
 	}
 	
-	@CacheEvict(cacheNames = {"bbsTopicMessageList","bbsTopicMessageCount"}, allEntries=true)
+	@CacheEvict(cacheNames = {"bbsTopicMessageList","bbsTopicMessageCount","bbsTopic"}, allEntries=true)
 	@Override
 	public void updateMyTopic(int msgId,int status){
 		BbsMessage msg = new BbsMessage();
@@ -191,6 +191,8 @@ public class BBSServiceImpl implements BBSService {
 		postDao.insert(post,true);
 		gitUserService.addTopicScore(user.getId());
 	}
+	
+	
 
 	@Override
 	@CacheEvict(cacheNames = {"bbsPost","bbsPostPage","bbsFirstPost","bbsLatestPost"}, allEntries=true)
@@ -232,6 +234,16 @@ public class BBSServiceImpl implements BBSService {
 	}
 	
 	@Override
+	@Caching(evict = {
+			@CacheEvict(cacheNames = {"bbsTopic","bbsTopicPage","bbsHotTopicPage","bbsNiceTopicPage"}, allEntries=true),
+			@CacheEvict(cacheNames = {"bbsPost","bbsPostPage","bbsFirstPost","bbsLatestPost"}, allEntries=true),
+			@CacheEvict(cacheNames = {"bbsReply"}, allEntries=true)
+	})
+	public void deleteReplay(int id) {
+		sql.deleteById(BbsReply.class, id);
+	}
+	
+	@Override
 	@Cacheable(cacheNames = "bbsLatestPost",key = "#userId")
 	public Date getLatestPost(int userId) {
 		return postDao.getLatestPostDate(userId);
@@ -240,6 +252,11 @@ public class BBSServiceImpl implements BBSService {
 	@CacheEvict(cacheNames = {"bbsTopic","bbsTopicPage","bbsHotTopicPage","bbsNiceTopicPage"}, allEntries=true)
 	public void updateTopic(BbsTopic topic){
 		sql.updateById(topic);
+	}
+	
+	@CacheEvict(cacheNames =  {"bbsPost","bbsPostPage","bbsFirstPost","bbsLatestPost"}, allEntries=true)
+	public void updatePost(BbsPost post) {
+		sql.updateById(post);
 	}
 
 	@Override

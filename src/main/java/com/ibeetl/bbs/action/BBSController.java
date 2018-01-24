@@ -159,9 +159,12 @@ public class BBSController {
 		PageQuery query = new PageQuery(p, new HashMap(){{put("topicId", id);}});
 		query = bbsService.getPosts(query);
 		view.addObject("postPage", query);
+		
 		BbsTopic topic = bbsService.getTopic(id);
-		topic.setPv(topic.getPv() + 1);
-		sql.updateById(topic);
+		BbsTopic template = new BbsTopic();
+		template.setId(id);
+		template.setPv(topic.getPv() + 1);
+		sql.updateTemplateById(template);
 		view.addObject("topic", topic);
 		return view;
 	}
@@ -254,7 +257,7 @@ public class BBSController {
 			BbsTopic topic = bbsService.getTopic(post.getTopicId());
 			int totalPost = topic.getPostCount() + 1;
 			topic.setPostCount(totalPost);
-			sql.updateById(topic);
+			bbsService.updateTopic(topic);
 			
 			bbsService.notifyParticipant(topic.getId(),user.getId());
 			
@@ -463,7 +466,7 @@ public class BBSController {
 			BbsPost db = sql.unique(BbsPost.class, post.getId());
 			if(canUpdatePost(db,request,response)){
 				db.setContent(post.getContent());
-				sql.updateById(db);
+				bbsService.updatePost(db);
 				result.put("id", post.getId());
 				result.put("msg", "/bbs/topic/"+db.getTopicId()+"-1.html");
 				result.put("err", 0);
@@ -507,7 +510,7 @@ public class BBSController {
 		
 		JSONObject result = new JSONObject();
 		if( canDeleteReply(request, response, id)){
-			sql.deleteById(BbsReply.class, id);
+			bbsService.deleteReplay(id);
 			result.put("err", 0);
 			result.put("msg", "success");
 		}else{

@@ -2,6 +2,9 @@ package com.ibeetl.bbs.es.vo;
 
 import java.util.Date;
 
+import com.ibeetl.bbs.model.BbsModule;
+import com.ibeetl.bbs.model.BbsUser;
+
 /**
  * 索引对象
 * @author ykb yang.kb@topcheer.com
@@ -127,15 +130,26 @@ public class IndexObject implements Comparable<IndexObject>{
 	public void setModuleName(String moduleName) {
 		this.moduleName = moduleName;
 	}
-	public IndexObject(Integer topicId, Integer isUp, Integer isNice, Integer userId, String userName, Date createTime,
-			Integer postCount, Integer pv, Integer moduleId, String moduleName, String topicContent, String postContent,
+	public IndexObject(Integer topicId, Integer isUp, Integer isNice, BbsUser user, Date createTime,
+			Integer postCount, Integer pv, BbsModule module, String topicContent, String postContent,
 			Integer indexType, double score) {
 		super();
 		this.topicId = topicId;
 		this.isUp = isUp;
 		this.isNice = isNice;
-		this.userId = userId;
-		this.userName = userName;
+		if(user!=null) {
+			this.userId = userId;
+			this.userName = userName;
+		}else {
+			this.userId=-1;
+			this.userName="未知";
+		}
+		if(module!=null) {
+			//不太可能物理删除moudle
+			this.moduleId = module.getId();
+			this.moduleName = module.getName();
+		}
+		
 		this.createTime = createTime;
 		this.postCount = postCount;
 		this.pv = pv;

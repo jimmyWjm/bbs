@@ -40,6 +40,7 @@ public interface BBSService {
 	BbsUser login(BbsUser user);
 
 	void saveTopic(BbsTopic topic, BbsPost post, BbsUser user);
+	
 
 	void savePost(BbsPost post, BbsUser user);
 
@@ -50,7 +51,10 @@ public interface BBSService {
 
 	void deletePost(int id);
 	
+	void deleteReplay(int id);
+	
 	void updateTopic(BbsTopic topic);
+	void updatePost(BbsPost post);
 	
 	Date getLatestPost(int userId);
 	

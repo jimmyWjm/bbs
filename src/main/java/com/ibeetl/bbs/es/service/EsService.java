@@ -228,13 +228,13 @@ public class EsService{
 					BbsModule module = (BbsModule)topic.get("module");
 					
 					if(index.getReplyId() != null) {
-						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 
-								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module.getId(), module.getName(), 
+						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user, 
+								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module, 
 								topic.getContent(), index.getContent(), 3, score);
 						
 					}else if(index.getPostId() != null) {
-						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 
-								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module.getId(), module.getName(), 
+						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user, 
+								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module, 
 								topic.getContent(), index.getContent(), 2, score);
 						
 					}else if(index.getTopicId() != null) {
@@ -243,8 +243,8 @@ public class EsService{
 						if(firstPost != null) {
 							postContent = firstPost.getContent();
 						}
-						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user.getId(), user.getUserName(), 
-								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module.getId(), module.getName(), 
+						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user, 
+								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module, 
 								topic.getContent(),postContent , 1, score);
 					}
 					
