@@ -55,6 +55,7 @@
 </head>
 <body>
 @  var _user = c.currentUser(request, servlet.response); 
+@ var isAdmin = 'admin'== (_user.userName!"");
 <nav class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
@@ -102,7 +103,10 @@
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user-circle-o"></i> ${_user.userName} ${mcount > 0?'<span class="badge mcount">'+mcount+'</span> '}<span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu">
 						<li><a href="javascript:;">你已有${_user.score}积分</a></li>
-						<li><a href="javascript:;">等级${level(_user.level)}</a></li>
+						<li><a href="javascript:;">等级：${level(_user.level)}</a></li>
+						@if(isAdmin){
+							<li><a href="javascript:;" id="initEs" data-href="${ctxPath}/bbs/admin/es/init">初始化ES索引</a></li>
+						@}
 						<li class="divider"></li>
 						<li><a href="${ctxPath}/bbs/myMessage.html">给我的回复</a></li>
 					</ul>
@@ -270,6 +274,13 @@
     </script>
 <script type="text/javascript">
 $(function(){
+    	$('#initEs').on('click',function(e){
+    		var href = $(this).data('href');
+    		
+    		$.post(href,null,function(json){
+	   			 $.alert(json.msg);
+	   		 })
+    	});
 	
 	 getKeword();
 	

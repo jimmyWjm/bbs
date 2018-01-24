@@ -566,7 +566,7 @@ public class BBSController {
 		}else{
 			esService.initIndex();
 			result.put("err", 0);
-			result.put("msg", "success");
+			result.put("msg", "ES初始化成功");
 		}
 		return result;
 	}
