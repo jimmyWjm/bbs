@@ -19,7 +19,6 @@ import org.beetl.sql.ext.DebugInterceptor;
 import org.beetl.sql.ext.spring4.BeetlSqlDataSource;
 import org.beetl.sql.ext.spring4.BeetlSqlScannerConfigurer;
 import org.beetl.sql.ext.spring4.SqlManagerFactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
@@ -54,7 +53,7 @@ public class BbsMain extends SpringBootServletInitializer  {
 	public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(BbsMain.class);
         app.setBannerMode(Banner.Mode.OFF);
-        PageQuery.DEFAULT_PAGE_SIZE = 3 ;
+        PageQuery.DEFAULT_PAGE_SIZE = 20 ;
         app.run(args);
 
     }
@@ -153,5 +152,26 @@ public class BbsMain extends SpringBootServletInitializer  {
     public RestTemplate restTemplate(RestTemplateBuilder builder) {  
         return builder.build();  
     }  
+    
+    
+
+	
+	/**
+	 *内容模板配置
+	 * @return
+	 */
+   @Bean(name = "beetlContentTemplateConfig")
+    public BeetlGroupUtilConfiguration getContentBeetlUtilConfiguration() {
+            BeetlGroupUtilConfiguration beetlGroupUtilConfiguration = new BeetlGroupUtilConfiguration();
+            ResourcePatternResolver patternResolver = ResourcePatternUtils.getResourcePatternResolver(new DefaultResourceLoader());
+            
+            beetlGroupUtilConfiguration.setConfigFileResource(patternResolver.getResource("classpath:beetl.properties"));
+            ClasspathResourceLoader cploder = new ClasspathResourceLoader("/elasticsearch");
+            beetlGroupUtilConfiguration.setResourceLoader(cploder);
+            
+            beetlGroupUtilConfiguration.init();
+            
+            return beetlGroupUtilConfiguration;
+    }
     
 }

@@ -1,14 +1,17 @@
 package com.ibeetl.bbs.es.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
+import org.beetl.core.GroupTemplate;
+import org.beetl.core.Template;
+import org.beetl.ext.spring.BeetlGroupUtilConfiguration;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.env.Environment;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -44,6 +47,16 @@ public class EsService{
 	SQLManager sqlManager;
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	private Environment env;
+	
+	private GroupTemplate beetlTemplate;
+	
+	public EsService(Environment env,@Qualifier("beetlContentTemplateConfig") BeetlGroupUtilConfiguration beetlGroupUtilConfiguration){
+		this.env = env;
+		this.beetlTemplate = beetlGroupUtilConfiguration.getGroupTemplate();
+	}
+	
 	
 	/**
 	 * 公共操作方法
@@ -186,21 +199,14 @@ public class EsService{
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 	
-			
-			String esJson = "{" + 
-					"	\"from\":"+(pageSize*(pageNumber -1))+"," + 
-					"	\"size\":"+pageSize+"," + 
-					"	\"query\":{" + 
-					"		\"match\":{" + 
-					"			\"content\":\""+keyword+"\""+
-					"			}" + 
-					"		}" + 
-					"}";
-			
+			Template template = beetlTemplate.getTemplate("/bssContent.html");
+			template.binding("pageSize", pageSize);
+			template.binding("pageNumber", pageNumber);
+			template.binding("keyword", keyword);
+			String esJson = template.render();
 			
 			HttpEntity<String>  httpEntity = new HttpEntity<String>(esJson,headers);
-			
-			String result = restTemplate.postForObject("http://127.0.0.1:9200/bbs/content/_search", httpEntity, String.class);
+			String result = restTemplate.postForObject(env.getProperty("elasticsearch.bbs.content.url"), httpEntity, String.class);
 			
 			List<IndexObject> indexObjectList = new ArrayList<>();
 			
