@@ -44,6 +44,7 @@ public class BbsTopic  extends TailBean implements Serializable{
 	public Integer getIsNice() {
 		return isNice;
 	}
+	
 
 	public void setIsNice(Integer isNice) {
 		this.isNice = isNice;

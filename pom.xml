@@ -10,7 +10,7 @@
  <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.0.0.M2</version>
+        <version>2.0.0.M7</version>
     </parent>
     
     
@@ -33,10 +33,7 @@
 	        <groupId>org.springframework.boot</groupId>
 	        <artifactId>spring-boot-starter-aop</artifactId>
 	    </dependency>
-	     <dependency>
-	        <groupId>org.springframework.session</groupId>
-	        <artifactId>spring-session</artifactId>
-   		 </dependency>
+	   
 	    
 	    <dependency>
 	        <groupId>org.springframework.boot</groupId>
@@ -48,7 +45,7 @@
 		<dependency>
 		    <groupId>com.ibeetl</groupId>
 		    <artifactId>beetl-framework-starter</artifactId>
-		    <version>1.1.31.RELEASE</version>
+		    <version>1.1.32.RELEASE</version>
 		</dependency>
 		
 	    <dependency>
@@ -64,11 +61,7 @@
 		    <version>4.6</version>
 		</dependency>
         
-        <dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.0.5</version>
-		</dependency>
+       
 		
 		<dependency>
 		    <groupId>com.alibaba</groupId>
@@ -95,11 +88,15 @@
 			<version>3.2.1</version>
 		</dependency>
 		
-		<dependency>
-		    <groupId>com.alibaba</groupId>
-		    <artifactId>druid</artifactId>
-		    <version>1.0.6</version>
-		</dependency>
+		 <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>6.0.5</version>
+        </dependency>
 	
  	<!-- ES搜索 -->
  	<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-elasticsearch -->
@@ -127,22 +124,7 @@
 	    <artifactId>fluent-hc</artifactId>
 	    <version>4.5.4</version>
 	</dependency>
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-    </dependencies>
+</dependencies>
 	 		
 
 

@@ -16,13 +16,4 @@ public interface BbsUserDao extends BaseMapper<BbsUser> {
 		
 		@SqlStatement(params="max")
 		List<BbsUser> getLevelTop(Integer max);
-		
-
-		
-		
-		
-	
-		
-		
-	
 }
