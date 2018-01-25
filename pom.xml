@@ -110,6 +110,20 @@
 	    <groupId>org.springframework.boot</groupId>
 	    <artifactId>spring-boot-starter-cache</artifactId>
 	</dependency>
+	<!-- 使用Ehcache 2.X -->
+	<!-- https://mvnrepository.com/artifact/net.sf.ehcache/ehcache -->
+	<dependency>
+	    <groupId>net.sf.ehcache</groupId>
+	    <artifactId>ehcache</artifactId>
+	    <version>2.10.4</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.springframework/spring-context-support -->
+	<dependency>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-context-support</artifactId>
+	</dependency>
+	
+	
 	<!--  		Http请求工具类 -->
  		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 	<dependency>

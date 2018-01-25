@@ -179,7 +179,6 @@ public class BBSServiceImpl implements BBSService {
 	@Caching(evict = {
 			@CacheEvict(cacheNames = {"bbsTopic","bbsTopicPage","bbsHotTopicPage","bbsNiceTopicPage"}, allEntries=true),
 			@CacheEvict(cacheNames = {"bbsPost","bbsPostPage","bbsFirstPost","bbsLatestPost"}, allEntries=true)
-			//TODO
 	})
 	public void saveTopic(BbsTopic topic, BbsPost post, BbsUser user) {
 		topic.setUserId(user.getId());
