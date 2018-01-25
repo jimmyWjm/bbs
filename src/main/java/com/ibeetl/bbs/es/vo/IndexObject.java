@@ -138,8 +138,8 @@ public class IndexObject implements Comparable<IndexObject>{
 		this.isUp = isUp;
 		this.isNice = isNice;
 		if(user!=null) {
-			this.userId = userId;
-			this.userName = userName;
+			this.userId = user.getId();
+			this.userName = user.getUserName();
 		}else {
 			this.userId=-1;
 			this.userName="未知";
@@ -153,8 +153,6 @@ public class IndexObject implements Comparable<IndexObject>{
 		this.createTime = createTime;
 		this.postCount = postCount;
 		this.pv = pv;
-		this.moduleId = moduleId;
-		this.moduleName = moduleName;
 		this.topicContent = topicContent;
 		this.postContent = postContent;
 		this.indexType = indexType;
