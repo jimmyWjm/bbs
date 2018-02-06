@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibeetl.bbs.es.annotation.EsEntityType;
 import com.ibeetl.bbs.es.annotation.EsOperateType;
-import com.ibeetl.bbs.es.config.AOPConfig;
 import com.ibeetl.bbs.es.entity.BbsIndex;
 import com.ibeetl.bbs.es.repository.BbsIndexRepository;
 import com.ibeetl.bbs.es.vo.IndexObject;

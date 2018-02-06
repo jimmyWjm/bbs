@@ -7,14 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
@@ -36,7 +36,7 @@ public class AOPConfig {
 	@Autowired
 	private EsService esService;
 	
-	private Logger logger = LogManager.getLogger(AOPConfig.class);  
+	private Logger logger = LoggerFactory.getLogger(AOPConfig.class);
 	
 	@Pointcut("@annotation(com.ibeetl.bbs.es.annotation.EsIndexType) || @annotation(com.ibeetl.bbs.es.annotation.EsIndexs)")  
 	private void anyMethod(){}//定义ES的切入点  
@@ -90,6 +90,7 @@ public class AOPConfig {
 				
 		       Map<String, Object> parameterNames = this.getParameterNames(pjp);
 	        	id = (Integer)parameterNames.get(key);
+	        	boolean resultErr = false;
         		if(id == null) {
         			if(o instanceof ModelAndView) {
         				ModelAndView modelAndView = (ModelAndView)o;
@@ -97,10 +98,14 @@ public class AOPConfig {
         			}else if(o instanceof JSONObject) {
         				JSONObject json = (JSONObject)o;
         				id = json.getInteger(key);
+        				resultErr = 1 == json.getInteger("err")?true:false;
         			}
     			}
         		if(id == null) {
-        			logger.error(target.getClass().getName()+"$"+msig.getName()+"：未获取到主键，无法更新索引");
+        			if(!resultErr){
+        				logger.error(target.getClass().getName()+"$"+msig.getName()+"：未获取到主键，无法更新索引");
+        			}
+        			
         		}else {
         			EsIndexTypeData data = new EsIndexTypeData(index.entityType(), index.operateType(), id);
             		typeDatas.add(data); 

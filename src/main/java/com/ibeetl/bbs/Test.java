@@ -101,6 +101,12 @@ public class Test {
 			
 		}
 
+		@Override
+		public Connection getMetaData() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
 		
 		
 
