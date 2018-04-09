@@ -31,8 +31,6 @@ public class PageQueryKeyGenerator implements KeyGenerator{
 		key.append(pageQuery.getPageSize()+"-");
 		key.append(pageQuery.getPageNumber());
 		
-		
-//		System.out.println(method.getName()+" key："+key.toString());
 		return key.toString();
 	}
 

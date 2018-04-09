@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.beetl.core.GroupTemplate;
 import org.beetl.core.Template;
 import org.beetl.ext.spring.BeetlGroupUtilConfiguration;
@@ -198,7 +199,7 @@ public class EsService{
 	public PageQuery<IndexObject> getQueryPage(String keyword,int p){
 		if(p <= 0) {p = 1;}
 		int pageNumber = p;
-		int pageSize = 3;
+		long pageSize = PageQuery.DEFAULT_PAGE_SIZE;
 		
 		PageQuery<IndexObject> pageQuery = new PageQuery<>(pageNumber, pageSize);
 		try {
@@ -226,6 +227,8 @@ public class EsService{
 				
 				double score = jsonNode.get("_score").asDouble();
 				BbsIndex index = new ObjectMapper().convertValue(jsonNode.get("_source"), BbsIndex.class);
+				
+				index.setContent(jsonNode.get("highlight").get("content").get(0).asText());
 				if(index.getTopicId() != null) {
 					IndexObject indexObject = null;
 					
@@ -252,7 +255,7 @@ public class EsService{
 						}
 						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user, 
 								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module, 
-								topic.getContent(),postContent , 1, score);
+								index.getContent(),postContent , 1, score);
 					}
 					
 					indexObjectList.add(indexObject);

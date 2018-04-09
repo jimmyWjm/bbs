@@ -285,7 +285,8 @@ $(function(){
 	 getKeword();
 	
 	$('#serach-btn').on('click',function(){
-		var keyword = $('#keyword').val().trim();	
+		var keyword = $('#keyword').val().trim();
+		keyword = encodeURI(keyword);
 		location.href = '/bbs/bbs/index/1.html?keyword='+keyword;
 	})
 	$("#keyword").on('keydown',function (e) {

@@ -1,4 +1,4 @@
-package com.ibeetl.bbs.action;
+package com.ibeetl.bbs.config;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

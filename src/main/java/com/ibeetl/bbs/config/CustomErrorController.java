@@ -1,4 +1,4 @@
-package com.ibeetl.bbs.action;
+package com.ibeetl.bbs.config;
 
 import java.util.Collections;
 import java.util.HashMap;
