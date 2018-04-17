@@ -17,6 +17,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.Cache.ValueWrapper;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +32,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
 import com.alibaba.fastjson.JSONObject;
-import com.ibeetl.bbs.common.Const;
 import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.es.annotation.EsEntityType;
 import com.ibeetl.bbs.es.annotation.EsIndexType;
@@ -58,7 +60,8 @@ public class BBSController {
 	WebUtils webUtils;
 	@Autowired
 	EsService esService;
-	
+	@Autowired
+	private CacheManager cacheManager;
 
 	
 	
@@ -313,6 +316,7 @@ public class BBSController {
 		view.addObject("user", user);
 		return view;
 	}
+
 	
 	// ============== 上传文件路径：项目根目录 upload
 	@RequestMapping("/bbs/upload")
@@ -570,6 +574,71 @@ public class BBSController {
 		}
 		return result;
 	}
-	
-	
+	/**
+	 * 踩或顶 评论
+	 * @param request
+	 * @param response
+	 * @param postId
+	 * @param num
+	 * @return
+	 */
+	@PostMapping("/bbs/post/support/{postId}")
+	@ResponseBody
+	public JSONObject updatePostSupport(HttpServletRequest request, HttpServletResponse response,@PathVariable Integer postId,@RequestParam Integer num){
+		JSONObject result = new JSONObject();
+		result.put("err", 1);
+		BbsUser user = webUtils.currentUser(request, response);
+		if(user==null){
+			result.put("msg", "未登录用户！");
+		}else{
+			BbsPost post = bbsService.getPost(postId);
+			
+			Cache cache = cacheManager.getCache("postSupport");
+			ValueWrapper valueWrapper = cache.get(user.getId()+":"+post.getId());
+			if(valueWrapper != null && valueWrapper.get() != null) {
+				result.put("err", 1);
+				result.put("msg", "请勿频繁点赞，休息一下吧~~~");
+			}else {
+				if(num == 0) {
+					Long cons = post.getCons() != null?post.getCons():0L;
+					post.setCons(++cons);
+					result.put("data", post.getCons());
+				}else {
+					Long pros = post.getPros()!= null?post.getPros():0L;
+					post.setPros(++pros);
+					result.put("data", post.getPros());
+				}
+				bbsService.updatePost(post);
+				
+				result.put("err", 0);
+				cache.put(user.getId()+":"+post.getId(), 1);
+			}
+		}
+		return result;
+	}
+	/**
+	 * 管理员是否已采纳
+	 * @param request
+	 * @param response
+	 * @param postId
+	 * @return
+	 */
+	@PostMapping("/bbs/admin/post/accept/{postId}")
+	@ResponseBody
+	public JSONObject updatePostAccept(HttpServletRequest request, HttpServletResponse response,@PathVariable Integer postId){
+		JSONObject result = new JSONObject();
+		result.put("err", 1);
+		BbsUser user = webUtils.currentUser(request, response);
+		if(user == null || !webUtils.isAdmin(request, response)){
+			result.put("err", 1);
+			result.put("msg", "无法操作");
+		}else{
+			BbsPost post = bbsService.getPost(postId);
+			post.setIsAccept((post.getIsAccept() == null || post.getIsAccept() == 0 )?1:0 );
+			result.put("data", post.getIsAccept());
+			bbsService.updatePost(post);
+			result.put("err", 0);
+		}
+		return result;
+	}
 }
