@@ -109,15 +109,17 @@ public class EsService{
 					
 					if(t instanceof BbsTopic) {
 						BbsTopic topic = (BbsTopic)t ;
-						bbsIndex = new BbsIndex(topic.getId(), null, null, topic.getUserId(), topic.getContent(), topic.getCreateTime());
+						BbsPost firstPost = bbsService.getFirstPost(topic.getId());
+						bbsIndex = new BbsIndex(topic.getId(), null, null, topic.getUserId(), topic.getContent(), topic.getCreateTime(),0,0,firstPost!=null?firstPost.getIsAccept():0,topic.getPv());
 					}
 					if(t instanceof BbsPost) {
 						BbsPost post = (BbsPost)t;
-						bbsIndex = new BbsIndex(post.getTopicId(), post.getId(), null, post.getUserId(), post.getContent(), post.getCreateTime());
+						BbsTopic topic = bbsService.getTopic(post.getTopicId());
+						bbsIndex = new BbsIndex(post.getTopicId(), post.getId(), null, post.getUserId(), post.getContent(), post.getCreateTime(),post.getPros(),post.getCons(),post.getIsAccept(),topic.getPv());
 					}
 					if(t instanceof BbsReply) {
 						BbsReply reply = (BbsReply)t;
-						bbsIndex = new BbsIndex(reply.getTopicId(), reply.getPostId(), reply.getId(), reply.getUserId(), reply.getContent(), reply.getCreateTime());
+						bbsIndex = new BbsIndex(reply.getTopicId(), reply.getPostId(), reply.getId(), reply.getUserId(), reply.getContent(), reply.getCreateTime(),0,0,0,0);
 					} 
 					if(bbsIndex == null) {
 						logger.error("未定义类型转换");
@@ -148,13 +150,15 @@ public class EsService{
 		BbsIndex bbsIndex = null;
 		if(entityType == EsEntityType.BbsTopic) {
 			BbsTopic topic = bbsService.getTopic(id);
-			bbsIndex = new BbsIndex(topic.getId(), null, null, topic.getUserId(), topic.getContent(), topic.getCreateTime());
+			BbsPost firstPost = bbsService.getFirstPost(topic.getId());
+			bbsIndex = new BbsIndex(topic.getId(), null, null, topic.getUserId(), topic.getContent(), topic.getCreateTime(),0,0,firstPost != null ?firstPost.getIsAccept():0,topic.getPv());
 		}else if(entityType == EsEntityType.BbsPost) {
 			BbsPost post = bbsService.getPost(id);
-			bbsIndex = new BbsIndex(post.getTopicId(), post.getId(), null, post.getUserId(), post.getContent(), post.getCreateTime());
+			BbsTopic topic = bbsService.getTopic(post.getTopicId());
+			bbsIndex = new BbsIndex(post.getTopicId(), post.getId(), null, post.getUserId(), post.getContent(), post.getCreateTime(),post.getPros(),post.getCons(),post.getIsAccept(),topic.getPv());
 		}else if(entityType == EsEntityType.BbsReply) {
 			BbsReply reply = bbsService.getReply(id);
-			bbsIndex = new BbsIndex(reply.getTopicId(), reply.getPostId(), reply.getId(), reply.getUserId(), reply.getContent(), reply.getCreateTime());
+			bbsIndex = new BbsIndex(reply.getTopicId(), reply.getPostId(), reply.getId(), reply.getUserId(), reply.getContent(), reply.getCreateTime(),0,0,0,0);
 		}
 		if(bbsIndex == null) {
 			logger.error("未定义类型转换");
@@ -209,7 +213,7 @@ public class EsService{
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 	
-			Template template = beetlTemplate.getTemplate("/bssContent.html");
+			Template template = beetlTemplate.getTemplate("/bssContent2.html");
 			template.binding("pageSize", pageSize);
 			template.binding("pageNumber", pageNumber);
 			template.binding("keyword", keyword);

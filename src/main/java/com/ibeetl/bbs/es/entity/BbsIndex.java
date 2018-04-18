@@ -22,6 +22,11 @@ public class BbsIndex implements Serializable{
 	private String content;
 	private Date createTime;
 	
+	private Integer pros = 0;//顶次数
+	private Integer cons = 0;//踩次数
+	private Integer isAccept = 0;//0：未采纳，1：采纳
+	private Integer pv = 0 ;//访问量
+	
 	public String getId() {
 		if(this.id == null) {
 			return EsUtil.getEsKey(topicId, postId, replyId);
@@ -85,7 +90,7 @@ public class BbsIndex implements Serializable{
 		super();
 	}
 
-	public BbsIndex(Integer topicId, Integer postId, Integer replyId, Integer userId, String content, Date createTime) {
+	public BbsIndex(Integer topicId, Integer postId, Integer replyId, Integer userId, String content, Date createTime,Integer pros,Integer cons ,Integer isAccept,Integer pv) {
 		super();
 		this.topicId = topicId;
 		this.postId = postId;
@@ -93,8 +98,44 @@ public class BbsIndex implements Serializable{
 		this.userId = userId;
 		this.content = content;
 		this.createTime = createTime;
+		this.pros = pros;
+		this.cons = cons;
+		this.isAccept = isAccept;
+		this.pv = pv;
 		
 		this.id = EsUtil.getEsKey(topicId, postId, replyId);
+	}
+
+	public Integer getPros() {
+		return pros;
+	}
+
+	public void setPros(Integer pros) {
+		this.pros = pros;
+	}
+
+	public Integer getCons() {
+		return cons;
+	}
+
+	public void setCons(Integer cons) {
+		this.cons = cons;
+	}
+
+	public Integer getIsAccept() {
+		return isAccept;
+	}
+
+	public void setIsAccept(Integer isAccept) {
+		this.isAccept = isAccept;
+	}
+
+	public Integer getPv() {
+		return pv;
+	}
+
+	public void setPv(Integer pv) {
+		this.pv = pv;
 	}
 
 	

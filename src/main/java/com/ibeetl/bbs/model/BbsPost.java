@@ -20,8 +20,8 @@ public class BbsPost  extends TailBean implements Serializable{
 	private Date createTime ;
 	private Date updateTime ;
 	
-	private Long pros = 0L;//顶次数
-	private Long cons = 0L;//踩次数
+	private Integer pros = 0;//顶次数
+	private Integer cons = 0;//踩次数
 	private Integer isAccept = 0;//0：未采纳，1：采纳
 	
 	
@@ -93,19 +93,19 @@ public class BbsPost  extends TailBean implements Serializable{
 		this.replys = replys;
 	}
 
-	public Long getPros() {
+	public Integer getPros() {
 		return pros;
 	}
 
-	public void setPros(Long pros) {
+	public void setPros(Integer pros) {
 		this.pros = pros;
 	}
 
-	public Long getCons() {
+	public Integer getCons() {
 		return cons;
 	}
 
-	public void setCons(Long cons) {
+	public void setCons(Integer cons) {
 		this.cons = cons;
 	}
 

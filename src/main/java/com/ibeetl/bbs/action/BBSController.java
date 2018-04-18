@@ -584,6 +584,7 @@ public class BBSController {
 	 */
 	@PostMapping("/bbs/post/support/{postId}")
 	@ResponseBody
+	@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.UPDATE)
 	public JSONObject updatePostSupport(HttpServletRequest request, HttpServletResponse response,@PathVariable Integer postId,@RequestParam Integer num){
 		JSONObject result = new JSONObject();
 		result.put("err", 1);
@@ -600,16 +601,17 @@ public class BBSController {
 				result.put("msg", "请勿频繁点赞，休息一下吧~~~");
 			}else {
 				if(num == 0) {
-					Long cons = post.getCons() != null?post.getCons():0L;
+					Integer cons = post.getCons() != null?post.getCons():0;
 					post.setCons(++cons);
 					result.put("data", post.getCons());
 				}else {
-					Long pros = post.getPros()!= null?post.getPros():0L;
+					Integer pros = post.getPros()!= null?post.getPros():0;
 					post.setPros(++pros);
 					result.put("data", post.getPros());
 				}
 				bbsService.updatePost(post);
 				
+				result.put("id", post.getId());
 				result.put("err", 0);
 				cache.put(user.getId()+":"+post.getId(), 1);
 			}
@@ -625,6 +627,7 @@ public class BBSController {
 	 */
 	@PostMapping("/bbs/admin/post/accept/{postId}")
 	@ResponseBody
+	@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.UPDATE)
 	public JSONObject updatePostAccept(HttpServletRequest request, HttpServletResponse response,@PathVariable Integer postId){
 		JSONObject result = new JSONObject();
 		result.put("err", 1);
@@ -638,6 +641,7 @@ public class BBSController {
 			result.put("data", post.getIsAccept());
 			bbsService.updatePost(post);
 			result.put("err", 0);
+			result.put("id", post.getId());
 		}
 		return result;
 	}
