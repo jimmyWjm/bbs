@@ -213,7 +213,7 @@ public class EsService{
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 	
-			Template template = beetlTemplate.getTemplate("/bssContent2.html");
+			Template template = beetlTemplate.getTemplate("/bssContent.html");
 			template.binding("pageSize", pageSize);
 			template.binding("pageNumber", pageNumber);
 			template.binding("keyword", keyword);
