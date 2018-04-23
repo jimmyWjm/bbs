@@ -96,7 +96,7 @@
 	$('.adminAgree').on('click',function(){
 	 	var _this = $(this);
 	 	var postId = _this.data('post');
-	 	$.post('${ctxPath}/bbs/admin/post/accept/'+postId,function(json){
+	 	$.post('${ctxPath}/bbs/user/post/accept/'+postId,function(json){
 	 		 if(json.err){
 	 			$.alert(json.msg)
 	 		 }else{

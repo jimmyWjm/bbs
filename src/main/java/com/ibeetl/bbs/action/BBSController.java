@@ -619,24 +619,25 @@ public class BBSController {
 		return result;
 	}
 	/**
-	 * 管理员是否已采纳
+	 * 提问人或管理员是否已采纳
 	 * @param request
 	 * @param response
 	 * @param postId
 	 * @return
 	 */
-	@PostMapping("/bbs/admin/post/accept/{postId}")
+	@PostMapping("/bbs/user/post/accept/{postId}")
 	@ResponseBody
 	@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.UPDATE)
 	public JSONObject updatePostAccept(HttpServletRequest request, HttpServletResponse response,@PathVariable Integer postId){
 		JSONObject result = new JSONObject();
 		result.put("err", 1);
 		BbsUser user = webUtils.currentUser(request, response);
-		if(user == null || !webUtils.isAdmin(request, response)){
+		BbsPost post = bbsService.getPost(postId);
+		if(user == null || post == null || !webUtils.isAdmin(request, response) || !user.getId().equals(post.getUserId())){
 			result.put("err", 1);
 			result.put("msg", "无法操作");
 		}else{
-			BbsPost post = bbsService.getPost(postId);
+			
 			post.setIsAccept((post.getIsAccept() == null || post.getIsAccept() == 0 )?1:0 );
 			result.put("data", post.getIsAccept());
 			bbsService.updatePost(post);
