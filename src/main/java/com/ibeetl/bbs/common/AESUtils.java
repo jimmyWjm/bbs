@@ -43,7 +43,9 @@ public class AESUtils {
 	private void setkey(String keyStr) {
 		try {
 			KeyGenerator kgen = KeyGenerator.getInstance(AES);  
-            kgen.init(128, new SecureRandom(keyStr.getBytes("UTF-8")));  
+			SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+	        random.setSeed(keyStr.getBytes());
+            kgen.init(128, random);  
             SecretKey secretKey = kgen.generateKey();  
             byte[] enCodeFormat = secretKey.getEncoded();  
             SecretKeySpec aesKey = new SecretKeySpec(enCodeFormat, AES);  
