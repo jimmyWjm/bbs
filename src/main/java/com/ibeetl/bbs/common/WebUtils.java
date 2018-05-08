@@ -57,7 +57,7 @@ public  class WebUtils {
 		// cookie 私钥
 		String secret = Const.USER_COOKIE_SECRET;
 		try {
-			cookieInfo = new DESUtils(secret).decryptString(userCookie);
+			cookieInfo = new AESUtils(secret).decryptString(userCookie);
 		} catch (RuntimeException e) {
 			// ignore
 		}
@@ -68,13 +68,14 @@ public  class WebUtils {
 		}
 		String[] userInfo = cookieInfo.split("~");
 		// 4.规则不匹配
-		if (userInfo.length < 3) {
+		if (userInfo.length < 4) {
 			removeCookie(response, cookieKey);
 			return null;
 		}
 		String userId   = userInfo[0];
 		String oldTime  = userInfo[1];
 		String maxAge   = userInfo[2];
+		String password    = userInfo[3];
 		// 5.判定时间区间，超时的cookie清理掉
 		if (!"-1".equals(maxAge)) {
 			long now  = System.currentTimeMillis();
@@ -88,7 +89,17 @@ public  class WebUtils {
 			removeCookie(response, cookieKey);
 			return null;
 		}
+		if(password == null || "".equals(password.trim())){
+			removeCookie(response, cookieKey);
+			return null;
+		}
 		user =  userDao.unique(Integer.valueOf(userId));
+		
+		if(!user.getPassword().equals(password)) {
+			removeCookie(response, cookieKey);
+			return null;
+		}
+		
 		request.getSession().setAttribute("user", user);
 		return user;
 	}
@@ -96,7 +107,7 @@ public  class WebUtils {
 	/**
 	 * 用户登陆状态维持
 	 * 
-	 * cookie设计为: des(私钥).encode(userId~time~maxAge~ip)
+	 * cookie设计为: des(私钥).encode(userId~time~maxAge~password~ip)
 	 * 
 	 * @param Controller 控制器
 	 * @param GitUserModel  用户model
@@ -109,6 +120,7 @@ public  class WebUtils {
 		request.setAttribute("user", user);
 		// 获取用户的id、nickName
 		String uid     = user.getId()+"";
+		String password     = user.getPassword();
 		// 当前毫秒数
 		long   now      = System.currentTimeMillis();
 		// 超时时间
@@ -123,12 +135,13 @@ public  class WebUtils {
 			.append(uid).append("~")
 			.append(now).append("~")
 			.append(maxAge).append("~")
+			.append(password).append("~")
 			.append(ip);
 
 		// cookie 私钥
 		String secret = Const.USER_COOKIE_SECRET;
 		// 加密cookie
-		String userCookie = new DESUtils(secret).encryptString(cookieBuilder.toString());
+		String userCookie = new AESUtils(secret).encryptString(cookieBuilder.toString());
 		String cookieKey = Const.USER_COOKIE_KEY;
 		// 设置用户的cookie、 -1 维持成session的状态
 		setCookie(response, cookieKey, userCookie, maxAge);
