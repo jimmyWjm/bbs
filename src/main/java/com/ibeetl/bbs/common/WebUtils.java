@@ -95,7 +95,7 @@ public  class WebUtils {
 		}
 		user =  userDao.unique(Integer.valueOf(userId));
 		
-		if(!user.getPassword().equals(password)) {
+		if(!HashKit.md5(user.getPassword()).equals(password)) {
 			removeCookie(response, cookieKey);
 			return null;
 		}
@@ -135,7 +135,7 @@ public  class WebUtils {
 			.append(uid).append("~")
 			.append(now).append("~")
 			.append(maxAge).append("~")
-			.append(password).append("~")
+			.append(HashKit.md5(password)).append("~")
 			.append(ip);
 
 		// cookie 私钥
