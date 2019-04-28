@@ -116,4 +116,5 @@ public class BbsUserServiceImpl implements BbsUserService {
 		return sqlManager.unique(BbsUser.class, id);
 	}
 
+
 }

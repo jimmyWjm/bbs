@@ -3,13 +3,8 @@ package com.ibeetl.bbs.service;
 import java.util.Date;
 import java.util.List;
 
+import com.ibeetl.bbs.model.*;
 import org.beetl.sql.core.engine.PageQuery;
-
-import com.ibeetl.bbs.model.BbsMessage;
-import com.ibeetl.bbs.model.BbsPost;
-import com.ibeetl.bbs.model.BbsReply;
-import com.ibeetl.bbs.model.BbsTopic;
-import com.ibeetl.bbs.model.BbsUser;
 
 public interface BBSService {
 	BbsTopic getTopic(Integer topicId);
@@ -59,5 +54,8 @@ public interface BBSService {
 	Date getLatestPost(int userId);
 	
 	BbsPost getFirstPost(Integer topicId);
+
+	List<BbsModule> allModule();
+	BbsModule getModule(Integer id);
 	
 }

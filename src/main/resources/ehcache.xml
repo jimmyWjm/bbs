@@ -85,8 +85,20 @@
 	    timeToLiveSeconds="3600" 
 	    overflowToDisk="false"
 		/>
-		
-		
+	<cache name="allModule"
+		   eternal="false"
+		   timeToIdleSeconds="0"
+		   timeToLiveSeconds="3600"
+		   overflowToDisk="false"
+	/>
+
+	<cache name="module"
+		   eternal="false"
+		   timeToIdleSeconds="0"
+		   timeToLiveSeconds="36000"
+		   overflowToDisk="false"
+	/>
+
 
 </ehcache> 
 <!--  

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.ibeetl.bbs.model.*;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.beetl.sql.core.query.Query;
@@ -21,11 +22,6 @@ import com.ibeetl.bbs.dao.BbsPostDao;
 import com.ibeetl.bbs.dao.BbsReplyDao;
 import com.ibeetl.bbs.dao.BbsTopicDao;
 import com.ibeetl.bbs.dao.BbsUserDao;
-import com.ibeetl.bbs.model.BbsMessage;
-import com.ibeetl.bbs.model.BbsPost;
-import com.ibeetl.bbs.model.BbsReply;
-import com.ibeetl.bbs.model.BbsTopic;
-import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BBSService;
 import com.ibeetl.bbs.service.BbsUserService;
 
@@ -44,9 +40,13 @@ public class BBSServiceImpl implements BBSService {
 	BbsReplyDao replyDao;
 	@Autowired
 	SQLManager sql ;
+
 	
 	@Autowired
 	BbsUserService gitUserService;
+
+	@Autowired
+	BBSService self;
 
 	@Cacheable(cacheNames = "bbsTopic",key = "#topicId")
 	@Override
@@ -270,8 +270,21 @@ public class BBSServiceImpl implements BBSService {
 		return null;
 	}
 
+	@Override
+	public List<BbsModule> allModule() {
+		return this.moduleDao.all();
+	}
 
-
-
+	@Override
+	@Cacheable(cacheNames = "module")
+	public BbsModule getModule(Integer id){
+		List<BbsModule>  list = self.allModule();
+		for(BbsModule m:list){
+			if( m.getId().equals(id) ){
+				return m;
+			}
+		}
+		return null;
+	}
 
 }

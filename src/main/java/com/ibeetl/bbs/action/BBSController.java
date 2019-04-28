@@ -13,6 +13,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ibeetl.bbs.model.*;
+import com.ibeetl.bbs.util.Functions;
 import org.apache.commons.lang3.StringUtils;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
@@ -39,11 +41,6 @@ import com.ibeetl.bbs.es.annotation.EsIndexs;
 import com.ibeetl.bbs.es.annotation.EsOperateType;
 import com.ibeetl.bbs.es.service.EsService;
 import com.ibeetl.bbs.es.vo.IndexObject;
-import com.ibeetl.bbs.model.BbsMessage;
-import com.ibeetl.bbs.model.BbsPost;
-import com.ibeetl.bbs.model.BbsReply;
-import com.ibeetl.bbs.model.BbsTopic;
-import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BBSService;
 import com.ibeetl.bbs.service.BbsUserService;
 
@@ -58,6 +55,8 @@ public class BBSController {
 	BBSService bbsService;
 	@Autowired
 	WebUtils webUtils;
+	@Autowired
+	Functions functionUtil;
 	@Autowired
 	EsService esService;
 	@Autowired
@@ -94,14 +93,14 @@ public class BBSController {
 			//因为用了spring boot缓存,sb是用返回值做缓存,所以service再次返回了pageQuery以缓存查询结果
 			query = bbsService.getTopics(query);
 			view.addObject("topicPage", query);
-			view.addObject("pagename", "首页综合");
+			view.addObject("pageName", "首页综合");
 		}else{
 			
 	    	//查询索引
 			PageQuery<IndexObject> searcherKeywordPage = this.esService.getQueryPage(keyword,p);
 			view.setViewName("/lucene/lucene.html");
 			view.addObject("searcherPage", searcherKeywordPage);
-			view.addObject("pagename", keyword);
+			view.addObject("pageName", keyword);
 			view.addObject("resultnum", searcherKeywordPage.getTotalRow());
 		}
 		return view;
@@ -168,6 +167,7 @@ public class BBSController {
 		template.setId(id);
 		template.setPv(topic.getPv() + 1);
 		sql.updateTemplateById(template);
+
 		view.addObject("topic", topic);
 		return view;
 	}
@@ -181,13 +181,15 @@ public class BBSController {
 		view.addObject("topicPage", query);
 		if(query.getList().size() >0){
 			BbsTopic bbsTopic = (BbsTopic) query.getList().get(0);
-			view.addObject("pagename",bbsTopic.getTails().get("moduleName"));
+			view.addObject("pageName",bbsTopic.getTails().get("moduleName"));
+			view.addObject("module",this.bbsService.getModule(id));
 		}
 		return view;
 	}
 
 	@RequestMapping("/bbs/topic/add.html")
 	public ModelAndView addTopic(ModelAndView view){
+
 		view.setViewName("/post.html");
 		return view;
 	}
@@ -218,30 +220,48 @@ public class BBSController {
 //			//10秒之内的提交都不处理
 //			throw new RuntimeException("提交太快，处理不了，上次提交是 "+lastPostTime);
 //		}
+
+
+
 		JSONObject result = new JSONObject();
 		result.put("err", 1);
 		if(user==null){
 			result.put("msg", "请先登录后再继续！");
-		}else if(title.length()<5||postContent.length()<10){
+			return result;
+		}
+		if(title.length()<5||postContent.length()<10) {
 			//客户端需要完善
 			result.put("msg", "标题或内容太短！");
-		}else{
-			topic.setIsNice(0);
-			topic.setIsUp(0);
-			topic.setPv(1);
-			topic.setPostCount(1);
-			topic.setReplyCount(0);
-			post.setHasReply(0);
-			topic.setContent(title);
-			post.setContent(postContent);
-			bbsService.saveTopic(topic, post, user);
-			
-			result.put("err", 0);
-			result.put("tid",topic.getId());
-			result.put("pid",post.getId());
-			result.put("msg", "/bbs/topic/"+topic.getId()+"-1.html");
+			return result;
 		}
+
+		BbsModule module = this.bbsService.getModule(topic.getModuleId());
+
+		if(!isAllowAdd(module,request,response)){
+			result.put("msg", "板块 ["+module.getName()+"] 普通用户只能浏览");
+			return result;
+		}
+		topic.setIsNice(0);
+		topic.setIsUp(0);
+		topic.setPv(1);
+		topic.setPostCount(1);
+		topic.setReplyCount(0);
+		post.setHasReply(0);
+		topic.setContent(title);
+		post.setContent(postContent);
+		bbsService.saveTopic(topic, post, user);
+
+		result.put("err", 0);
+		result.put("tid",topic.getId());
+		result.put("pid",post.getId());
+		result.put("msg", "/bbs/topic/"+topic.getId()+"-1.html");
+
+
 		return result;
+	}
+
+	private boolean isAllowAdd(BbsModule module,HttpServletRequest request, HttpServletResponse response){
+		return functionUtil.allowPost(module,request,response);
 	}
 
 	@ResponseBody

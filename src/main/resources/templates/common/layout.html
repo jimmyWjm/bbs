@@ -56,6 +56,7 @@
 <body>
 @  var _user = c.currentUser(request, servlet.response); 
 @ var isAdmin = 'admin'== (_user.userName!"");
+@ var allowAdd = c.allowPost(module!null,request, servlet.response);
 <nav class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
@@ -73,7 +74,7 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li><a href="${ctxPath}/bbs/index/1.html">首页综合</a></li>
+        <li><a href="${ctxPath}/bbs/index/1.html">${pageName!"首页综合"}</a></li>
        <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">板块 <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
@@ -97,8 +98,11 @@
 				<li><a href="#login-dialog" data-toggle="modal"><i class="fa fa-sign-in"></i> 登录</a></li>
 				<li><a href="#reg-dialog" data-toggle="modal"><i class="fa fa-user-plus"></i> 注册</a></li>
 		@}else{
-				<li><a href="/bbs/bbs/topic/add.html"><i class="fa fa-plus"></i> 发帖</a></li>
-				<li class="dropdown">
+
+				@if(allowAdd){
+		  		<li><a href="/bbs/bbs/topic/add.html"><i class="fa fa-plus"></i> 发帖</a></li>
+				@}
+		  		<li class="dropdown">
 				@ var mcount = c.myMessageCount(_user.id);
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user-circle-o"></i> ${_user.userName} ${mcount > 0?'<span class="badge mcount">'+mcount+'</span> '}<span class="caret"></span></a>
 					<ul class="dropdown-menu" role="menu">
@@ -128,7 +132,7 @@
   			<div class="col-sm-3">
   					<div class="author-panel hidden-xs">
   							<div class="head"></div>
-	  						<div class="name">作者：闲.大赋</div>
+	  						<div class="name">作者：闲.大赋(李家智)</div>
 	  						<div class="home">
 	  							官网：
 	  							<a href="http://ibeetl.com" target="_Blank"><i class="fa fa-home"></i></a>
@@ -137,34 +141,37 @@
 	  							博客：
 	  							<a href="https://my.oschina.net/xiandafu" target="_Blank">开源中国</a>
 	  							<a href="http://git.oschina.net/xiandafu" target="_Blank">码云</a>
-	  							<a href="https://github.com/javamonkey" target="_Blank">GitHub</a>
-	  						</div>
-	  						<div class="projects">
-	  							作品一：
-	  							<a href="http://ibeetl.com/guide/#beetl" target="_Blank">Beetl</a>
-	  							<a href="http://ibeetl.com/guide/#beetlsql" target="_Blank">BeetlSql</a>
-	  							
-	  						</div>
-	  						<div class="projects">
-	  							作品二：
-	  							<a href="https://git.oschina.net/xiandafu/beetl-bbs" target="_Blank">本论坛源码:Beetl-BBS</a>
-	  							
-	  						</div>
-	  						<div class="projects">
-	  							作品三：
-	  							<a href="gitee.com/xiandafu/springboot-plus" target="_Blank">Spring Boot 2 plus</a>
-	  							
-	  						</div>
-	  						<div class="QQ">qq群：219324263</div>
-  							<div class="help">
-  								
 
-  								<div>
-  								<b>微信捐助开源</b>：	
-  									<img src="${ctxPath}/images/weixinpay.png" width="100%">
-  								
-  								</div>
-  							</div>
+	  						</div>
+							<div class="projects">
+								作品1：
+								<a href="https://gitee.com/xiandafu/beetl target="_Blank">国内最流行文本处理引擎 Beetl</a>
+
+
+							</div>
+	  						<div class="projects">
+	  							作品2：
+
+	  							<a href="https://gitee.com/xiandafu/beetlsql" target="_Blank">高性能Dao工具 BeetlSql</a>
+	  							
+	  						</div>
+	  						<div class="projects">
+	  							作品3：
+	  							<a href="https://git.oschina.net/xiandafu/beetl-bbs" target="_Blank">本论坛源码 SpringBoot-BBS</a>
+	  							
+	  						</div>
+	  						<div class="projects">
+	  							作品4：
+	  							<a href="https://gitee.com/xiandafu/springboot-plus" target="_Blank">开源企业开发平台 SpringBoot-Plus</a>
+	  							
+	  						</div>
+							<div class="projects">
+								作品5：
+								<a href="https://item.jd.com/12214143.html" target="_Blank">畅销书《SpringBoot 2 精髓》</a>
+
+							</div>
+	  						<div class="QQ">以上开源从2011年来一直提供技术支持，有良好口碑,也为有想使用开源技术的公司提供有偿商业支持和保证,qq群：219324263(满),636321496</div>
+
   					</div>
   			</div>
 	  	</div>
@@ -333,5 +340,6 @@ $(function(){
 	     if(r!=null)return  decodeURI(r[2]); return null;
 	}
 </script>
+@ include("/common/baidu.html"){}
 </body>
 </html>
