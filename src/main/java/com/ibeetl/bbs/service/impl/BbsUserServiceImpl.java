@@ -1,7 +1,10 @@
 package com.ibeetl.bbs.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
+import com.ibeetl.bbs.config.BbsConfig;
+import com.ibeetl.bbs.util.DateUtil;
 import org.beetl.sql.core.SQLManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +18,8 @@ import com.ibeetl.bbs.service.BbsUserService;
 @Transactional
 public class BbsUserServiceImpl implements BbsUserService {
 
-	
+
+	BbsConfig bbsConfig;
 	
 	@Autowired
 	BbsUserDao userDao;
@@ -54,6 +58,15 @@ public class BbsUserServiceImpl implements BbsUserService {
 		return user;
 		
 	}
+
+	@Override
+	public int countByIp(String ip){
+		Date date = new Date();
+		String today = DateUtil.format(date);
+		return userDao.getIpCount(ip,today);
+	}
+
+
 
 	@Override
 	public BbsUser getUserAccount(String userName, String password) {

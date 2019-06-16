@@ -2,6 +2,7 @@ package com.ibeetl.bbs.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class DateUtil {
@@ -33,7 +34,21 @@ public class DateUtil {
 		}
 		
 	}
-	
+
+	public static String format(Date date){
+
+		SimpleDateFormat sdf = new SimpleDateFormat(FORMAT);
+		return  sdf.format(date);
+	}
+
+	public static Date  getDate(Date date,int min){
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.MINUTE,-min);
+		return cal.getTime();
+	}
+
+
 	
 	
 	public static Date[] getLastMonth(){
@@ -41,8 +56,8 @@ public class DateUtil {
 	}
 	
 	public static void main(String[] args){
-		Date date = parseSonarDate("2016-04-21T16:29:40+0800");
-		System.out.println(date);
+
+		System.out.println(getDate(new Date(),12));
 		
 	}
 }

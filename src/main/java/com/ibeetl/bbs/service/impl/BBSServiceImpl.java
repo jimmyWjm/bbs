@@ -190,8 +190,22 @@ public class BBSServiceImpl implements BBSService {
 		postDao.insert(post,true);
 		gitUserService.addTopicScore(user.getId());
 	}
-	
-	
+
+	@Override
+	public int getTopicCount(BbsUser user, Date date) {
+		return this.topicDao.getTopicCount(user.getId(),date);
+	}
+
+	@Override
+	public int getPostCount(BbsUser user, Date date) {
+		return 0;
+	}
+
+	@Override
+	public int getReplyCount(BbsUser user, Date date) {
+		return 0;
+	}
+
 
 	@Override
 	@CacheEvict(cacheNames = {"bbsPost","bbsPostPage","bbsFirstPost","bbsLatestPost"}, allEntries=true)

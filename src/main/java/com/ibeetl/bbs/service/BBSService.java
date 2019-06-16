@@ -35,7 +35,30 @@ public interface BBSService {
 	BbsUser login(BbsUser user);
 
 	void saveTopic(BbsTopic topic, BbsPost post, BbsUser user);
-	
+
+	/**
+	 * 一定时间内的提交Topic总数
+	 * @param user
+	 * @Param date
+	 * @return
+	 */
+	int getTopicCount(BbsUser user,Date date);
+
+	/**
+	 * 一定时间内的
+	 * @param user
+	 * @param date
+	 * @return
+	 */
+	int getPostCount(BbsUser user,Date date);
+
+	/**
+	 * 一定时间内的提交总数
+	 * @param user
+	 * @param date
+	 * @return
+	 */
+	int getReplyCount(BbsUser user,Date date);
 
 	void savePost(BbsPost post, BbsUser user);
 

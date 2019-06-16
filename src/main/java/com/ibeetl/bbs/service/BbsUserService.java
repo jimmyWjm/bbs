@@ -30,11 +30,9 @@ public interface  BbsUserService {
 	public void addPostScore(long userId);
 	public void addReplayScore(long userId);
 
-	/** 设置用户账号
-	 * @param userName
-	 * @param password
-	 */
+
 	public BbsUser setUserAccount(BbsUser user);
+	public int countByIp(String ip);
 	
 	public BbsUser getUserAccount(String userName,String password);
 	

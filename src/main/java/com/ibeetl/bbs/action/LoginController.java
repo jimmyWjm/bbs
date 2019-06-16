@@ -1,11 +1,14 @@
 package com.ibeetl.bbs.action;
 
 import java.io.IOException;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.ibeetl.bbs.config.BbsConfig;
+import com.ibeetl.bbs.util.AddressUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.beetl.sql.core.SQLManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +36,12 @@ public class LoginController {
 
 	@Autowired
 	BbsUserService bbsUserService;
+
+	@Autowired
+	BbsConfig bbsConfig;
 	
 	static final String CODE_NAME = "verCode";
-	
+	static final String POST_CODE_NAME = "postVerCode";
 
 	/**
 	 * 登录方法改为ajax方式登录
@@ -66,12 +72,7 @@ public class LoginController {
 		return result;
 	}
 	
-	@GetMapping("/bbs/user/register.html")
-	public ModelAndView  loginPage(HttpServletRequest request){
-		ModelAndView view = new ModelAndView("/register.html");
-		return view ;
-	}
-	
+
 	/**
 	 * 登出方法改为ajax方式登出
 	 * @param request
@@ -96,17 +97,28 @@ public class LoginController {
 		JSONObject result  = new JSONObject();
 		result.put("err", 1);
 		HttpSession session = request.getSession(true); 
+
+		String ip = AddressUtil.getIPAddress(request);
+		int count = bbsUserService.countByIp(ip);
+		if(count>=bbsConfig.getRegisterSameIp()){
+			result.put("msg","同一个IP同一天注册用户过多，禁止注册");
+			return result;
+		}
+
 		String verCode = (String)session.getAttribute(CODE_NAME);
-		if(!verCode.equalsIgnoreCase(code)){
+		if(count!=0&&!verCode.equalsIgnoreCase(code)){
 			result.put("msg", "验证码输入错误");
 		}else if(bbsUserService.hasUser(user.getUserName())){
 			result.put("msg", "用户已经存在");
 		}else{
+
 			String password = HashKit.md5(user.getPassword());
 			user.setPassword(password);
 			user.setBalance(10);
 			user.setLevel(1);
 			user.setScore(10);
+			user.setIp(ip);
+			user.setRegisterTime(new Date());
 			user = bbsUserService.setUserAccount(user);
 			WebUtils.loginUser(request, response, user, true);
 			result.put("err", 0);
@@ -117,22 +129,44 @@ public class LoginController {
 	
 	@RequestMapping("/bbs/user/authImage")
 	public void authImage(HttpServletRequest request,HttpServletResponse response) throws IOException{
-		response.setHeader("Pragma", "No-cache"); 
-        response.setHeader("Cache-Control", "no-cache"); 
-        response.setDateHeader("Expires", 0); 
-        response.setContentType("image/jpeg"); 
-           
-        //生成随机字串 
-        String verifyCode = VerifyCodeUtils.generateVerifyCode(4); 
-        //存入会话session 
-        HttpSession session = request.getSession(true); 
-        //删除以前的
-        session.removeAttribute(CODE_NAME);
-        session.setAttribute(CODE_NAME, verifyCode.toLowerCase()); 
-        //生成图片 
-        int w = 100, h = 30; 
-        VerifyCodeUtils.outputImage(w, h, response.getOutputStream(), verifyCode); 
-	
+		response.setHeader("Pragma", "No-cache");
+		response.setHeader("Cache-Control", "no-cache");
+		response.setDateHeader("Expires", 0);
+		response.setContentType("image/jpeg");
+		String ip = AddressUtil.getIPAddress(request);
+
+		//生成随机字串
+		String verifyCode = VerifyCodeUtils.generateVerifyCode(4);
+		//存入会话session
+		HttpSession session = request.getSession(true);
+		//删除以前的
+		session.removeAttribute(CODE_NAME);
+		session.setAttribute(CODE_NAME, verifyCode.toLowerCase());
+		//生成图片
+		int w = 100, h = 30;
+		VerifyCodeUtils.outputImage(w, h, response.getOutputStream(), verifyCode);
+
+	}
+
+	@RequestMapping("/bbs/user/postAuthImage")
+	public void pousAuthImage(HttpServletRequest request,HttpServletResponse response) throws IOException{
+		response.setHeader("Pragma", "No-cache");
+		response.setHeader("Cache-Control", "no-cache");
+		response.setDateHeader("Expires", 0);
+		response.setContentType("image/jpeg");
+		String ip = AddressUtil.getIPAddress(request);
+
+		//生成随机字串
+		String verifyCode = VerifyCodeUtils.generateVerifyCode(4);
+		//存入会话session
+		HttpSession session = request.getSession(true);
+		//删除以前的
+		session.removeAttribute(POST_CODE_NAME);
+		session.setAttribute(POST_CODE_NAME, verifyCode.toLowerCase());
+		//生成图片
+		int w = 100, h = 30;
+		VerifyCodeUtils.outputImage(w, h, response.getOutputStream(), verifyCode);
+
 	}
 	
 	

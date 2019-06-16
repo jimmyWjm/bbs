@@ -12,8 +12,12 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import com.ibeetl.bbs.config.BbsConfig;
 import com.ibeetl.bbs.model.*;
+import com.ibeetl.bbs.util.AddressUtil;
+import com.ibeetl.bbs.util.DateUtil;
 import com.ibeetl.bbs.util.Functions;
 import org.apache.commons.lang3.StringUtils;
 import org.beetl.sql.core.SQLManager;
@@ -61,6 +65,8 @@ public class BBSController {
 	EsService esService;
 	@Autowired
 	private CacheManager cacheManager;
+	@Autowired
+	BbsConfig bbsConfig;
 
 	
 	
@@ -210,7 +216,7 @@ public class BBSController {
 		@EsIndexType(entityType= EsEntityType.BbsTopic ,operateType = EsOperateType.ADD,key = "tid"),
 		@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.ADD,key = "pid")
 	})
-	public JSONObject saveTopic(BbsTopic topic, BbsPost post, String title, String postContent,HttpServletRequest request, HttpServletResponse response){
+	public JSONObject saveTopic(BbsTopic topic, BbsPost post, String code,String title, String postContent,HttpServletRequest request, HttpServletResponse response){
 		//@TODO， 防止频繁提交
 		BbsUser user = webUtils.currentUser(request, response);
 //		Date lastPostTime = bbsService.getLatestPost(user.getId());
@@ -221,6 +227,8 @@ public class BBSController {
 //			throw new RuntimeException("提交太快，处理不了，上次提交是 "+lastPostTime);
 //		}
 
+		HttpSession session = request.getSession(true);
+		String verCode = (String)session.getAttribute(LoginController.POST_CODE_NAME);
 
 
 		JSONObject result = new JSONObject();
@@ -229,16 +237,33 @@ public class BBSController {
 			result.put("msg", "请先登录后再继续！");
 			return result;
 		}
+
+		if(!verCode.equals(code)){
+			result.put("msg", "验证码不正确");
+			return result;
+		}
+
 		if(title.length()<5||postContent.length()<10) {
 			//客户端需要完善
 			result.put("msg", "标题或内容太短！");
 			return result;
 		}
 
+
+
 		BbsModule module = this.bbsService.getModule(topic.getModuleId());
 
 		if(!isAllowAdd(module,request,response)){
 			result.put("msg", "板块 ["+module.getName()+"] 普通用户只能浏览");
+			return result;
+		}
+		//4个小时的提交总数
+		Date lastPost = DateUtil.getDate(new Date(),bbsConfig.getTopicCountMinutes());
+		int count = bbsService.getTopicCount(user,lastPost);
+		if(count>=bbsConfig.getTopicCount()){
+			String msg = AddressUtil.getIPAddress(request)+" "+user.getUserName()+" 提交主题太频繁，稍后再提交，紧急问题入群";
+			result.put("msg", msg);
+			System.out.println(msg);
 			return result;
 		}
 		topic.setIsNice(0);

@@ -1,6 +1,8 @@
 package com.ibeetl.bbs.model;
 import org.beetl.sql.core.TailBean;
 
+import java.util.Date;
+
 /*
 * 
 * gen by beetlsql 2016-04-27
@@ -14,6 +16,9 @@ public class BbsUser extends TailBean {
 	private String email ;
 	private String userName ;
 	private String corp;
+
+	private String ip;
+	private Date registerTime;
 	
 	public Integer getId() {
 		return id;
@@ -63,6 +68,20 @@ public class BbsUser extends TailBean {
 	public void setCorp(String corp) {
 		this.corp = corp;
 	}
-	
-	
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public Date getRegisterTime() {
+		return registerTime;
+	}
+
+	public void setRegisterTime(Date registerTime) {
+		this.registerTime = registerTime;
+	}
 }
