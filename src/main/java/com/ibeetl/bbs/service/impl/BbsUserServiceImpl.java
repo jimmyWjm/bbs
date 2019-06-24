@@ -129,5 +129,12 @@ public class BbsUserServiceImpl implements BbsUserService {
 		return sqlManager.unique(BbsUser.class, id);
 	}
 
+	@Override
+	public void removeUser(Integer id) {
+		BbsUser user = userDao.unique(id);
+		user.setPassword("delete");
+		userDao.updateById(user);
+	}
+
 
 }

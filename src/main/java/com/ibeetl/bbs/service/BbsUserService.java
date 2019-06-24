@@ -40,4 +40,9 @@ public interface  BbsUserService {
 	
 	public BbsUser getUser(Integer id);
 
+	/**
+	 * 逻辑删除
+	 * */
+	public void removeUser(Integer id);
+
 }

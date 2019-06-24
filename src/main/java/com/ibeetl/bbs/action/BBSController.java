@@ -477,6 +477,25 @@ public class BBSController {
 		return result;
 	}
 
+	@ResponseBody
+	@PostMapping("/bbs/admin/topic/deleteUser/{id}")
+	@EsIndexType(entityType= EsEntityType.BbsTopic ,operateType = EsOperateType.DELETE)
+	public JSONObject deleteTopicOwner(@PathVariable int id,HttpServletRequest request, HttpServletResponse response){
+		JSONObject result = new JSONObject();
+		if(!webUtils.isAdmin(request, response)){
+			//如果有非法使用，不提示具体信息，直接返回null
+			result.put("err", 1);
+			result.put("msg", "呵呵~~");
+		}else{
+			BbsTopic topic = bbsService.getTopic(id);
+			Integer userId = topic.getUserId();
+			this.gitUserService.removeUser(userId);
+			result.put("err", 0);
+			result.put("msg", "success");
+		}
+		return result;
+	}
+
 	@RequestMapping("/bbs/admin/post/{p}")
 	public ModelAndView adminPosts(ModelAndView view, @PathVariable int p){
 		view.setViewName("/bbs/admin/postList.html");

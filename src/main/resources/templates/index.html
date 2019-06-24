@@ -40,6 +40,7 @@
 							<a href="javascript:;"  class="btn btn-default btn-xs nice-btn">精华</a>
 							<a href="javascript:;"  class="btn btn-default btn-xs top-btn">置顶</a>
 							<a href="javascript:;"  class="btn btn-default btn-xs del-btn">删除</a>
+              <a href="javascript:;"  class="btn btn-default btn-xs del-user-btn">删除此人</a>
 					</div>
 					@}
 				</div>
@@ -53,6 +54,10 @@
     	   })
        }).on('click','.top-btn',function(){
     	   $.post('${ctxPath}/bbs/admin/topic/up/'+$(this).parents('div').data('topic'),function(json){
+    		   json.err||location.reload();
+    	   })
+       }).on('click','.del-user-btn',function(){
+    	   $.post('${ctxPath}/bbs/admin/topic/deleteUser/'+$(this).parents('div').data('topic'),function(json){
     		   json.err||location.reload();
     	   })
        }).on('click','.del-btn',function(){
