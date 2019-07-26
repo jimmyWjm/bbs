@@ -1,9 +1,23 @@
 package com.ibeetl.bbs.es.service;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ibeetl.bbs.es.annotation.EsEntityType;
+import com.ibeetl.bbs.es.annotation.EsFallback;
+import com.ibeetl.bbs.es.annotation.EsOperateType;
+import com.ibeetl.bbs.es.entity.BbsIndex;
+import com.ibeetl.bbs.es.vo.IndexObject;
+import com.ibeetl.bbs.model.BbsModule;
+import com.ibeetl.bbs.model.BbsPost;
+import com.ibeetl.bbs.model.BbsReply;
+import com.ibeetl.bbs.model.BbsTopic;
+import com.ibeetl.bbs.model.BbsUser;
+import com.ibeetl.bbs.service.BBSService;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.client.fluent.Response;
+import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.beetl.core.GroupTemplate;
@@ -13,50 +27,41 @@ import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.env.Environment;
-import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ibeetl.bbs.es.annotation.EsEntityType;
-import com.ibeetl.bbs.es.annotation.EsOperateType;
-import com.ibeetl.bbs.es.entity.BbsIndex;
-import com.ibeetl.bbs.es.repository.BbsIndexRepository;
-import com.ibeetl.bbs.es.vo.IndexObject;
-import com.ibeetl.bbs.model.BbsModule;
-import com.ibeetl.bbs.model.BbsPost;
-import com.ibeetl.bbs.model.BbsReply;
-import com.ibeetl.bbs.model.BbsTopic;
-import com.ibeetl.bbs.model.BbsUser;
-import com.ibeetl.bbs.service.BBSService;
-import com.ibeetl.bbs.util.EsUtil;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class EsService{
 
 	private Logger logger = LogManager.getLogger(EsService.class);  
 	@Autowired
-	private BbsIndexRepository bbsIndexRepository;
-	@Autowired
 	private BBSService bbsService;
-	@Autowired
-	private ElasticsearchTemplate elasticsearchTemplate;
 	@Autowired
 	SQLManager sqlManager;
 	@Autowired
-	private RestTemplate restTemplate;
-	
-	private Environment env;
-	
+	private ObjectMapper objectMapper;
+	@Value("${elasticsearch.bbs.url}")
+	private String bbsUrl;
+	@Value("${elasticsearch.bbs.content.url}")
+	private String bbsContentUrl;
+	@Value("${elasticsearch.bbs.content.search.url}")
+	private String bbsContentSearchUrl;
+
 	private GroupTemplate beetlTemplate;
 	
-	public EsService(Environment env,@Qualifier("beetlContentTemplateConfig") BeetlGroupUtilConfiguration beetlGroupUtilConfiguration){
-		this.env = env;
+	public EsService(@Qualifier("beetlContentTemplateConfig") BeetlGroupUtilConfiguration beetlGroupUtilConfiguration){
 		this.beetlTemplate = beetlGroupUtilConfiguration.getGroupTemplate();
 	}
 	
@@ -67,6 +72,7 @@ public class EsService{
 	 * @param operateType
 	 * @param id
 	 */
+	@EsFallback
 	public void editEsIndex(EsEntityType entityType,EsOperateType operateType,Object id) {
 		if(operateType == EsOperateType.ADD || operateType == EsOperateType.UPDATE) {
 			BbsIndex bbsIndex = this.createBbsIndex(entityType, (Integer)id);
@@ -76,26 +82,36 @@ public class EsService{
 		}else if(operateType == EsOperateType.DELETE) {
 			this.deleteBbsIndex((String)id);
 		}
+	}
 
+	public void editEsIndexFallback(EsEntityType entityType,EsOperateType operateType,Object id){
+		logger.warn("ES服务[editEsIndex]降级处理...");
 	}
 	
 	/**
 	 * 重构索引
 	 */
+	@EsFallback
 	public void initIndex() {
-		
-		elasticsearchTemplate.deleteIndex("bbs");
-		
-		batchSaveBbsIndex(BbsTopic.class);
-		batchSaveBbsIndex(BbsPost.class);
-		batchSaveBbsIndex(BbsReply.class);
+		try {
+			Request.Delete(bbsUrl).execute().discardContent();
+			batchSaveBbsIndex(BbsTopic.class);
+			batchSaveBbsIndex(BbsPost.class);
+			batchSaveBbsIndex(BbsReply.class);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
-	
+
+	public void initIndexFallback(){
+		logger.warn("ES服务[editEsIndex]降级处理...");
+	}
+
 	/**
 	 * 批量插入索引
 	 * @param clazz
 	 */
-	public <T> void batchSaveBbsIndex(Class<T> clazz) {
+	private <T> void batchSaveBbsIndex(Class<T> clazz) {
 		int curPage = 1;
 		int pageSize = 500;
 		List<BbsIndex> indexList = new ArrayList<>();
@@ -128,7 +144,7 @@ public class EsService{
 					}
 					
 				}
-				bbsIndexRepository.saveAll(indexList);
+				indexList.forEach(this::saveBbsIndex);
 				indexList = new ArrayList<>();
 				curPage ++;
 			}else {
@@ -171,23 +187,33 @@ public class EsService{
 	 * 保存或更新索引
 	 * @param bbsIndex
 	 */
-	public void saveBbsIndex(BbsIndex bbsIndex) {
+	private void saveBbsIndex(BbsIndex bbsIndex) {
 		
-		bbsIndex.setId(EsUtil.getEsKey(bbsIndex.getTopicId(), bbsIndex.getPostId(), bbsIndex.getReplyId()));
-		bbsIndexRepository.save(bbsIndex);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		HttpEntity<String>  httpEntity = new HttpEntity<>(JSON.toJSONString(bbsIndex),headers);
+
+		try {
+			Request.Post(bbsContentUrl + bbsIndex)
+					.bodyString(JSON.toJSONString(bbsIndex), ContentType.APPLICATION_JSON)
+					.execute()
+					.discardContent();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	/**
 	 * 删除索引
-	 * @param topicId
-	 * @param postId
-	 * @param replayId
 	 */
-	public void deleteBbsIndex(Integer topicId,Integer postId,Integer replayId) {
-		String key = EsUtil.getEsKey(topicId, postId, replayId);
-		bbsIndexRepository.deleteById(key);
-	}
-	public void deleteBbsIndex(String id) {
-		bbsIndexRepository.deleteById(id);
+	private void deleteBbsIndex(String id) {
+		try {
+			Request.Delete(bbsContentUrl + id)
+					.execute()
+					.discardContent();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	
@@ -199,6 +225,7 @@ public class EsService{
 	 * @param p	当前第几页
 	 * @return
 	 */
+	@EsFallback
 	public PageQuery<IndexObject> getQueryPage(String keyword,int p){
 		if(p <= 0) {p = 1;}
 		int pageNumber = p;
@@ -209,72 +236,100 @@ public class EsService{
 		}
 		PageQuery<IndexObject> pageQuery = new PageQuery<>(pageNumber, pageSize);
 		try {
-		
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-	
 			Template template = beetlTemplate.getTemplate("/bssContent.html");
 			template.binding("pageSize", pageSize);
 			template.binding("pageNumber", pageNumber);
 			template.binding("keyword", keyword);
-			String esJson = template.render();
-			
-			HttpEntity<String>  httpEntity = new HttpEntity<String>(esJson,headers);
-			String result = restTemplate.postForObject(env.getProperty("elasticsearch.bbs.content.url"), httpEntity, String.class);
-			
+			Response response = Request.Post(bbsContentSearchUrl)
+					.bodyString(template.render(), ContentType.APPLICATION_JSON)
+					.execute();
+			String result = response.returnContent().asString(StandardCharsets.UTF_8);
+
 			List<IndexObject> indexObjectList = new ArrayList<>();
 			
-			JsonNode root = new ObjectMapper().readTree(result);
+			JsonNode root = objectMapper.readTree(result);
 			long total = root.get("hits").get("total").asLong();
-			
+
 			Iterator<JsonNode> iterator = root.get("hits").get("hits").iterator();
 			while(iterator.hasNext()) {
 				JsonNode jsonNode = iterator.next();
-				
+
 				double score = jsonNode.get("_score").asDouble();
-				BbsIndex index = new ObjectMapper().convertValue(jsonNode.get("_source"), BbsIndex.class);
-				
+				BbsIndex index = objectMapper.convertValue(jsonNode.get("_source"), BbsIndex.class);
+
 				index.setContent(jsonNode.get("highlight").get("content").get(0).asText());
 				if(index.getTopicId() != null) {
 					IndexObject indexObject = null;
-					
+
 					BbsTopic topic = bbsService.getTopic(index.getTopicId());
-					
+
 					BbsUser user = topic.getUser();
 					BbsModule module = topic.getModule();
-					
+
 					if(index.getReplyId() != null) {
-						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user, 
-								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module, 
+						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user,
+								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module,
 								topic.getContent(), index.getContent(), 3, score);
-						
+
 					}else if(index.getPostId() != null) {
-						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user, 
-								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module, 
+						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user,
+								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module,
 								topic.getContent(), index.getContent(), 2, score);
-						
+
 					}else if(index.getTopicId() != null) {
 						String postContent = "";
 						BbsPost firstPost = bbsService.getFirstPost(index.getTopicId());
 						if(firstPost != null) {
 							postContent = firstPost.getContent();
 						}
-						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user, 
-								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module, 
+						indexObject = new IndexObject(topic.getId(), topic.getIsUp(), topic.getIsNice(), user,
+								topic.getCreateTime(), topic.getPostCount(), topic.getPv(), module,
 								index.getContent(),postContent , 1, score);
 					}
-					
+
 					indexObjectList.add(indexObject);
 				}
 			}
 			pageQuery.setTotalRow(total);
 			pageQuery.setList(indexObjectList);
-			
+			return pageQuery;
+
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
-		
-	
+	}
+
+	public PageQuery<IndexObject> getQueryPageFallback(String keyword,int p){
+		logger.warn("ES服务[getQueryPage]降级处理...");
+		if(p <= 0) {p = 1;}
+		int pageNumber = p;
+		long pageSize = PageQuery.DEFAULT_PAGE_SIZE;
+		String kw = keyword.trim().replaceAll("</?\\w+[^>]>","");
+		PageQuery<IndexObject> pageQuery = new PageQuery<>(pageNumber, pageSize);
+
+		PageQuery<BbsPost> postPage = bbsService.queryPostByContent(kw, pageNumber, pageSize);
+		List<IndexObject> indexObjects = Optional.ofNullable(postPage.getList())
+				.orElse(Collections.emptyList())
+				.stream()
+				.peek(post -> post.setContent(post.getContent().replaceAll("</?\\w+[^>]*>","").toLowerCase()))
+				.filter(post -> StringUtils.isNotBlank(post.getContent()))
+				.map(post -> {
+					String content = post.getContent();
+					int    index   = Math.max(0,content.indexOf(kw));
+					int start = Math.max(index - 100, 0);
+					int end = Math.min(index + kw.length() + 100,content.length());
+					return new IndexObject(post.getTopicId(), 0, 0, new BbsUser(post.getUserId(),"注册用户"),
+							post.getCreateTime(), post.getCons(), post.getPros(), null,
+							content.substring(0,Math.min(50,content.length()))+"...",
+							content.substring(start,index) +
+									"<font color=\"red\">" + kw + "</font>" +
+									content.substring(index + kw.length(),end),
+							1,
+							1);
+				})
+				.collect(Collectors.toList());
+		pageQuery.setTotalRow(postPage.getTotalRow());
+		pageQuery.setList(indexObjects);
 		return pageQuery;
 	}
 	
@@ -282,9 +337,9 @@ public class EsService{
      * JSON字符串特殊字符处理
      * @param s 
      * @return String 
-     */  
-    public String string2Json(String s) {        
-        StringBuffer sb = new StringBuffer();        
+     */
+	private String string2Json(String s) {
+        StringBuilder sb = new StringBuilder();
         for (int i=0; i<s.length(); i++) {  
             char c = s.charAt(i);    
              switch (c){  

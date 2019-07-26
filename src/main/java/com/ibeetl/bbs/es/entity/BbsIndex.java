@@ -1,20 +1,15 @@
 package com.ibeetl.bbs.es.entity;
 
+import com.ibeetl.bbs.util.EsUtil;
+
 import java.io.Serializable;
 import java.util.Date;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-
-import com.ibeetl.bbs.util.EsUtil;
-
-@Document(indexName="bbs",type="content")
 public class BbsIndex implements Serializable{
 
 	private static final long serialVersionUID = 7588021529563246352L;
 	
-	@Id
-	private String id;
+	private transient String id;
 	private Integer topicId;
 	private Integer postId;
 	private Integer replyId;
@@ -26,7 +21,7 @@ public class BbsIndex implements Serializable{
 	private Integer cons = 0;//踩次数
 	private Integer isAccept = 0;//0：未采纳，1：采纳
 	private Integer pv = 0 ;//访问量
-	
+
 	public String getId() {
 		if(this.id == null) {
 			return EsUtil.getEsKey(topicId, postId, replyId);
