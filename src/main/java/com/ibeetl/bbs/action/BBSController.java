@@ -1,21 +1,16 @@
 package com.ibeetl.bbs.action;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import com.alibaba.fastjson.JSONObject;
+import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.config.BbsConfig;
+import com.ibeetl.bbs.es.annotation.EsEntityType;
+import com.ibeetl.bbs.es.annotation.EsIndexType;
+import com.ibeetl.bbs.es.annotation.EsOperateType;
+import com.ibeetl.bbs.es.service.EsService;
+import com.ibeetl.bbs.es.vo.IndexObject;
 import com.ibeetl.bbs.model.*;
+import com.ibeetl.bbs.service.BBSService;
+import com.ibeetl.bbs.service.BbsUserService;
 import com.ibeetl.bbs.util.AddressUtil;
 import com.ibeetl.bbs.util.DateUtil;
 import com.ibeetl.bbs.util.Functions;
@@ -28,25 +23,19 @@ import org.springframework.cache.Cache.ValueWrapper;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import com.alibaba.fastjson.JSONObject;
-import com.ibeetl.bbs.common.WebUtils;
-import com.ibeetl.bbs.es.annotation.EsEntityType;
-import com.ibeetl.bbs.es.annotation.EsIndexType;
-import com.ibeetl.bbs.es.annotation.EsIndexs;
-import com.ibeetl.bbs.es.annotation.EsOperateType;
-import com.ibeetl.bbs.es.service.EsService;
-import com.ibeetl.bbs.es.vo.IndexObject;
-import com.ibeetl.bbs.service.BBSService;
-import com.ibeetl.bbs.service.BbsUserService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Controller
 public class BBSController {
@@ -212,10 +201,8 @@ public class BBSController {
 	 */
 	@ResponseBody
 	@PostMapping("/bbs/topic/save")
-	@EsIndexs({
-		@EsIndexType(entityType= EsEntityType.BbsTopic ,operateType = EsOperateType.ADD,key = "tid"),
-		@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.ADD,key = "pid")
-	})
+	@EsIndexType(entityType= EsEntityType.BbsTopic ,operateType = EsOperateType.ADD,key = "tid")
+	@EsIndexType(entityType= EsEntityType.BbsPost ,operateType = EsOperateType.ADD,key = "pid")
 	public JSONObject saveTopic(BbsTopic topic, BbsPost post, String code,String title, String postContent,HttpServletRequest request, HttpServletResponse response){
 		//@TODO， 防止频繁提交
 		BbsUser user = webUtils.currentUser(request, response);

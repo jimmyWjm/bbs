@@ -29,7 +29,7 @@
 
 ## 技术
 
-Spring Boot2.1.5，Elastic Search(6),Beetl,BeetlSQL,Java8
+Spring Boot2.1.5，Elastic Search ,Beetl,BeetlSQL,Java8
 
 ## 合作开发
 
