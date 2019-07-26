@@ -3,6 +3,7 @@ package com.ibeetl.bbs.action;
 import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.config.BbsConfig;
+import com.ibeetl.bbs.config.CaffeineConfig;
 import com.ibeetl.bbs.es.annotation.EsEntityType;
 import com.ibeetl.bbs.es.annotation.EsIndexType;
 import com.ibeetl.bbs.es.annotation.EsOperateType;
@@ -645,7 +646,7 @@ public class BBSController {
 		}else{
 			BbsPost post = bbsService.getPost(postId);
 			
-			Cache cache = cacheManager.getCache("postSupport");
+			Cache cache = cacheManager.getCache(CaffeineConfig.Caches.postSupport.name());
 			ValueWrapper valueWrapper = cache.get(user.getId()+":"+post.getId());
 			if(valueWrapper != null && valueWrapper.get() != null) {
 				result.put("err", 1);

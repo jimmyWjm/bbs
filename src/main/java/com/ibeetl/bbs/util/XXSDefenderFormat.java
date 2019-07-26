@@ -1,7 +1,7 @@
 package com.ibeetl.bbs.util;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.beetl.core.Format;
 
 public class XXSDefenderFormat implements Format {
