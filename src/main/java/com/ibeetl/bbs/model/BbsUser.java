@@ -84,4 +84,12 @@ public class BbsUser extends TailBean {
 	public void setRegisterTime(Date registerTime) {
 		this.registerTime = registerTime;
 	}
+
+	public BbsUser() {
+	}
+
+	public BbsUser(Integer id, String userName) {
+		this.id = id;
+		this.userName = userName;
+	}
 }

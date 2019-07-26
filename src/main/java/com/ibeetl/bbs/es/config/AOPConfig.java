@@ -1,12 +1,14 @@
 package com.ibeetl.bbs.es.config;
 
 import com.alibaba.fastjson.JSONObject;
+import com.ibeetl.bbs.es.annotation.EsFallback;
 import com.ibeetl.bbs.es.annotation.EsIndexType;
 import com.ibeetl.bbs.es.annotation.EsOperateType;
 import com.ibeetl.bbs.es.entity.BbsIndex;
 import com.ibeetl.bbs.es.service.EsService;
 import com.ibeetl.bbs.es.vo.EsIndexTypeData;
 import com.ibeetl.bbs.util.EsUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
@@ -20,8 +22,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Configuration
 @Aspect
@@ -32,17 +39,20 @@ public class AOPConfig {
 
     private Logger logger = LoggerFactory.getLogger(AOPConfig.class);
 
+    /**
+     * ES的切入点
+     */
     @Pointcut("@annotation(com.ibeetl.bbs.es.annotation.EsIndexType) || @annotation(com.ibeetl.bbs.es.annotation.EsIndexs)")
-    private void anyMethod(){}//定义ES的切入点
+    private void anyMethod() {
+    }
 
     @Around("anyMethod()")
     public Object simpleAop(ProceedingJoinPoint pjp) throws Throwable {
         try {
-            Signature       sig    = pjp.getSignature();
-            MethodSignature msig   = (MethodSignature) sig;//代理方法
-            Object          target = pjp.getTarget();//代理类
-            Method          method = target.getClass().getMethod(msig.getName(), msig.getParameterTypes());
-            EsIndexType[]   types  = method.getAnnotationsByType(EsIndexType.class);
+            Signature     sig    = pjp.getSignature();
+            Object        target = pjp.getTarget();//代理类
+            Method        method = ((MethodSignature) sig).getMethod();//代理方法
+            EsIndexType[] types  = method.getAnnotationsByType(EsIndexType.class);
 
             Map<String, Object> parameters = this.getParameterNames(pjp);
 
@@ -56,7 +66,7 @@ public class AOPConfig {
 
                     Integer id = (Integer) parameters.get(key);
                     if (id == null) {
-                        logger.error(target.getClass().getName() + "$" + msig.getName() + "：未获取到主键，无法更新索引");
+                        logger.error(target.getClass().getName() + "$" + method.getName() + "：未获取到主键，无法更新索引");
                     } else {
                         BbsIndex        bbsIndex = esService.createBbsIndex(index.entityType(), id);
                         String          md5Id    = EsUtil.getEsKey(bbsIndex.getTopicId(), bbsIndex.getPostId(), bbsIndex.getReplyId());
@@ -86,7 +96,7 @@ public class AOPConfig {
                     }
                     if (id == null) {
                         if (!resultErr) {
-                            logger.error(target.getClass().getName() + "$" + msig.getName() + "：未获取到主键，无法更新索引");
+                            logger.error(target.getClass().getName() + "$" + method.getName() + "：未获取到主键，无法更新索引");
                         }
 
                     } else {
@@ -106,6 +116,43 @@ public class AOPConfig {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    /**
+     * 调用ES失败降级的处理（如ES服务挂了）
+     */
+    @Around("@annotation(com.ibeetl.bbs.es.annotation.EsFallback)")
+    public Object fallback(ProceedingJoinPoint pjp) {
+
+        Signature sig    = pjp.getSignature();
+        Object    target = pjp.getTarget();//代理类
+        Method    method = ((MethodSignature) sig).getMethod();//代理方法
+
+        //调用原方法
+        try {
+            return pjp.proceed();
+        } catch (Throwable throwable) {
+            EsFallback fallback = method.getAnnotation(EsFallback.class);
+            String methodName = fallback.fallbackMethod();
+            if (StringUtils.isBlank(methodName)){
+                methodName = method.getName()+"Fallback";
+            }
+            try {
+                Method fallbackMethod = target.getClass().getMethod(methodName, method.getParameterTypes());
+                if (fallbackMethod.getReturnType() == method.getReturnType()){
+                    method.setAccessible(Boolean.TRUE);
+                    return fallbackMethod.invoke(target, pjp.getArgs());
+                } else {
+                    throw new RuntimeException(throwable);
+                }
+            } catch (NoSuchMethodException e) {
+                //找不到Fallback方法时抛出原异常
+                throw new RuntimeException(throwable);
+            } catch (IllegalAccessException |InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 
     /**

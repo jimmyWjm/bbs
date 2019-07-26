@@ -1,10 +1,15 @@
 package com.ibeetl.bbs.service;
 
+import com.ibeetl.bbs.model.BbsMessage;
+import com.ibeetl.bbs.model.BbsModule;
+import com.ibeetl.bbs.model.BbsPost;
+import com.ibeetl.bbs.model.BbsReply;
+import com.ibeetl.bbs.model.BbsTopic;
+import com.ibeetl.bbs.model.BbsUser;
+import org.beetl.sql.core.engine.PageQuery;
+
 import java.util.Date;
 import java.util.List;
-
-import com.ibeetl.bbs.model.*;
-import org.beetl.sql.core.engine.PageQuery;
 
 public interface BBSService {
 	BbsTopic getTopic(Integer topicId);
@@ -80,5 +85,7 @@ public interface BBSService {
 
 	List<BbsModule> allModule();
 	BbsModule getModule(Integer id);
+
+	PageQuery<BbsPost> queryPostByContent(String keyWord, long pageNum, long pageSize);
 	
 }

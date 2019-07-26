@@ -1,13 +1,22 @@
 package com.ibeetl.bbs.service.impl;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.ibeetl.bbs.model.*;
+import com.ibeetl.bbs.dao.BbsModuleDao;
+import com.ibeetl.bbs.dao.BbsPostDao;
+import com.ibeetl.bbs.dao.BbsReplyDao;
+import com.ibeetl.bbs.dao.BbsTopicDao;
+import com.ibeetl.bbs.dao.BbsUserDao;
+import com.ibeetl.bbs.model.BbsMessage;
+import com.ibeetl.bbs.model.BbsModule;
+import com.ibeetl.bbs.model.BbsPost;
+import com.ibeetl.bbs.model.BbsReply;
+import com.ibeetl.bbs.model.BbsTopic;
+import com.ibeetl.bbs.model.BbsUser;
+import com.ibeetl.bbs.service.BBSService;
+import com.ibeetl.bbs.service.BbsUserService;
+import org.apache.commons.lang3.StringUtils;
 import org.beetl.sql.core.SQLManager;
 import org.beetl.sql.core.engine.PageQuery;
+import org.beetl.sql.core.query.LambdaQuery;
 import org.beetl.sql.core.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -17,13 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import com.ibeetl.bbs.dao.BbsModuleDao;
-import com.ibeetl.bbs.dao.BbsPostDao;
-import com.ibeetl.bbs.dao.BbsReplyDao;
-import com.ibeetl.bbs.dao.BbsTopicDao;
-import com.ibeetl.bbs.dao.BbsUserDao;
-import com.ibeetl.bbs.service.BBSService;
-import com.ibeetl.bbs.service.BbsUserService;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -302,5 +308,13 @@ public class BBSServiceImpl implements BBSService {
 	}
 
 
-
+	@Override
+	@Cacheable(cacheNames = "fallbackQuery",key = "#keyWord.concat(#pageNum)")
+	public PageQuery<BbsPost> queryPostByContent(String keyWord, long pageNum, long pageSize) {
+		LambdaQuery<BbsPost> query = sql.lambdaQuery(BbsPost.class);
+		if (StringUtils.isNotBlank(keyWord)){
+			query.andLike(BbsPost::getContent,String.format("%%%s%%",keyWord));
+		}
+		return query.page(pageNum, pageSize);
+	}
 }
