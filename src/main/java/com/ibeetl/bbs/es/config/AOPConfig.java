@@ -132,14 +132,14 @@ public class AOPConfig {
         try {
             return pjp.proceed();
         } catch (Throwable throwable) {
-            EsFallback fallback = method.getAnnotation(EsFallback.class);
-            String methodName = fallback.fallbackMethod();
-            if (StringUtils.isBlank(methodName)){
-                methodName = method.getName()+"Fallback";
+            EsFallback fallback   = method.getAnnotation(EsFallback.class);
+            String     methodName = fallback.fallbackMethod();
+            if (StringUtils.isBlank(methodName)) {
+                methodName = method.getName() + "Fallback";
             }
             try {
                 Method fallbackMethod = target.getClass().getMethod(methodName, method.getParameterTypes());
-                if (fallbackMethod.getReturnType() == method.getReturnType()){
+                if (fallbackMethod.getReturnType() == method.getReturnType()) {
                     method.setAccessible(Boolean.TRUE);
                     return fallbackMethod.invoke(target, pjp.getArgs());
                 } else {
@@ -148,7 +148,7 @@ public class AOPConfig {
             } catch (NoSuchMethodException e) {
                 //找不到Fallback方法时抛出原异常
                 throw new RuntimeException(throwable);
-            } catch (IllegalAccessException |InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
         }

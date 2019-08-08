@@ -1,95 +1,37 @@
 package com.ibeetl.bbs.model;
+
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.beetl.sql.core.TailBean;
 
 import java.util.Date;
 
 /*
-* 
-* gen by beetlsql 2016-04-27
-*/
+ *
+ * gen by beetlsql 2016-04-27
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@NoArgsConstructor
 public class BbsUser extends TailBean {
-	private Integer id ;
-	private Integer level ;
-	private Integer score ;
-	private Integer balance;
-	private String password;
-	private String email ;
-	private String userName ;
-	private String corp;
+    Integer id;
+    Integer level;
+    Integer score;
+    Integer balance;
+    String  password;
+    String  email;
+    String  userName;
+    String  corp;
+    String  ip;
+    Date    registerTime;
 
-	private String ip;
-	private Date registerTime;
-	
-	public Integer getId() {
-		return id;
-	}
-	public void setId(Integer id) {
-		this.id = id;
-	}
-	public Integer getLevel() {
-		return level;
-	}
-	public void setLevel(Integer level) {
-		this.level = level;
-	}
-	public Integer getScore() {
-		return score;
-	}
-	public void setScore(Integer score) {
-		this.score = score;
-	}
-	public String getEmail() {
-		return email;
-	}
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	public String getUserName() {
-		return userName;
-	}
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-	public String getPassword() {
-		return password;
-	}
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	public Integer getBalance() {
-		return balance;
-	}
-	public void setBalance(Integer balance) {
-		this.balance = balance;
-	}
-	public String getCorp() {
-		return corp;
-	}
-	public void setCorp(String corp) {
-		this.corp = corp;
-	}
 
-	public String getIp() {
-		return ip;
-	}
-
-	public void setIp(String ip) {
-		this.ip = ip;
-	}
-
-	public Date getRegisterTime() {
-		return registerTime;
-	}
-
-	public void setRegisterTime(Date registerTime) {
-		this.registerTime = registerTime;
-	}
-
-	public BbsUser() {
-	}
-
-	public BbsUser(Integer id, String userName) {
-		this.id = id;
-		this.userName = userName;
-	}
+    public BbsUser(Integer id, String userName) {
+        this.id = id;
+        this.userName = userName;
+    }
 }

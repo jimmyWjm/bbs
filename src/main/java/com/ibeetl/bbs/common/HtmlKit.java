@@ -65,8 +65,7 @@ public class HtmlKit {
 			for (String s : arr) {
 				if (!StringUtils.isEmpty(s)) {
 					String temp = "<span class=\"highlight\">" + s + "</span>";
-					if(temp!=null)
-						target = target.replaceAll(s, temp);
+					target = target.replaceAll(s, temp);
 				}
 			}
 		}

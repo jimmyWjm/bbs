@@ -1,18 +1,16 @@
 package com.ibeetl.bbs.util;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.ibeetl.bbs.common.WebUtils;
 import com.ibeetl.bbs.model.BbsModule;
+import com.ibeetl.bbs.model.BbsUser;
+import com.ibeetl.bbs.service.BBSService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.ibeetl.bbs.common.WebUtils;
-import com.ibeetl.bbs.model.BbsUser;
-import com.ibeetl.bbs.service.BBSService;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  * beetl 自定义函数
@@ -53,7 +51,7 @@ public class Functions {
 	 * @return
 	 */
 	public BbsUser currentUser(HttpServletRequest request, HttpServletResponse response) {
-		return webUtils.currentUser(request, response);
+		return webUtils.currentUser();
 	}
 
 

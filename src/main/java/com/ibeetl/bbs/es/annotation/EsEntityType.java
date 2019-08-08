@@ -1,5 +1,5 @@
 package com.ibeetl.bbs.es.annotation;
 
 public enum EsEntityType {
-	BbsTopic,BbsPost,BbsReply
+    BbsTopic, BbsPost, BbsReply
 }

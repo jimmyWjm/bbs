@@ -1,48 +1,45 @@
 package com.ibeetl.bbs.service;
 
-import java.util.List;
-
 import com.ibeetl.bbs.model.BbsUser;
 
 
+public interface BbsUserService {
 
 
-
-public interface  BbsUserService {
-
-
-	
-	public static final int BBS_TOPIC_SCORE = 10;
-	public static final int BBS_POST_SCORE = 3;
-	public static final int BBS_REPLAY_SCORE = 3;
-	
-	
-	//level 用户等级
-	
-	public static final int REFRESH_THRESHOLD = 30;
-	public static final int OLD_THRESHOLD = 100;
-	public static final int TEACHER_THRESHOLD = 200;
-	public static final int DIRECTOR_THRESHOLD = 350;
-	public static final int PRESIDENT_THRESHOLD = 700;
-	
-	
-	public void addTopicScore(long userId);
-	public void addPostScore(long userId);
-	public void addReplayScore(long userId);
+    int BBS_TOPIC_SCORE  = 10;
+    int BBS_POST_SCORE   = 3;
+    int BBS_REPLAY_SCORE = 3;
 
 
-	public BbsUser setUserAccount(BbsUser user);
-	public int countByIp(String ip);
-	
-	public BbsUser getUserAccount(String userName,String password);
-	
-	public boolean hasUser(String userName);
-	
-	public BbsUser getUser(Integer id);
+    //level 用户等级
 
-	/**
-	 * 逻辑删除
-	 * */
-	public void removeUser(Integer id);
+    int REFRESH_THRESHOLD   = 30;
+    int OLD_THRESHOLD       = 100;
+    int TEACHER_THRESHOLD   = 200;
+    int DIRECTOR_THRESHOLD  = 350;
+    int PRESIDENT_THRESHOLD = 700;
+
+
+    void addTopicScore(long userId);
+
+    void addPostScore(long userId);
+
+    void addReplayScore(long userId);
+
+
+    BbsUser setUserAccount(BbsUser user);
+
+    int countByIp(String ip);
+
+    BbsUser getUserAccount(String userName, String password);
+
+    boolean hasUser(String userName);
+
+    BbsUser getUser(Integer id);
+
+    /**
+     * 逻辑删除
+     */
+    void removeUser(Integer id);
 
 }

@@ -5,6 +5,7 @@ import org.apache.commons.codec.binary.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 
 /**
@@ -39,8 +40,8 @@ public class DESUtils {
 		try {
 			// L.cm 2015-01-20 将加密的密匙Base64
 			// fix Caused by: java.security.InvalidKeyException: Wrong key size
-			String desKey = Base64.encodeBase64String(keyStr.getBytes("UTF-8"));
-			DESKeySpec objDesKeySpec = new DESKeySpec(desKey.getBytes("UTF-8"));
+			String desKey = Base64.encodeBase64String(keyStr.getBytes(StandardCharsets.UTF_8));
+			DESKeySpec objDesKeySpec = new DESKeySpec(desKey.getBytes(StandardCharsets.UTF_8));
 			SecretKeyFactory objKeyFactory = SecretKeyFactory.getInstance("DES");
 			key = objKeyFactory.generateSecret(objDesKeySpec);
 		} catch (Exception e) {

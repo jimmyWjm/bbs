@@ -4,6 +4,8 @@
 
 ## 安装
 
+* lombok
+
 * jdk8,maven3,mysql
 
 * git clone 
@@ -18,7 +20,7 @@
 
 * maven install  生成的war包部署到服务器上
 
-* 必须安装elastic search 作为全文搜索：下载 https://www.elastic.co/cn/downloads/elasticsearch (截止当前测试ES版本7.2.0 通过),进入bin目录，调用elasticsearch 启动
+* 安装elastic search 作为全文搜索：下载 https://www.elastic.co/cn/downloads/elasticsearch (截止当前测试ES版本7.2.0 通过),进入bin目录，调用elasticsearch 启动
 
 * 安装elastic search 分词：进入bin目录，运行 ./elasticsearch-plugin install  analysis-smartcn。然后重新启动elasticsearch
 
@@ -29,7 +31,7 @@
 
 ## 技术
 
-- Spring Boot2.1.6，Elastic Search , Caffeine Cache ,Beetl,BeetlSQL,Java8
+- Spring Boot2.1.7，Elastic Search , Caffeine Cache ,Beetl,BeetlSQL,Java8
 
 ## 合作开发
 
