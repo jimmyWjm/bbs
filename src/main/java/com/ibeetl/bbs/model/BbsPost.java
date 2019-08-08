@@ -6,7 +6,6 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.FieldDefaults;
 import org.beetl.sql.core.TailBean;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -17,8 +16,7 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class BbsPost extends TailBean implements Serializable {
-    private static final long serialVersionUID = 2365496820528154205L;
+public class BbsPost extends TailBean {
 
     Integer id;
     Integer hasReply;

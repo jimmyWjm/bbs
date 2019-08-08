@@ -6,15 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
-import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
-public class BbsIndex implements Serializable {
-
-    private static final long serialVersionUID = 7588021529563246352L;
+public class BbsIndex {
 
     transient String id;
     Integer topicId;

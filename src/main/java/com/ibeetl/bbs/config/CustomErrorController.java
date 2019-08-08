@@ -1,10 +1,8 @@
 package com.ibeetl.bbs.config;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
 import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
-import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -23,10 +21,10 @@ import java.util.Map;
  * @date 2016年12月29日 上午9:38:33
  */
 @Controller
+@Slf4j
 public class CustomErrorController extends AbstractErrorController {
 
     private static final String ERROR_PATH = "/error";
-    Log log = LogFactory.getLog(ErrorController.class);
 
     public CustomErrorController() {
         super(new DefaultErrorAttributes());
