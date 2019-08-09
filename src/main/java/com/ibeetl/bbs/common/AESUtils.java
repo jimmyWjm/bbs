@@ -1,14 +1,14 @@
 package com.ibeetl.bbs.common;
 
-import java.security.Key;
-import java.security.SecureRandom;
+import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.codec.binary.Base64;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.security.SecureRandom;
 
 /**
  * aes加密、解密
@@ -47,9 +47,8 @@ public class AESUtils {
 	        random.setSeed(keyStr.getBytes());
             kgen.init(128, random);  
             SecretKey secretKey = kgen.generateKey();  
-            byte[] enCodeFormat = secretKey.getEncoded();  
-            SecretKeySpec aesKey = new SecretKeySpec(enCodeFormat, AES);  
-            key = aesKey;
+            byte[] enCodeFormat = secretKey.getEncoded();
+			key = new SecretKeySpec(enCodeFormat, AES);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -59,7 +58,7 @@ public class AESUtils {
 	public final String encryptString(String str) {
 		try {
 	            Cipher cipher = Cipher.getInstance(AES);// 创建密码器  
-	            byte[] bytes = str.getBytes("UTF-8");  
+	            byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
 	            cipher.init(Cipher.ENCRYPT_MODE, key);// 初始化  
 	            byte[] result = cipher.doFinal(bytes);  
 	            return Base64.encodeBase64URLSafeString(result);

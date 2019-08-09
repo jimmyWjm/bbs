@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * ES服务调用失败后的降级处理
+ *
  * @author darren
  * @date 2019/7/26 16:59
  */

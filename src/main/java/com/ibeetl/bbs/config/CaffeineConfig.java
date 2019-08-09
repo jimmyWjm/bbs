@@ -44,7 +44,7 @@ public class CaffeineConfig {
         postSupport(3600),
         allModule(3600),
         module(36000),
-        fallbackQuery(60,20),
+        fallbackQuery(60, 20),
         ;
 
         Caches() {
