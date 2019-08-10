@@ -1,4 +1,6 @@
 /target/
 /upload/
-.*
 /bin/
+.idea
+*.iml
+.DS_Store
