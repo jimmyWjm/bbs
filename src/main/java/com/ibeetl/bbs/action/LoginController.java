@@ -12,7 +12,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.StringUtils;
-import org.beetl.sql.core.SQLManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,16 +30,14 @@ import java.util.Date;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class LoginController {
 
-
-    SQLManager          sql;
     BbsUserService      bbsUserService;
     BbsConfig           bbsConfig;
     WebUtils            webUtils;
     HttpServletRequest  request;
     HttpServletResponse response;
 
-    static final String CODE_NAME      = "verCode";
-    static final String POST_CODE_NAME = "postVerCode";
+    private static final String CODE_NAME      = "verCode";
+    static final         String POST_CODE_NAME = "postVerCode";
 
     /**
      * 登录方法改为ajax方式登录
@@ -59,7 +56,7 @@ public class LoginController {
                 result.put("msg", "用户不存在或密码错误");
             } else {
                 webUtils.loginUser(user, true);
-                result.put("msg", "/bbs/index/1.html");
+                result.put("msg", "/bbs/");
                 result.put("err", 0);
             }
         }
@@ -121,8 +118,6 @@ public class LoginController {
         response.setHeader("Cache-Control", "no-cache");
         response.setDateHeader("Expires", 0);
         response.setContentType("image/jpeg");
-        String ip = AddressUtil.getIPAddress(request);
-
         //生成随机字串
         String verifyCode = VerifyCodeUtils.generateVerifyCode(4);
         //存入会话session
@@ -142,8 +137,6 @@ public class LoginController {
         response.setHeader("Cache-Control", "no-cache");
         response.setDateHeader("Expires", 0);
         response.setContentType("image/jpeg");
-        String ip = AddressUtil.getIPAddress(request);
-
         //生成随机字串
         String verifyCode = VerifyCodeUtils.generateVerifyCode(4);
         //存入会话session

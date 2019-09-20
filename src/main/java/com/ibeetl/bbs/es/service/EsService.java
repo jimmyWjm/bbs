@@ -1,8 +1,8 @@
 package com.ibeetl.bbs.es.service;
 
 import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.es.annotation.EsEntityType;
 import com.ibeetl.bbs.es.annotation.EsFallback;
 import com.ibeetl.bbs.es.annotation.EsOperateType;
@@ -42,7 +42,6 @@ public class EsService {
 
     BBSService    bbsService;
     SQLManager    sqlManager;
-    ObjectMapper  objectMapper;
     EsConfig      esConfig;
     GroupTemplate beetlTemplate;
     Executor      executor = Executor.newInstance();
@@ -208,15 +207,16 @@ public class EsService {
                     .asString(StandardCharsets.UTF_8);
 
             List<IndexObject> indexObjectList = new ArrayList<>();
+            JSONObject root = JSON.parseObject(result);
+            JSONObject hits = root.getJSONObject("hits");
+            long     total = hits.getLongValue("total");
+            JSONArray  arrays = hits.getJSONArray("hits");
+            for (int i = 0; i < arrays.size(); i++) {
+                JSONObject node = arrays.getJSONObject(i);
+                double   score = node.getDoubleValue("_score");
+                BbsIndex index = node.getObject("_source",BbsIndex.class);
 
-            JsonNode root  = objectMapper.readTree(result);
-            long     total = root.get("hits").get("total").asLong();
-
-            for (JsonNode jsonNode : root.get("hits").get("hits")) {
-                double   score = jsonNode.get("_score").asDouble();
-                BbsIndex index = objectMapper.convertValue(jsonNode.get("_source"), BbsIndex.class);
-
-                index.setContent(jsonNode.get("highlight").get("content").get(0).asText());
+                index.setContent(node.getJSONObject("highlight").getJSONArray("content").toJavaList(String.class).get(0));
                 if (index.getTopicId() != null) {
                     IndexObject indexObject = null;
 

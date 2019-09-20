@@ -74,12 +74,12 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li><a href="${ctxPath}/bbs/index/1.html">${pageName!"首页综合"}</a></li>
+        <li><a href="${ctxPath}/bbs/">${pageName!"首页综合"}</a></li>
        <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">板块 <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
            @for(moudle in moduleList){
-				<li><a href="${ctxPath}/bbs/topic/module/${moudle.id}-1.html">${moudle.name} </a></li>
+				<li><a href="${ctxPath}/bbs/topic/module/${moudle.id}">${moudle.name} </a></li>
 			@}
           </ul>
         </li>
@@ -100,7 +100,7 @@
 		@}else{
 
 				@if(allowAdd){
-		  		<li><a href="/bbs/bbs/topic/add.html"><i class="fa fa-plus"></i> 发帖</a></li>
+		  		<li><a href="/bbs/bbs/topic/add"><i class="fa fa-plus"></i> 发帖</a></li>
 				@}
 		  		<li class="dropdown">
 				@ var mcount = c.myMessageCount(_user.id);
@@ -112,7 +112,7 @@
 							<li><a href="javascript:;" id="initEs" data-href="${ctxPath}/bbs/admin/es/init">初始化ES索引</a></li>
 						@}
 						<li class="divider"></li>
-						<li><a href="${ctxPath}/bbs/myMessage.html">给我的回复</a></li>
+						<li><a href="${ctxPath}/bbs/myMessage">给我的回复</a></li>
 					</ul>
 				</li>
 				<li><a href="javascript:;" onclick="$.post('${ctxPath}/bbs/user/logout',function(){location.reload()})"><i class="fa fa-sign-out"></i> 注销</a></li>

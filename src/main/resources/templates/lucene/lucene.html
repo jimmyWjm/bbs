@@ -35,10 +35,10 @@
 						<span>回答: ${searcher.postCount}</span>
 						<span>浏览: ${searcher.pv}</span>
 						<span>匹配度:${searcher.score,'##.##'}</span>
-						&nbsp;&nbsp;<a class="type" href="${ctxPath}/bbs/topic/module/${searcher.moduleId}-1.html">${searcher.moduleName}</a>
+						&nbsp;&nbsp;<a class="type" href="${ctxPath}/bbs/topic/module/${searcher.moduleId}">${searcher.moduleName}</a>
 					</div>							
 					<div class="post">
-							<a class="tiezi" href="${ctxPath}/bbs/topic/${searcher.topicId}-1.html">${searcher.topicContent}</a>&nbsp;&nbsp;
+							<a class="tiezi" href="${ctxPath}/bbs/topic/${searcher.topicId}">${searcher.topicContent}</a>&nbsp;&nbsp;
 							<div class="frist-post"><pre class="pre">${searcher.postContent}</pre></div>
 					</div>
 					@if(isAdmin){
