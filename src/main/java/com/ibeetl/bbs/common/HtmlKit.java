@@ -7,6 +7,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
 
+@SuppressWarnings("unused")
 public class HtmlKit {
 	
 	// 只有纯文本可以通过

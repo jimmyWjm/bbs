@@ -36,7 +36,7 @@
 			@}
 		</div>
 		@}
-		<#page query="${postPage}"/>
+		<#page query="${postPage}" url="${ctxPath}/bbs/topic/${topic.id}/"/>
 		@if(_user!=null){
 		<form id="postForm" action="${ctxPath}/bbs/post/save" method="POST"  onsubmit="return ajaxSubmit(this,'reload')"> 
 			<input type="hidden" name="topicId" value="${topic.id}">

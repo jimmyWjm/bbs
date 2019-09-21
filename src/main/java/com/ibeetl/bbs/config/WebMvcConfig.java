@@ -7,7 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
@@ -65,14 +70,15 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         //外部静态资源的处理（用于图片上传后的URL映射）
         registry.addResourceHandler("/bbs/showPic/**")
-                .addResourceLocations("file:" + System.getProperty("user.dir") + File.separator + "upload" + File.separator);
+                .addResourceLocations("file:upload" + File.separator);
     }
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        //无逻辑处理的
-        registry.addViewController("/bbs/share").setViewName("forward:/bbs/topic/module/1");
+        //无逻辑处理的控制器路由
+        registry.setOrder(-1);//解决 => /bbs/topic/{id}导致匹配不到此处路由的问题
         registry.addViewController("/bbs/topic/add").setViewName("/post.html");
+        registry.addViewController("/bbs/share").setViewName("forward:/bbs/topic/module/1");
     }
 
 

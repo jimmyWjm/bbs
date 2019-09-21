@@ -9,7 +9,12 @@ import com.ibeetl.bbs.es.annotation.EsIndexType;
 import com.ibeetl.bbs.es.annotation.EsOperateType;
 import com.ibeetl.bbs.es.service.EsService;
 import com.ibeetl.bbs.es.vo.IndexObject;
-import com.ibeetl.bbs.model.*;
+import com.ibeetl.bbs.model.BbsMessage;
+import com.ibeetl.bbs.model.BbsModule;
+import com.ibeetl.bbs.model.BbsPost;
+import com.ibeetl.bbs.model.BbsReply;
+import com.ibeetl.bbs.model.BbsTopic;
+import com.ibeetl.bbs.model.BbsUser;
 import com.ibeetl.bbs.service.BBSService;
 import com.ibeetl.bbs.service.BbsUserService;
 import com.ibeetl.bbs.util.AddressUtil;
@@ -27,14 +32,24 @@ import org.springframework.cache.Cache.ValueWrapper;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,17 +70,7 @@ public class BBSController {
     HttpServletRequest  request;
     HttpServletResponse response;
 
-    private static String filePath;
     Pattern mediaTypePattern = Pattern.compile("(?i)^image/(.+)$");
-
-    static {
-        filePath = System.getProperty("user.dir");
-        File file = new File("upload", filePath);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-
-    }
 
     @GetMapping({"", "/bbs/index", "/bbs/index/{p}"})
     public String index(@PathVariable Optional<Integer> p, String keyword) {
@@ -117,9 +122,9 @@ public class BBSController {
         return "/bbs/index.html";
     }
 
-    @GetMapping({"/bbs/topic/{id}", "/bbs/topic/{id}-{p}"})
+    @GetMapping({"/bbs/topic/{id}", "/bbs/topic/{id}/{p}"})
     @EsIndexType(entityType = EsEntityType.BbsTopic, operateType = EsOperateType.UPDATE)
-    public String topic(@PathVariable int id, @PathVariable Optional<Integer> p) {
+    public String topic(@PathVariable Integer id, @PathVariable Optional<Integer> p) {
         PageQuery query = new PageQuery(p.orElse(1));
         query.setPara("topicId", id);
         query = bbsService.getPosts(query);
@@ -135,7 +140,7 @@ public class BBSController {
         return "/detail.html";
     }
 
-    @GetMapping({"/bbs/topic/module/{id}", "/bbs/topic/module/{id}-{p}"})
+    @GetMapping({"/bbs/topic/module/{id}", "/bbs/topic/module/{id}/{p}"})
     public String module(@PathVariable Integer id, @PathVariable Optional<Integer> p) {
         PageQuery query = new PageQuery<>(p.orElse(1));
         query.setPara("moduleId", id);
@@ -178,7 +183,8 @@ public class BBSController {
             return result;
         }
 
-        if (!verCode.equals(code)) {
+        //验证码不要区分大小写
+        if (!verCode.equalsIgnoreCase(code)) {
             result.put("msg", "验证码不正确");
             return result;
         }
@@ -218,7 +224,7 @@ public class BBSController {
         result.put("err", 0);
         result.put("tid", topic.getId());
         result.put("pid", post.getId());
-        result.put("msg", "/bbs/topic/" + topic.getId() + "-1");
+        result.put("msg", "/bbs/topic/" + topic.getId());
 
 
         return result;
@@ -250,7 +256,7 @@ public class BBSController {
 
             int pageSize = (int) PageQuery.DEFAULT_PAGE_SIZE;
             int page     = (totalPost / pageSize) + (totalPost % pageSize == 0 ? 0 : 1);
-            result.put("msg", "/bbs/topic/" + post.getTopicId() + "-" + page + "");
+            result.put("msg", "/bbs/topic/" + post.getTopicId() + "/" + page);
             result.put("err", 0);
             result.put("id", post.getId());
         }
@@ -312,7 +318,7 @@ public class BBSController {
             Matcher matcher = mediaTypePattern.matcher(Objects.requireNonNull(file.getContentType()));
             if (matcher.find()) {
                 String newName   = UUID.randomUUID().toString() + System.currentTimeMillis() + "." + matcher.group(1);
-                String filePaths = filePath + File.separator + "upload" + File.separator;
+                String filePaths = "upload" + File.separator;
                 File   fileout   = new File(filePaths);
                 if (!fileout.exists()) {
                     fileout.mkdirs();
@@ -446,7 +452,7 @@ public class BBSController {
                 db.setContent(post.getContent());
                 bbsService.updatePost(db);
                 result.put("id", post.getId());
-                result.put("msg", "/bbs/topic/" + db.getTopicId() + "-1");
+                result.put("msg", "/bbs/topic/" + db.getTopicId());
                 result.put("err", 0);
             } else {
                 result.put("msg", "不是自己发表的内容无法编辑！");

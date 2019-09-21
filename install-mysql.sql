@@ -85,7 +85,7 @@ INSERT INTO `bbs_post` VALUES ('209', '64', '1', '<p>&nbsp; &nbsp; &nbsp;sdf sdf
 INSERT INTO `bbs_post` VALUES ('210', '65', '1', '<p>&nbsp; &nbsp; &nbsp;sdfdfsdfsdfsdf</p>', '2016-07-13 13:27:06', '\0', null, '0', '0', '0');
 INSERT INTO `bbs_post` VALUES ('211', '66', '1', '<p>sdfsdfsd</p>', '2016-07-13 13:27:28', '\0', null, '0', '0', '0');
 INSERT INTO `bbs_post` VALUES ('212', '66', '1', '<p>&nbsp; &nbsp; &nbsp;dsfsdf&nbsp;</p>', '2016-07-13 13:27:47', '\0', null, '0', '0', '0');
-INSERT INTO `bbs_post` VALUES ('213', '66', '1', '<p><a href=\"http://127.0.0.1:7700/codeweb/bbs/topic/66-1\" target=\"_blank\" title=\"课程\">http://127.0.0.1:7700/codeweb/bbs/topic/66-1&nbsp;</a></p>', '2016-07-13 13:47:07', '\0', null, '0', '0', '0');
+INSERT INTO `bbs_post` VALUES ('213', '66', '1', '<p><a href=\"http://127.0.0.1:7700/codeweb/bbs/topic/66/1\" target=\"_blank\" title=\"课程\">http://127.0.0.1:7700/codeweb/bbs/topic/66-1&nbsp;</a></p>', '2016-07-13 13:47:07', '\0', null, '0', '0', '0');
 INSERT INTO `bbs_post` VALUES ('214', '67', '1', '<h2>第三方斯蒂芬放到</h2><p>dfdfdf<br/></p><p><br/></p><p><br/></p>', '2016-07-13 13:49:12', '\0', null, '0', '0', '0');
 INSERT INTO `bbs_post` VALUES ('215', '68', '1', '<p><img src=\"/codeweb//bbs/showPic/1468389086446blob.png\" _src=\"/codeweb//bbs/showPic/1468389086446blob.png\"/></p>', '2016-07-13 13:51:28', '\0', null, '0', '0', '0');
 INSERT INTO `bbs_post` VALUES ('216', '69', '4', '<p><img src=\"/codeweb//bbs/showPic/1468391755464blob.png\" _src=\"/codeweb//bbs/showPic/1468391755464blob.png\" style=\"width: 754px; height: 585px;\"/></p><p><br/></p><p><br/></p><p>ok，试试看了多发点 多发点，明天搞</p>', '2016-07-13 14:35:57', '\0', null, '0', '0', '0');

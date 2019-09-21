@@ -11,6 +11,7 @@ import java.security.Key;
 /**
  * des加密、解密
  */
+@SuppressWarnings("unused")
 public class DESUtils {
 
 	// 指定DES加密解密所用的密钥
