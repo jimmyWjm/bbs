@@ -26,9 +26,6 @@ public class BbsUserServiceImpl implements BbsUserService {
 
     /**
      * 分5个级别
-     *
-     * @param score
-     * @return
      */
     private int getLevel(int score) {
         if (score >= BbsUserService.PRESIDENT_THRESHOLD) {
@@ -66,10 +63,10 @@ public class BbsUserServiceImpl implements BbsUserService {
         BbsUser query = new BbsUser();
         query.setUserName(userName);
         query.setPassword(password);
-		return userDao.template(query)
-				.stream()
-				.findFirst()
-				.orElse(null);
+        return userDao.template(query)
+                .stream()
+                .findFirst()
+                .orElse(null);
     }
 
 

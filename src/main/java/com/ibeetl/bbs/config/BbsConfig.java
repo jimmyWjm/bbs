@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * 每天用户能做的操作个数，如果大于配置个数，需要验证码
  */
-@ConfigurationProperties(prefix = "bbs.user", ignoreUnknownFields = true)
+@ConfigurationProperties(prefix = "bbs.user")
 @Configuration
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)

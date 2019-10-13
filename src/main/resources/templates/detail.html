@@ -17,7 +17,7 @@
 					<a class="btn btn-default supportPost" href="javascript:;" data-post = "${post.id!}" data-num = "0" data-toggle="tooltip" title="踩" ><i class="fa fa-thumbs-o-down"></i> <span class="supportNum">${post.cons!0}</span></a>
 					<a class="btn ${post.isAccept == 0 ?'btn-default':'btn-success'} ${isAdmin?'adminAgree'}" href="javascript:;" data-toggle="tooltip" title="采纳"  data-post = "${post.id!}" ><i class="fa fa-star"></i></a>
 					@if(_user.id!0==post.userId||isAdmin){
-					<a class="btn btn-default" href="${ctxPath}/bbs/admin/post/edit/${post.id}.html" data-toggle="tooltip" title="编辑"  ><i class="fa fa-edit"></i></a>
+					<a class="btn btn-default" href="${ctxPath}/bbs/admin/post/edit/${post.id}" data-toggle="tooltip" title="编辑"  ><i class="fa fa-edit"></i></a>
 					<a class="btn btn-default" href="javascript:;" onclick="deletePost(this)" data-toggle="tooltip" title="删除"  ><i class="fa fa-trash"></i></a>
 					@}
 					<a class="btn btn-default" href="javascript:;" onclick="showReplyDialog('${post.id!}','${topic.id!}')" data-toggle="tooltip" title="回复"  ><i class="fa fa-reply"></i></a>
@@ -36,7 +36,7 @@
 			@}
 		</div>
 		@}
-		<#page query="${postPage}"/>
+		<#page query="${postPage}" url="${ctxPath}/bbs/topic/${topic.id}/"/>
 		@if(_user!=null){
 		<form id="postForm" action="${ctxPath}/bbs/post/save" method="POST"  onsubmit="return ajaxSubmit(this,'reload')"> 
 			<input type="hidden" name="topicId" value="${topic.id}">

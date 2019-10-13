@@ -1,27 +1,23 @@
 package com.ibeetl.bbs.es.service;
 
 import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.ibeetl.bbs.es.annotation.EsEntityType;
 import com.ibeetl.bbs.es.annotation.EsFallback;
 import com.ibeetl.bbs.es.annotation.EsOperateType;
 import com.ibeetl.bbs.es.config.EsConfig;
 import com.ibeetl.bbs.es.entity.BbsIndex;
 import com.ibeetl.bbs.es.vo.IndexObject;
-import com.ibeetl.bbs.model.BbsModule;
-import com.ibeetl.bbs.model.BbsPost;
-import com.ibeetl.bbs.model.BbsReply;
-import com.ibeetl.bbs.model.BbsTopic;
-import com.ibeetl.bbs.model.BbsUser;
+import com.ibeetl.bbs.model.*;
 import com.ibeetl.bbs.service.BBSService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
-import org.apache.http.client.fluent.Response;
 import org.apache.http.entity.ContentType;
 import org.beetl.core.GroupTemplate;
 import org.beetl.core.Template;
@@ -40,15 +36,15 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class EsService {
 
-    final BBSService    bbsService;
-    final SQLManager    sqlManager;
-    final ObjectMapper  objectMapper;
-    final EsConfig      esConfig;
-    final GroupTemplate beetlTemplate;
+    BBSService    bbsService;
+    SQLManager    sqlManager;
+    EsConfig      esConfig;
+    GroupTemplate beetlTemplate;
+    Executor      executor = Executor.newInstance();
 
 
     /**
@@ -76,7 +72,7 @@ public class EsService {
     @EsFallback
     public void initIndex() {
         try {
-            Request.Delete(esConfig.getUrl()).execute().discardContent();
+            executor.execute(Request.Delete(esConfig.getUrl())).discardContent();
             batchSaveBbsIndex(BbsTopic.class);
             batchSaveBbsIndex(BbsPost.class);
             batchSaveBbsIndex(BbsReply.class);
@@ -164,9 +160,8 @@ public class EsService {
      */
     private void saveBbsIndex(BbsIndex bbsIndex) {
         try {
-            Request.Post(esConfig.getContentUrl() + bbsIndex)
-                    .bodyString(JSON.toJSONString(bbsIndex), ContentType.APPLICATION_JSON)
-                    .execute()
+            executor.execute(Request.Post(esConfig.getContentUrl() + bbsIndex)
+                    .bodyString(JSON.toJSONString(bbsIndex), ContentType.APPLICATION_JSON))
                     .discardContent();
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -178,8 +173,7 @@ public class EsService {
      */
     private void deleteBbsIndex(String id) {
         try {
-            Request.Delete(esConfig.getContentUrl() + id)
-                    .execute()
+            executor.execute(Request.Delete(esConfig.getContentUrl() + id))
                     .discardContent();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -207,21 +201,22 @@ public class EsService {
             template.binding("pageSize", pageSize);
             template.binding("pageNumber", pageNumber);
             template.binding("keyword", keyword);
-            Response response = Request.Post(esConfig.getContentSearchUrl())
-                    .bodyString(template.render(), ContentType.APPLICATION_JSON)
-                    .execute();
-            String result = response.returnContent().asString(StandardCharsets.UTF_8);
+            String result = executor.execute(Request.Post(esConfig.getContentSearchUrl())
+                    .bodyString(template.render(), ContentType.APPLICATION_JSON))
+                    .returnContent()
+                    .asString(StandardCharsets.UTF_8);
 
             List<IndexObject> indexObjectList = new ArrayList<>();
+            JSONObject root = JSON.parseObject(result);
+            JSONObject hits = root.getJSONObject("hits");
+            long     total = hits.getLongValue("total");
+            JSONArray  arrays = hits.getJSONArray("hits");
+            for (int i = 0; i < arrays.size(); i++) {
+                JSONObject node = arrays.getJSONObject(i);
+                double   score = node.getDoubleValue("_score");
+                BbsIndex index = node.getObject("_source",BbsIndex.class);
 
-            JsonNode root  = objectMapper.readTree(result);
-            long     total = root.get("hits").get("total").asLong();
-
-            for (JsonNode jsonNode : root.get("hits").get("hits")) {
-                double   score = jsonNode.get("_score").asDouble();
-                BbsIndex index = objectMapper.convertValue(jsonNode.get("_source"), BbsIndex.class);
-
-                index.setContent(jsonNode.get("highlight").get("content").get(0).asText());
+                index.setContent(node.getJSONObject("highlight").getJSONArray("content").toJavaList(String.class).get(0));
                 if (index.getTopicId() != null) {
                     IndexObject indexObject = null;
 

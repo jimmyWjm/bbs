@@ -232,12 +232,22 @@ public class BBSServiceImpl implements BBSService {
 
     @Override
     @Caching(evict = {
+            @CacheEvict(cacheNames = {"bbsTopic", "bbsTopicPage", "bbsHotTopicPage", "bbsNiceTopicPage"}, allEntries = true),
             @CacheEvict(cacheNames = {"bbsPost", "bbsPostPage", "bbsFirstPost", "bbsLatestPost"}, allEntries = true),
             @CacheEvict(cacheNames = {"bbsReply"}, allEntries = true)
     })
     public void deletePost(int id) {
+        BbsPost postTopic = postDao.createLambdaQuery()
+                .andEq(BbsPost::getId, id)
+                .single("topic_id");
+        //删除当前post
         sql.deleteById(BbsPost.class, id);
+        //删除当前post下的所有 reply
         replyDao.deleteByPostId(id);
+        //检查当前post所在的topic下是否还有其他post，如果没有，则删除当前topic
+        if (postDao.templateCount(postTopic) == 0) {
+            topicDao.deleteById(postTopic.getTopicId());
+        }
     }
 
     @Override
@@ -271,11 +281,11 @@ public class BBSServiceImpl implements BBSService {
     public BbsPost getFirstPost(Integer topicId) {
         Query<BbsPost> query = sql.query(BbsPost.class);
         return query.andEq("topic_id", topicId)
-				.orderBy("create_time asc")
-				.select()
-				.stream()
-				.findFirst()
-				.orElse(null);
+                .orderBy("create_time asc")
+                .select()
+                .stream()
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -287,10 +297,10 @@ public class BBSServiceImpl implements BBSService {
     @Cacheable(cacheNames = "module")
     public BbsModule getModule(Integer id) {
         return allModule()
-				.stream()
-				.filter(m->m.getId().equals(id))
-				.findFirst()
-				.orElse(null);
+                .stream()
+                .filter(m -> m.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
 

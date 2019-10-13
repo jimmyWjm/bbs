@@ -4,7 +4,7 @@
   <ul class="pagination">
 	@if(query.totalPage<=10){//小于10页直接全部输出
 		@for(var i in range(1,query.totalPage+1)){
-			<li class="${i==query.pageNumber?'active'}"><a href="${ctxPath}${pageUrl}${i}.html${pageUrlParameter}">${i}</a></li>
+			<li class="${i==query.pageNumber?'active'}"><a href="${pageUrl}${i}${pageUrlParameter}">${i}</a></li>
 		@}
 	@}else{
 		@var maxdiff = query.totalPage-query.pageNumber;
@@ -17,12 +17,12 @@
 		@}
 		
 		@for(var i in range(start,end+1)){
-			<li class="${i==query.pageNumber?'active'}"><a href="${ctxPath}${pageUrl}${i}.html${pageUrlParameter}">${i}</a></li>
+			<li class="${i==query.pageNumber?'active'}"><a href="${ctxPath}${pageUrl}${i}${pageUrlParameter}">${i}</a></li>
 		@}
 		
 		@if(end<query.totalPage){
 			<li class="disabled"><a href="javascript:;">···</a></li>
-			<li><a href="${ctxPath}${pageUrl}${query.totalPage}.html${pageUrlParameter}">尾页</a></li>
+			<li><a href="${ctxPath}${pageUrl}${query.totalPage}${pageUrlParameter}">尾页</a></li>
 		@}
 	@}
   </ul>

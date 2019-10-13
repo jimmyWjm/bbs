@@ -39,19 +39,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,6 +56,7 @@ import java.util.regex.Pattern;
 @Controller
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "ResultOfMethodCallIgnored"})
 public class BBSController {
 
     SQLManager          sql;
@@ -72,31 +70,14 @@ public class BBSController {
     HttpServletRequest  request;
     HttpServletResponse response;
 
-    static String filePath = null;
+    Pattern mediaTypePattern = Pattern.compile("(?i)^image/(.+)$");
 
-    static {
-        filePath = System.getProperty("user.dir");
-        File file = new File("upload", filePath);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-
-    }
-
-    @RequestMapping("/bbs/share")
-    public ModelAndView share() {
-        return new ModelAndView("forward:/bbs/topic/module/1-1.html");
-    }
-
-    @GetMapping({"/bbs/index", "/bbs/index/{p}.html"})
-    public String index(@PathVariable(required = false) Integer p, String keyword) {
-        if (p == null) {
-            p = 1;
-        }
+    @GetMapping({"", "/bbs/index", "/bbs/index/{p}"})
+    public String index(@PathVariable Optional<Integer> p, String keyword) {
         String view;
         if (StringUtils.isBlank(keyword)) {
             view = "/index.html";
-            PageQuery query = new PageQuery(p, null);
+            PageQuery query = new PageQuery(p.orElse(1), null);
             //因为用了spring boot缓存,sb是用返回值做缓存,所以service再次返回了pageQuery以缓存查询结果
             query = bbsService.getTopics(query);
             request.setAttribute("topicPage", query);
@@ -104,7 +85,7 @@ public class BBSController {
         } else {
             view = "/lucene/lucene.html";
             //查询索引
-            PageQuery<IndexObject> searcherKeywordPage = this.esService.getQueryPage(keyword, p);
+            PageQuery<IndexObject> searcherKeywordPage = this.esService.getQueryPage(keyword, p.orElse(1));
             request.setAttribute("searcherPage", searcherKeywordPage);
             request.setAttribute("pageName", keyword);
             request.setAttribute("resultnum", searcherKeywordPage.getTotalRow());
@@ -112,62 +93,42 @@ public class BBSController {
         return view;
     }
 
-    @RequestMapping("/bbs/myMessage.html")
-    public ModelAndView myPage() {
-        ModelAndView view = new ModelAndView();
-        view.setViewName("/message.html");
-        BbsUser        user = webUtils.currentUser();
-        List<BbsTopic> list = bbsService.getMyTopics(user.getId());
-        view.addObject("list", list);
-        return view;
+    @GetMapping("/bbs/myMessage")
+    public String myPage() {
+        BbsUser user = webUtils.currentUser();
+        request.setAttribute("list", bbsService.getMyTopics(user.getId()));
+        return "/message.html";
     }
 
-    @RequestMapping("/bbs/my/{p}.html")
-    public RedirectView openMyTopic(@PathVariable int p) {
+    @GetMapping("/bbs/my/{p}")
+    public String openMyTopic(@PathVariable int p) {
         BbsUser    user    = webUtils.currentUser();
         BbsMessage message = bbsService.makeOneBbsMessage(user.getId(), p, 0);
         this.bbsService.updateMyTopic(message.getId(), 0);
-        return new RedirectView(request.getContextPath() + "/bbs/topic/" + p + "-1.html");
+        return "redirect:/bbs/topic/" + p;
     }
 
-    @RequestMapping("/bbs/topic/hot")
-    public RedirectView hotTopic() {
-        return new RedirectView("/bbs/topic/hot/1");
+    @GetMapping({"/bbs/topic/hot", "/bbs/topic/hot/{p}"})
+    public String hotTopic(@PathVariable Optional<Integer> p) {
+        PageQuery query = new PageQuery(p.orElse(1));
+        request.setAttribute("topicPage", bbsService.getHotTopics(query));
+        return "/bbs/index.html";
     }
 
-    @RequestMapping("/bbs/topic/hot/{p}")
-    public ModelAndView hotTopic(@PathVariable int p) {
-        ModelAndView view = new ModelAndView();
-        view.setViewName("/bbs/index.html");
-        PageQuery query = new PageQuery(p);
-        query = bbsService.getHotTopics(query);
-        view.addObject("topicPage", query);
-        return view;
+    @GetMapping({"/bbs/topic/nice", "/bbs/topic/nice/{p}"})
+    public String niceTopic(@PathVariable Optional<Integer> p) {
+        PageQuery query = new PageQuery(p.orElse(1), null);
+        request.setAttribute("topicPage", bbsService.getNiceTopics(query));
+        return "/bbs/index.html";
     }
 
-    @RequestMapping("/bbs/topic/nice")
-    public ModelAndView niceTopic() {
-        return new ModelAndView("forward:/bbs/topic/nice/1");
-    }
-
-    @RequestMapping("/bbs/topic/nice/{p}")
-    public ModelAndView niceTopic(@PathVariable int p, ModelAndView view) {
-        view.setViewName("/bbs/index.html");
-        PageQuery query = new PageQuery(p, null);
-        query = bbsService.getNiceTopics(query);
-        view.addObject("topicPage", query);
-        return view;
-    }
-
-    @RequestMapping("/bbs/topic/{id}-{p}.html")
+    @GetMapping({"/bbs/topic/{id}", "/bbs/topic/{id}/{p}"})
     @EsIndexType(entityType = EsEntityType.BbsTopic, operateType = EsOperateType.UPDATE)
-    public ModelAndView topic(@PathVariable final int id, @PathVariable int p) {
-        ModelAndView view = new ModelAndView();
-        view.setViewName("/detail.html");
-        PageQuery query = new PageQuery(p);
+    public String topic(@PathVariable Integer id, @PathVariable Optional<Integer> p) {
+        PageQuery query = new PageQuery(p.orElse(1));
         query.setPara("topicId", id);
         query = bbsService.getPosts(query);
-        view.addObject("postPage", query);
+        request.setAttribute("postPage", query);
 
         BbsTopic topic    = bbsService.getTopic(id);
         BbsTopic template = new BbsTopic();
@@ -175,31 +136,22 @@ public class BBSController {
         template.setPv(topic.getPv() + 1);
         sql.updateTemplateById(template);
 
-        view.addObject("topic", topic);
-        return view;
+        request.setAttribute("topic", topic);
+        return "/detail.html";
     }
 
-    @RequestMapping("/bbs/topic/module/{id}-{p}.html")
-    public ModelAndView module(@PathVariable final Integer id, @PathVariable Integer p) {
-        ModelAndView view = new ModelAndView();
-        view.setViewName("/index.html");
-        PageQuery query = new PageQuery<>(p);
+    @GetMapping({"/bbs/topic/module/{id}", "/bbs/topic/module/{id}/{p}"})
+    public String module(@PathVariable Integer id, @PathVariable Optional<Integer> p) {
+        PageQuery query = new PageQuery<>(p.orElse(1));
         query.setPara("moduleId", id);
         query = bbsService.getTopics(query);
-        view.addObject("topicPage", query);
+        request.setAttribute("topicPage", query);
         if (query.getList().size() > 0) {
             BbsTopic bbsTopic = (BbsTopic) query.getList().get(0);
-            view.addObject("pageName", bbsTopic.getTails().get("moduleName"));
-            view.addObject("module", this.bbsService.getModule(id));
+            request.setAttribute("pageName", bbsTopic.getTails().get("moduleName"));
+            request.setAttribute("module", this.bbsService.getModule(id));
         }
-        return view;
-    }
-
-    @RequestMapping("/bbs/topic/add.html")
-    public ModelAndView addTopic(ModelAndView view) {
-
-        view.setViewName("/post.html");
-        return view;
+        return "/index.html";
     }
 
     /**
@@ -231,7 +183,8 @@ public class BBSController {
             return result;
         }
 
-        if (!verCode.equals(code)) {
+        //验证码不要区分大小写
+        if (!verCode.equalsIgnoreCase(code)) {
             result.put("msg", "验证码不正确");
             return result;
         }
@@ -271,7 +224,7 @@ public class BBSController {
         result.put("err", 0);
         result.put("tid", topic.getId());
         result.put("pid", post.getId());
-        result.put("msg", "/bbs/topic/" + topic.getId() + "-1.html");
+        result.put("msg", "/bbs/topic/" + topic.getId());
 
 
         return result;
@@ -282,7 +235,7 @@ public class BBSController {
     }
 
     @ResponseBody
-    @RequestMapping("/bbs/post/save")
+    @PostMapping("/bbs/post/save")
     @EsIndexType(entityType = EsEntityType.BbsPost, operateType = EsOperateType.ADD)
     public JSONObject savePost(BbsPost post) {
         JSONObject result = new JSONObject();
@@ -303,7 +256,7 @@ public class BBSController {
 
             int pageSize = (int) PageQuery.DEFAULT_PAGE_SIZE;
             int page     = (totalPost / pageSize) + (totalPost % pageSize == 0 ? 0 : 1);
-            result.put("msg", "/bbs/topic/" + post.getTopicId() + "-" + page + ".html");
+            result.put("msg", "/bbs/topic/" + post.getTopicId() + "/" + page);
             result.put("err", 0);
             result.put("id", post.getId());
         }
@@ -334,8 +287,6 @@ public class BBSController {
             reply.setUser(user);
             result.put("msg", "评论成功！");
             result.put("err", 0);
-
-            BbsTopic topic = bbsService.getTopic(reply.getTopicId());
             bbsService.notifyParticipant(reply.getTopicId(), user.getId());
             result.put("id", reply.getId());
         }
@@ -343,20 +294,18 @@ public class BBSController {
     }
 
     @RequestMapping("/bbs/user/{id}")
-    public ModelAndView saveUser(ModelAndView view, @PathVariable int id) {
-        view.setViewName("/bbs/user/user.html");
+    public String saveUser(@PathVariable int id) {
         BbsUser user = sql.unique(BbsUser.class, id);
-        view.addObject("user", user);
-        return view;
+        request.setAttribute("user", user);
+        return "/bbs/user/user.html";
     }
 
 
     // ============== 上传文件路径：项目根目录 upload
-    @RequestMapping("/bbs/upload")
+    @PostMapping("/bbs/upload")
     @ResponseBody
     public Map<String, Object> upload(@RequestParam("editormd-image-file") MultipartFile file) {
-        String              rootPath = filePath;
-        Map<String, Object> map      = new HashMap<String, Object>();
+        Map<String, Object> map = new HashMap<>();
         map.put("success", false);
         try {
             BbsUser user = webUtils.currentUser();
@@ -366,10 +315,10 @@ public class BBSController {
                 return map;
             }
             //从剪切板粘贴上传没有后缀名，通过此方法可以获取后缀名
-            Matcher matcher = Pattern.compile("^image/(.+)$", Pattern.CASE_INSENSITIVE).matcher(Objects.requireNonNull(file.getContentType()));
+            Matcher matcher = mediaTypePattern.matcher(Objects.requireNonNull(file.getContentType()));
             if (matcher.find()) {
                 String newName   = UUID.randomUUID().toString() + System.currentTimeMillis() + "." + matcher.group(1);
-                String filePaths = rootPath + "/upload/";
+                String filePaths = "upload" + File.separator;
                 File   fileout   = new File(filePaths);
                 if (!fileout.exists()) {
                     fileout.mkdirs();
@@ -387,20 +336,6 @@ public class BBSController {
             map.put("msg", "图片上传出错！");
         }
         return map;
-    }
-
-    @RequestMapping("/bbs/showPic/{path}.{ext}")
-    public void showPic(@PathVariable String path, @PathVariable String ext) {
-        String rootPath = filePath;
-
-        try {
-            String          filePath = rootPath + "/upload/" + path + "." + ext;
-            FileInputStream fins     = new FileInputStream(filePath);
-            response.setContentType("image/jpeg");
-            FileCopyUtils.copy(fins, response.getOutputStream());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     // ======================= admin
@@ -492,7 +427,7 @@ public class BBSController {
         return "/bbs/admin/postList.html";
     }
 
-    @RequestMapping("/bbs/admin/post/edit/{id}.html")
+    @RequestMapping("/bbs/admin/post/edit/{id}")
     public String editPost(@PathVariable int id) {
         BbsPost post = sql.unique(BbsPost.class, id);
         request.setAttribute("post", post);
@@ -517,7 +452,7 @@ public class BBSController {
                 db.setContent(post.getContent());
                 bbsService.updatePost(db);
                 result.put("id", post.getId());
-                result.put("msg", "/bbs/topic/" + db.getTopicId() + "-1.html");
+                result.put("msg", "/bbs/topic/" + db.getTopicId());
                 result.put("err", 0);
             } else {
                 result.put("msg", "不是自己发表的内容无法编辑！");

@@ -32,8 +32,8 @@
 						<span>浏览: ${topic.pv}</span>
 					</div>							
 					<div class="post">
-							<a class="tiezi" href="${ctxPath}/bbs/topic/${topic.id}-1.html">${topic.content,xss}</a>&nbsp;&nbsp;
-							<a class="type" href="${ctxPath}/bbs/topic/module/${topic.moduleId}-1.html">${topic.tails.moduleName}</a>
+							<a class="tiezi" href="${ctxPath}/bbs/topic/${topic.id}">${topic.content,xss}</a>&nbsp;&nbsp;
+							<a class="type" href="${ctxPath}/bbs/topic/module/${topic.moduleId}">${topic.tails.moduleName}</a>
 					</div>
 					@if(isAdmin){
 					<div class="admin" data-topic=${topic.id}>
