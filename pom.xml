@@ -10,15 +10,15 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.8.RELEASE</version>
+        <version>2.1.9.RELEASE</version>
     </parent>
 
 
     <properties>
         <!-- The main class to start by executing java -jar -->
         <start-class>com.ibeetl.bbs.BbsMain</start-class>
-        <beetl-starter.version>1.2.14.RELEASE</beetl-starter.version>
-        <fastjson.version>1.2.61</fastjson.version>
+        <beetl-starter.version>1.2.16.RELEASE</beetl-starter.version>
+        <fastjson.version>1.2.62</fastjson.version>
         <jsoup.version>1.12.1</jsoup.version>
         <commons-text.version>1.8</commons-text.version>
         <commons-lang3.version>3.9</commons-lang3.version>
